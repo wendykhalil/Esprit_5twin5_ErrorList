@@ -45,3 +45,6 @@ Route::get('/profil', function () {
 Route::get('/mes-reservations', function () {
     return view('frontend.rentals.index');
 })->name('rentals.index');
+
+// Admin routes
+require __DIR__.'/admin.php';
