@@ -2,92 +2,304 @@
 
 namespace App\Http\Controllers;
 
-use App\Data\EquipmentData;
+use App\Models\Category;
+use App\Models\Equipment;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class EquipmentController extends Controller
 {
-    public function index()
+    /**
+     * Display all equipment.
+     */
+    public function index(Request $request)
     {
-        $equipments = EquipmentData::getAll();
-        $categories = EquipmentData::getCategories();
-        
-        // Apply filters
-        $query = request('q', '');
-        $location = request('location', '');
-        $category = request('category', '');
-        $maxPrice = (int)request('maxPrice', 200);
-        $available = request('available', false) === 'on' || request('available') === '1';
-        $sort = request('sort', 'popular');
+        $query = Equipment::with(['category', 'user']);
 
-        // Filter equipment
-        $filtered = array_filter($equipments, function ($eq) use ($query, $location, $category, $maxPrice, $available) {
-            if ($query && !stripos($eq['name'], $query) && !stripos($eq['description'], $query)) {
-                return false;
-            }
-            if ($location && $eq['location'] !== $location) {
-                return false;
-            }
-            if ($category && $eq['category'] !== $category) {
-                return false;
-            }
-            if ($eq['price'] > $maxPrice) {
-                return false;
-            }
-            if ($available && !$eq['available']) {
-                return false;
-            }
-            return true;
-        });
+        // Search
+        if ($request->filled('q')) {
+            $search = $request->q;
 
-        // Sort
-        $filtered = array_values($filtered);
-        if ($sort === 'price_asc') {
-            usort($filtered, fn($a, $b) => $a['price'] <=> $b['price']);
-        } elseif ($sort === 'price_desc') {
-            usort($filtered, fn($a, $b) => $b['price'] <=> $a['price']);
-        } elseif ($sort === 'rating') {
-            usort($filtered, fn($a, $b) => $b['rating'] <=> $a['rating']);
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhere('brand', 'like', "%{$search}%");
+            });
         }
 
-        // Pagination
-        $perPage = 6;
-        $page = (int)request('page', 1);
-        $totalPages = ceil(count($filtered) / $perPage);
-        $paginated = array_slice($filtered, ($page - 1) * $perPage, $perPage);
+        // Location
+        if ($request->filled('location')) {
+            $query->where('location', $request->location);
+        }
 
-        return view('frontend.equipments.index', [
-            'equipments' => $paginated,
-            'categories' => $categories,
-            'filtered' => $filtered,
-            'page' => $page,
-            'totalPages' => $totalPages,
-            'query' => $query,
-            'location' => $location,
-            'category' => $category,
-            'maxPrice' => $maxPrice,
-            'available' => $available,
-            'sort' => $sort,
-        ]);
+        // Category
+        if ($request->filled('category')) {
+            $query->where('category_id', $request->category);
+        }
+
+        // Maximum price
+        if ($request->filled('maxPrice')) {
+            $query->where('price_per_day', '<=', $request->maxPrice);
+        }
+
+        // Available only
+        if ($request->boolean('available')) {
+            $query->where('availability', true);
+        }
+
+        // Sorting
+        switch ($request->get('sort')) {
+
+            case 'price_asc':
+                $query->orderBy('price_per_day', 'asc');
+                break;
+
+            case 'price_desc':
+                $query->orderBy('price_per_day', 'desc');
+                break;
+
+            default:
+                $query->latest();
+                break;
+        }
+
+        $equipments = $query
+            ->paginate(6)
+            ->withQueryString();
+
+        $categories = Category::orderBy('name')->get();
+
+        $locations = Equipment::select('location')
+            ->whereNotNull('location')
+            ->distinct()
+            ->orderBy('location')
+            ->pluck('location');
+
+        return view(
+            'frontend.equipments.index',
+            compact(
+                'equipments',
+                'categories',
+                'locations'
+            )
+        );
     }
 
-    public function show($id)
+    /**
+     * Show create form.
+     */
+    public function create()
     {
-        $equipment = EquipmentData::getById($id);
-        
-        if (!$equipment) {
-            abort(404);
+        $categories = Category::orderBy('name')->get();
+
+        return view(
+            'frontend.equipments.create',
+            compact('categories')
+        );
+    }
+
+    /**
+     * Store new equipment.
+     */
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'category_id' => 'required|exists:categories,id',
+
+            'name' => 'required|string|min:3|max:255',
+
+            'description' => 'required|string|min:10',
+
+            'brand' => 'nullable|string|max:255',
+
+            'power' => 'nullable|numeric|min:0',
+
+            'capacity' => 'nullable|numeric|min:0',
+
+            'condition' => 'required|in:excellent,good,used',
+
+            'price_per_day' => 'required|numeric|min:0',
+
+            'location' => 'required|string|max:255',
+
+            'availability' => 'nullable|boolean',
+
+            'status' => 'required|in:active,inactive',
+
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+        ]);
+
+        // Logged-in user becomes equipment owner
+        $validated['user_id'] = auth()->id();
+
+        // Checkbox
+        $validated['availability'] =
+            $request->boolean('availability');
+
+        // Image upload
+        if ($request->hasFile('image')) {
+
+            $validated['image'] = $request
+                ->file('image')
+                ->store('equipments', 'public');
         }
 
-        // Get related equipment
-        $allEquipments = EquipmentData::getAll();
-        $related = array_filter($allEquipments, function ($eq) use ($equipment) {
-            return $eq['category'] === $equipment['category'] && $eq['id'] !== $equipment['id'];
-        });
-        $related = array_slice(array_values($related), 0, 3);
+        $equipment = Equipment::create($validated);
 
-        return view('frontend.equipments.show', [
-            'equipment' => $equipment,
-            'related' => $related,
+        return redirect()
+            ->route('equipments.show', $equipment)
+            ->with(
+                'success',
+                'Équipement ajouté avec succès.'
+            );
+    }
+
+    /**
+     * Display one equipment.
+     */
+    public function show(Equipment $equipment)
+    {
+        $equipment->load([
+            'category',
+            'user'
         ]);
+
+        $related = Equipment::with([
+            'category',
+            'user'
+        ])
+            ->where(
+                'category_id',
+                $equipment->category_id
+            )
+            ->where(
+                'id',
+                '!=',
+                $equipment->id
+            )
+            ->where(
+                'status',
+                'active'
+            )
+            ->take(3)
+            ->get();
+
+        return view(
+            'frontend.equipments.show',
+            compact(
+                'equipment',
+                'related'
+            )
+        );
+    }
+
+    /**
+     * Show edit form.
+     */
+    public function edit(Equipment $equipment)
+    {
+        // Only owner can edit
+        if ($equipment->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        $categories = Category::orderBy('name')->get();
+
+        return view(
+            'frontend.equipments.edit',
+            compact(
+                'equipment',
+                'categories'
+            )
+        );
+    }
+
+    /**
+     * Update equipment.
+     */
+    public function update(
+        Request $request,
+        Equipment $equipment
+    ) {
+        // Only owner can update
+        if ($equipment->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'category_id' => 'required|exists:categories,id',
+
+            'name' => 'required|string|min:3|max:255',
+
+            'description' => 'required|string|min:10',
+
+            'brand' => 'nullable|string|max:255',
+
+            'power' => 'nullable|numeric|min:0',
+
+            'capacity' => 'nullable|numeric|min:0',
+
+            'condition' => 'required|in:excellent,good,used',
+
+            'price_per_day' => 'required|numeric|min:0',
+
+            'location' => 'required|string|max:255',
+
+            'availability' => 'nullable|boolean',
+
+            'status' => 'required|in:active,inactive',
+
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+        ]);
+
+        $validated['availability'] =
+            $request->boolean('availability');
+
+        // Replace image
+        if ($request->hasFile('image')) {
+
+            if ($equipment->image) {
+                Storage::disk('public')
+                    ->delete($equipment->image);
+            }
+
+            $validated['image'] = $request
+                ->file('image')
+                ->store('equipments', 'public');
+        }
+
+        $equipment->update($validated);
+
+        return redirect()
+            ->route('equipments.show', $equipment)
+            ->with(
+                'success',
+                'Équipement modifié avec succès.'
+            );
+    }
+
+    /**
+     * Delete equipment.
+     */
+    public function destroy(Equipment $equipment)
+    {
+        // Only owner can delete
+        if ($equipment->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        if ($equipment->image) {
+            Storage::disk('public')
+                ->delete($equipment->image);
+        }
+
+        $equipment->delete();
+
+        return redirect()
+            ->route('equipments.index')
+            ->with(
+                'success',
+                'Équipement supprimé avec succès.'
+            );
     }
 }
