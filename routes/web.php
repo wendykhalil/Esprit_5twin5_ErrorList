@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EquipmentController;
+use App\Http\Controllers\Frontend\PaymentController;
 
 // Home
 Route::get('/', function () {
@@ -45,6 +46,12 @@ Route::get('/profil', function () {
 Route::get('/mes-reservations', function () {
     return view('frontend.rentals.index');
 })->name('rentals.index');
+
+// Payment routes
+Route::get('/paiement/creer', [PaymentController::class, 'create'])->name('payments.create');
+Route::post('/paiement', [PaymentController::class, 'store'])->name('payments.store');
+Route::get('/paiement/{payment}', [PaymentController::class, 'show'])->name('payments.show');
+Route::get('/mes-paiements', [PaymentController::class, 'history'])->name('payments.history');
 
 // Admin routes
 require __DIR__.'/admin.php';

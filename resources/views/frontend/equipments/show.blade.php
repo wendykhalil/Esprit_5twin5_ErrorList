@@ -170,10 +170,19 @@
                         <div id="confirmationMsg" class="hidden mt-4 bg-green-50 rounded-xl p-4 text-center border border-green-200">
                             <div class="text-3xl mb-2">✅</div>
                             <p class="font-semibold text-green-900">Réservation confirmée !</p>
-                            <p class="text-sm text-gray-600 mt-2" id="confirmationText">Votre demande de réservation est prête. La réservation réelle sera disponible prochainement.</p>
-                            <button type="button" id="resetBtn" class="mt-4 text-sm text-green-600 hover:text-green-700 underline">
-                                Faire une autre réservation
-                            </button>
+                            <p class="text-sm text-gray-600 mt-2" id="confirmationText">Votre demande de réservation est prête.</p>
+                            <div class="mt-4 space-y-2">
+                                <button 
+                                    type="button"
+                                    id="proceedPaymentBtn"
+                                    class="w-full py-2.5 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors text-sm"
+                                >
+                                    Procéder au paiement →
+                                </button>
+                                <button type="button" id="resetBtn" class="w-full py-2 text-sm text-green-600 hover:text-green-700 underline">
+                                    Faire une autre réservation
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -196,7 +205,7 @@
     @endif
 
     {{-- Booking CTA --}}
-    <section class="py-20 bg-gradient-to-br from-green-700 to-green-900">
+    <section class="py-20 bg-linear-to-br from-green-700 to-green-900">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 class="text-3xl font-bold text-white mb-4">Vous êtes intéressé ?</h2>
             <p class="text-green-200 mb-8 max-w-2xl mx-auto text-lg leading-relaxed">
@@ -222,6 +231,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const equipmentPrice = {{ $equipment['price'] }};
+            const equipmentId = {{ $equipment['id'] }};
             const durationBtns = document.querySelectorAll('.durationBtn');
             const startDateInput = document.getElementById('startDate');
             const bookingBtn = document.getElementById('bookingBtn');
@@ -230,9 +240,11 @@
             const confirmationMsg = document.getElementById('confirmationMsg');
             const trustBadge = document.getElementById('trustBadge');
             const resetBtn = document.getElementById('resetBtn');
+            const proceedPaymentBtn = document.getElementById('proceedPaymentBtn');
             
             let selectedDays = 1;
             let selectedDate = '';
+            let grandTotal = equipmentPrice + 1; // Initial total
 
             // Set first button as active on load
             if (durationBtns.length > 0) {
@@ -268,7 +280,7 @@
             function updatePriceCalculation() {
                 const itemTotal = equipmentPrice * selectedDays;
                 const serviceFee = 1; // Mock service fee
-                const grandTotal = itemTotal + serviceFee;
+                grandTotal = itemTotal + serviceFee;
                 
                 document.getElementById('priceCalc').textContent = `${equipmentPrice} TND × ${selectedDays} jour${selectedDays > 1 ? 's' : ''}`;
                 document.getElementById('priceTotal').textContent = `${itemTotal} TND`;
@@ -291,6 +303,15 @@
                 bookingBtn.classList.add('hidden');
                 trustBadge.classList.add('hidden');
                 confirmationMsg.classList.remove('hidden');
+            });
+
+            // Proceed to payment button handler
+            proceedPaymentBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Redirect to payment form with amount and equipment details
+                const paymentUrl = `{{ route('payments.create') }}?amount=${grandTotal}&equipment_id=${equipmentId}&description=Location de ${document.querySelector('h1').textContent.trim()} pour ${selectedDays} jour${selectedDays > 1 ? 's' : ''}`;
+                window.location.href = paymentUrl;
             });
 
             // Reset button handler
