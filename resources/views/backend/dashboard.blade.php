@@ -117,7 +117,7 @@
                         @foreach($rentals as $rental)
                             <tr class="hover:bg-slate-50 transition-colors">
                                 <td class="px-5 py-3.5 font-500 text-slate-800" style="font-family: Outfit, sans-serif">{{ $rental['client'] }}</td>
-                                <td class="px-5 py-3.5 text-slate-600 hidden sm:table-cell truncate max-w-[140px]" style="font-family: Outfit, sans-serif">{{ $rental['equipment'] }}</td>
+                                <td class="px-5 py-3.5 text-slate-600 hidden sm:table-cell truncate max-w-35" style="font-family: Outfit, sans-serif">{{ $rental['equipment'] }}</td>
                                 <td class="px-5 py-3.5 text-slate-700 font-600 hidden md:table-cell" style="font-family: Outfit, sans-serif">{{ $rental['price'] }} TND</td>
                                 <td class="px-5 py-3.5">
                                     <x-backend.status-badge :status="$rental['status']" />
@@ -143,7 +143,7 @@
                         <img
                             src="{{ $equipment['image'] }}"
                             alt="{{ $equipment['name'] }}"
-                            class="w-10 h-10 rounded-lg object-cover bg-slate-100 flex-shrink-0"
+                            class="w-10 h-10 rounded-lg object-cover bg-slate-100 shrink-0"
                         />
                         <div class="flex-1 min-w-0">
                             <p class="text-sm font-500 text-slate-800" style="font-family: Outfit, sans-serif">{{ $equipment['name'] }}</p>
