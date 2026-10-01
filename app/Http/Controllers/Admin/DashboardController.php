@@ -35,4 +35,28 @@ class DashboardController extends Controller
             'completedTransactions' => $completedTransactions,
         ]);
     }
+
+    /**
+     * Get real-time statistics for Dashboard (JSON)
+     * Used by AJAX polling
+     */
+    public function stats()
+    {
+        // Payment Statistics
+        $totalPayments = Payment::count();
+        $paidPayments = Payment::where('status', 'paid')->count();
+        $revenue = Payment::where('status', 'paid')->sum('amount');
+
+        // Transaction Statistics
+        $totalTransactions = Transaction::count();
+        $completedTransactions = Transaction::where('status', 'completed')->count();
+
+        return response()->json([
+            'revenue' => (float) $revenue,
+            'payments' => $totalPayments,
+            'paidPayments' => $paidPayments,
+            'transactions' => $totalTransactions,
+            'completedTransactions' => $completedTransactions,
+        ]);
+    }
 }

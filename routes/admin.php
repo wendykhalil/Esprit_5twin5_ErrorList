@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\TransactionController;
 Route::prefix('admin')->name('admin.')->group(function () {
     // Dashboard
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/stats', [DashboardController::class, 'stats'])->name('dashboard.stats');
     
     // Equipments
     Route::get('/equipements', [EquipmentController::class, 'index'])->name('equipments');
