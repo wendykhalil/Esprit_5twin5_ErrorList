@@ -35,11 +35,31 @@ class PaymentController extends Controller
      */
     public function store(Request $request)
     {
-        $payment = Payment::create($request->validated());
+        $validated = $request->validate([
+            'amount' => 'required|numeric|gt:0',
+            'method' => 'required|in:card,cash,bank_transfer',
+            'status' => 'required|in:pending,paid,failed,refunded',
+            'payment_date' => 'required|date',
+            'description' => 'nullable|string|max:500',
+        ], [
+            'amount.required' => 'Le montant est obligatoire.',
+            'amount.numeric' => 'Le montant doit être un nombre.',
+            'amount.gt' => 'Le montant doit être supérieur à 0.',
+            'method.required' => 'La méthode de paiement est obligatoire.',
+            'method.in' => 'La méthode de paiement sélectionnée est invalide.',
+            'status.required' => 'Le statut est obligatoire.',
+            'status.in' => 'Le statut sélectionné est invalide.',
+            'payment_date.required' => 'La date de paiement est obligatoire.',
+            'payment_date.date' => 'La date de paiement doit être une date valide.',
+            'description.string' => 'La description doit être un texte.',
+            'description.max' => 'La description ne doit pas dépasser 500 caractères.',
+        ]);
+
+        $payment = Payment::create($validated);
 
         return redirect()
             ->route('admin.payments.show', $payment)
-            ->with('success', 'Payment créé avec succès.');
+            ->with('success', 'Paiement créé avec succès.');
     }
 
     /**
@@ -69,11 +89,31 @@ class PaymentController extends Controller
      */
     public function update(Request $request, Payment $payment)
     {
-        $payment->update($request->validated());
+        $validated = $request->validate([
+            'amount' => 'required|numeric|gt:0',
+            'method' => 'required|in:card,cash,bank_transfer',
+            'status' => 'required|in:pending,paid,failed,refunded',
+            'payment_date' => 'required|date',
+            'description' => 'nullable|string|max:500',
+        ], [
+            'amount.required' => 'Le montant est obligatoire.',
+            'amount.numeric' => 'Le montant doit être un nombre.',
+            'amount.gt' => 'Le montant doit être supérieur à 0.',
+            'method.required' => 'La méthode de paiement est obligatoire.',
+            'method.in' => 'La méthode de paiement sélectionnée est invalide.',
+            'status.required' => 'Le statut est obligatoire.',
+            'status.in' => 'Le statut sélectionné est invalide.',
+            'payment_date.required' => 'La date de paiement est obligatoire.',
+            'payment_date.date' => 'La date de paiement doit être une date valide.',
+            'description.string' => 'La description doit être un texte.',
+            'description.max' => 'La description ne doit pas dépasser 500 caractères.',
+        ]);
+
+        $payment->update($validated);
 
         return redirect()
             ->route('admin.payments.show', $payment)
-            ->with('success', 'Payment modifié avec succès.');
+            ->with('success', 'Paiement modifié avec succès.');
     }
 
     /**
@@ -85,6 +125,6 @@ class PaymentController extends Controller
 
         return redirect()
             ->route('admin.payments.index')
-            ->with('success', 'Payment supprimé avec succès.');
+            ->with('success', 'Paiement supprimé avec succès.');
     }
 }
