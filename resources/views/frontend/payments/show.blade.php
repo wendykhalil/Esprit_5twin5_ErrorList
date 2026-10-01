@@ -181,6 +181,12 @@
 
                         <div class="space-y-2">
                             <a
+                                href="{{ route('payments.invoice', $payment) }}"
+                                class="block w-full px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors text-center text-sm"
+                            >
+                                🧾 Voir la facture
+                            </a>
+                            <a
                                 href="{{ route('payments.history') }}"
                                 class="block w-full px-4 py-2.5 border border-green-200 text-green-600 font-semibold rounded-lg hover:bg-green-50 transition-colors text-center text-sm"
                             >
@@ -188,7 +194,7 @@
                             </a>
                             <a
                                 href="{{ route('equipments.index') }}"
-                                class="block w-full px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors text-center text-sm"
+                                class="block w-full px-4 py-2.5 border border-green-200 text-green-600 font-semibold rounded-lg hover:bg-green-50 transition-colors text-center text-sm"
                             >
                                 Continuer les locations
                             </a>

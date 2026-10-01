@@ -111,4 +111,19 @@ class PaymentController extends Controller
             'payments' => $payments,
         ]);
     }
+
+    /**
+     * Display payment invoice
+     */
+    public function invoice(Payment $payment)
+    {
+        // Load the first transaction (if exists)
+        $payment->load('transactions');
+        $transaction = $payment->transactions->first();
+
+        return view('frontend.payments.invoice', [
+            'payment' => $payment,
+            'transaction' => $transaction,
+        ]);
+    }
 }

@@ -52,6 +52,7 @@ Route::get('/paiement/creer', [PaymentController::class, 'create'])->name('payme
 Route::post('/paiement', [PaymentController::class, 'store'])->name('payments.store');
 Route::get('/paiement/{payment}', [PaymentController::class, 'show'])->name('payments.show');
 Route::get('/mes-paiements', [PaymentController::class, 'history'])->name('payments.history');
+Route::get('/mes-paiements/{payment}/facture', [PaymentController::class, 'invoice'])->name('payments.invoice');
 
 // Admin routes
 require __DIR__.'/admin.php';
