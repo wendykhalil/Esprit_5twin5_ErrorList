@@ -6,6 +6,18 @@
 
 <div class="space-y-5">
 
+    {{-- Success Message --}}
+    @if(session('success'))
+        <div
+            class="bg-green-50 border border-green-200
+                   text-green-800 px-4 py-3 rounded-xl"
+            style="font-family: Outfit, sans-serif"
+        >
+            {{ session('success') }}
+        </div>
+    @endif
+
+
     {{-- Header --}}
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 
@@ -26,6 +38,8 @@
             </p>
         </div>
 
+
+        {{-- Add equipment --}}
         <a
             href="{{ route('equipments.create') }}"
             class="flex items-center gap-2 px-4 py-2.5
@@ -101,13 +115,14 @@
             </div>
 
 
-            {{-- Category --}}
+            {{-- Category filter --}}
             <select
                 name="category"
                 class="px-3 py-2.5 text-sm font-medium
                        border border-slate-200 rounded-lg
                        focus:outline-none focus:ring-2
-                       focus:ring-amber-400 text-slate-700 bg-white"
+                       focus:ring-amber-400
+                       text-slate-700 bg-white"
                 style="font-family: Outfit, sans-serif"
             >
 
@@ -129,23 +144,27 @@
             </select>
 
 
+            {{-- Filter button --}}
             <button
                 type="submit"
-                class="px-4 py-2.5 bg-amber-500
-                       text-white rounded-lg text-sm
-                       font-semibold hover:bg-amber-600
-                       transition-colors"
+                class="px-4 py-2.5
+                       bg-amber-500 text-white rounded-lg
+                       text-sm font-semibold
+                       hover:bg-amber-600 transition-colors"
                 style="font-family: Outfit, sans-serif"
             >
                 Filtrer
             </button>
 
 
+            {{-- Reset --}}
             <a
                 href="{{ route('admin.equipments') }}"
-                class="px-4 py-2.5 border border-slate-200
-                       text-slate-600 rounded-lg text-sm
-                       font-semibold hover:bg-slate-50
+                class="px-4 py-2.5
+                       border border-slate-200
+                       text-slate-600 rounded-lg
+                       text-sm font-semibold
+                       hover:bg-slate-50
                        transition-colors text-center"
                 style="font-family: Outfit, sans-serif"
             >
@@ -172,8 +191,8 @@
                     <tr class="bg-slate-50 border-b border-slate-200">
 
                         <th
-                            class="text-left px-5 py-3.5 text-xs
-                                   font-semibold text-slate-500
+                            class="text-left px-5 py-3.5
+                                   text-xs font-semibold text-slate-500
                                    uppercase tracking-wider"
                             style="font-family: Outfit, sans-serif"
                         >
@@ -181,8 +200,8 @@
                         </th>
 
                         <th
-                            class="text-left px-5 py-3.5 text-xs
-                                   font-semibold text-slate-500
+                            class="text-left px-5 py-3.5
+                                   text-xs font-semibold text-slate-500
                                    uppercase tracking-wider
                                    hidden md:table-cell"
                             style="font-family: Outfit, sans-serif"
@@ -191,8 +210,8 @@
                         </th>
 
                         <th
-                            class="text-left px-5 py-3.5 text-xs
-                                   font-semibold text-slate-500
+                            class="text-left px-5 py-3.5
+                                   text-xs font-semibold text-slate-500
                                    uppercase tracking-wider
                                    hidden lg:table-cell"
                             style="font-family: Outfit, sans-serif"
@@ -201,8 +220,8 @@
                         </th>
 
                         <th
-                            class="text-left px-5 py-3.5 text-xs
-                                   font-semibold text-slate-500
+                            class="text-left px-5 py-3.5
+                                   text-xs font-semibold text-slate-500
                                    uppercase tracking-wider
                                    hidden sm:table-cell"
                             style="font-family: Outfit, sans-serif"
@@ -211,8 +230,8 @@
                         </th>
 
                         <th
-                            class="text-left px-5 py-3.5 text-xs
-                                   font-semibold text-slate-500
+                            class="text-left px-5 py-3.5
+                                   text-xs font-semibold text-slate-500
                                    uppercase tracking-wider"
                             style="font-family: Outfit, sans-serif"
                         >
@@ -220,8 +239,8 @@
                         </th>
 
                         <th
-                            class="text-right px-5 py-3.5 text-xs
-                                   font-semibold text-slate-500
+                            class="text-right px-5 py-3.5
+                                   text-xs font-semibold text-slate-500
                                    uppercase tracking-wider"
                             style="font-family: Outfit, sans-serif"
                         >
@@ -306,7 +325,8 @@
 
                             {{-- Category --}}
                             <td
-                                class="px-5 py-4 text-slate-600 hidden md:table-cell"
+                                class="px-5 py-4
+                                       text-slate-600 hidden md:table-cell"
                                 style="font-family: Outfit, sans-serif"
                             >
                                 {{ $equipment->category?->name ?? 'Sans catégorie' }}
@@ -315,7 +335,8 @@
 
                             {{-- Owner --}}
                             <td
-                                class="px-5 py-4 text-slate-600 hidden lg:table-cell"
+                                class="px-5 py-4
+                                       text-slate-600 hidden lg:table-cell"
                                 style="font-family: Outfit, sans-serif"
                             >
                                 {{ $equipment->user?->name ?? 'Utilisateur inconnu' }}
@@ -324,8 +345,9 @@
 
                             {{-- Price --}}
                             <td
-                                class="px-5 py-4 font-semibold
-                                       text-slate-800 hidden sm:table-cell"
+                                class="px-5 py-4
+                                       font-semibold text-slate-800
+                                       hidden sm:table-cell"
                                 style="font-family: Outfit, sans-serif"
                             >
                                 {{ number_format((float) $equipment->price_per_day, 2) }}
@@ -349,10 +371,11 @@
                             <td class="px-5 py-4">
 
                                 <div
-                                    class="flex items-center justify-end gap-2"
+                                    class="flex items-center
+                                           justify-end gap-2"
                                 >
 
-                                    {{-- View --}}
+                                    {{-- VIEW --}}
                                     <a
                                         href="{{ route('equipments.show', $equipment) }}"
                                         class="p-1.5 text-slate-400
@@ -391,9 +414,9 @@
                                     </a>
 
 
-                                    {{-- Edit --}}
+                                    {{-- EDIT --}}
                                     <a
-                                        href="{{ route('equipments.edit', $equipment) }}"
+                                        href="{{ route('admin.equipments.edit', $equipment) }}"
                                         class="p-1.5 text-slate-400
                                                hover:text-amber-600
                                                hover:bg-amber-50
@@ -421,13 +444,11 @@
                                     </a>
 
 
-                                    {{-- Delete --}}
+                                    {{-- DELETE --}}
                                     <form
                                         method="POST"
-                                        action="{{ route('equipments.destroy', $equipment) }}"
-                                        onsubmit="return confirm(
-                                            'Voulez-vous vraiment supprimer cet équipement ?'
-                                        )"
+                                        action="{{ route('admin.equipments.destroy', $equipment) }}"
+                                        onsubmit="return confirm('Voulez-vous vraiment supprimer cet équipement ?')"
                                     >
                                         @csrf
                                         @method('DELETE')
@@ -475,7 +496,8 @@
                         <tr>
                             <td
                                 colspan="6"
-                                class="text-center py-12 text-slate-400"
+                                class="text-center py-12
+                                       text-slate-400"
                                 style="font-family: Outfit, sans-serif"
                             >
                                 Aucun équipement trouvé.

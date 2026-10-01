@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Storage;
 class EquipmentController extends Controller
 {
     /**
-     * Admin equipment list.
+     * Display equipment list in admin.
      */
     public function index(Request $request)
     {
@@ -20,6 +20,7 @@ class EquipmentController extends Controller
             'category'
         ]);
 
+        // Search
         if ($request->filled('search')) {
 
             $search = $request->search;
@@ -29,13 +30,21 @@ class EquipmentController extends Controller
                 $q->where('name', 'like', "%{$search}%")
                     ->orWhere('brand', 'like', "%{$search}%")
                     ->orWhereHas('user', function ($userQuery) use ($search) {
-                        $userQuery->where('name', 'like', "%{$search}%");
+
+                        $userQuery->where(
+                            'name',
+                            'like',
+                            "%{$search}%"
+                        );
+
                     });
 
             });
         }
 
+        // Category filter
         if ($request->filled('category')) {
+
             $query->where(
                 'category_id',
                 $request->category
@@ -47,7 +56,8 @@ class EquipmentController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        $categories = Category::orderBy('name')->get();
+        $categories = Category::orderBy('name')
+            ->get();
 
         return view(
             'backend.equipments.index',
@@ -60,11 +70,12 @@ class EquipmentController extends Controller
 
 
     /**
-     * Admin edit form.
+     * Show admin edit form.
      */
     public function edit(Equipment $equipment)
     {
-        $categories = Category::orderBy('name')->get();
+        $categories = Category::orderBy('name')
+            ->get();
 
         return view(
             'backend.equipments.edit',
@@ -77,7 +88,7 @@ class EquipmentController extends Controller
 
 
     /**
-     * Admin update equipment.
+     * Update equipment from admin.
      */
     public function update(
         Request $request,
@@ -136,13 +147,15 @@ class EquipmentController extends Controller
 
 
     /**
-     * Admin delete equipment.
+     * Delete equipment from admin.
      */
     public function destroy(Equipment $equipment)
     {
         if ($equipment->image) {
+
             Storage::disk('public')
                 ->delete($equipment->image);
+
         }
 
         $equipment->delete();
