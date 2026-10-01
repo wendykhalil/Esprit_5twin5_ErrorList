@@ -1,8 +1,11 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+
 use App\Http\Controllers\EquipmentController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Frontend\PaymentController;
+
 use App\Models\Category;
 
 
@@ -31,25 +34,23 @@ Route::get('/equipements', [EquipmentController::class, 'index'])
 
 Route::middleware('auth')->group(function () {
 
-    // Create form
+    // Create
     Route::get('/equipements/create', [EquipmentController::class, 'create'])
         ->name('equipments.create');
 
-    // Store new equipment
     Route::post('/equipements', [EquipmentController::class, 'store'])
         ->name('equipments.store');
 
-    // Edit form
+    // Edit
     Route::get('/equipements/{equipment}/edit', [EquipmentController::class, 'edit'])
         ->whereNumber('equipment')
         ->name('equipments.edit');
 
-    // Update equipment
     Route::put('/equipements/{equipment}', [EquipmentController::class, 'update'])
         ->whereNumber('equipment')
         ->name('equipments.update');
 
-    // Delete equipment
+    // Delete
     Route::delete('/equipements/{equipment}', [EquipmentController::class, 'destroy'])
         ->whereNumber('equipment')
         ->name('equipments.destroy');
@@ -58,7 +59,7 @@ Route::middleware('auth')->group(function () {
 
 // --------------------------------------------------
 // EQUIPMENT DETAILS
-// IMPORTANT: keep this AFTER /create and /edit
+// IMPORTANT: keep this after /create and /edit
 // --------------------------------------------------
 
 Route::get('/equipements/{equipment}', [EquipmentController::class, 'show'])
@@ -97,6 +98,29 @@ Route::get('/mes-reservations', function () {
 
 
 // --------------------------------------------------
+// PAYMENTS
+// --------------------------------------------------
+
+Route::middleware('auth')->group(function () {
+
+    Route::get('/paiement/creer', [PaymentController::class, 'create'])
+        ->name('payments.create');
+
+    Route::post('/paiement', [PaymentController::class, 'store'])
+        ->name('payments.store');
+
+    Route::get('/paiement/{payment}', [PaymentController::class, 'show'])
+        ->name('payments.show');
+
+    Route::get('/mes-paiements', [PaymentController::class, 'history'])
+        ->name('payments.history');
+
+    Route::get('/mes-paiements/{payment}/facture', [PaymentController::class, 'invoice'])
+        ->name('payments.invoice');
+});
+
+
+// --------------------------------------------------
 // BREEZE DASHBOARD
 // --------------------------------------------------
 
@@ -113,19 +137,15 @@ Route::get('/dashboard', function () {
 
 Route::middleware('auth')->group(function () {
 
-    // Breeze profile page
     Route::get('/profile', [ProfileController::class, 'edit'])
         ->name('profile.edit');
 
-    // Update profile
     Route::patch('/profile', [ProfileController::class, 'update'])
         ->name('profile.update');
 
-    // Delete account
     Route::delete('/profile', [ProfileController::class, 'destroy'])
         ->name('profile.destroy');
 
-    // SolarShare custom alias
     Route::get('/profil', [ProfileController::class, 'edit'])
         ->name('profile');
 });
@@ -140,7 +160,6 @@ require __DIR__.'/admin.php';
 
 // --------------------------------------------------
 // BREEZE AUTHENTICATION ROUTES
-// login / register / logout / password reset...
 // --------------------------------------------------
 
 require __DIR__.'/auth.php';

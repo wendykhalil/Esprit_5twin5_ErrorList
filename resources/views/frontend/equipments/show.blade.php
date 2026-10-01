@@ -52,7 +52,6 @@
 
             <div class="lg:col-span-2 space-y-8">
 
-
                 {{-- IMAGE --}}
                 <div
                     class="relative bg-white rounded-2xl overflow-hidden
@@ -141,7 +140,6 @@
                            border-green-100 p-8 shadow-sm"
                 >
 
-                    {{-- Title --}}
                     <h1
                         class="text-4xl font-bold text-green-900 mb-6"
                         style="font-family: Fraunces, Georgia, serif"
@@ -208,9 +206,7 @@
                                     <form
                                         action="{{ route('equipments.destroy', $equipment) }}"
                                         method="POST"
-                                        onsubmit="return confirm(
-                                            'Voulez-vous vraiment supprimer cet équipement ?'
-                                        )"
+                                        onsubmit="return confirm('Voulez-vous vraiment supprimer cet équipement ?')"
                                     >
                                         @csrf
                                         @method('DELETE')
@@ -290,15 +286,11 @@
                         class="pb-8 mb-8 border-b border-green-100"
                     >
 
-                        <h2
-                            class="text-xl font-bold text-green-900 mb-4"
-                        >
+                        <h2 class="text-xl font-bold text-green-900 mb-4">
                             Description
                         </h2>
 
-                        <p
-                            class="text-gray-600 leading-relaxed text-base"
-                        >
+                        <p class="text-gray-600 leading-relaxed text-base">
                             {{ $equipment->description }}
                         </p>
 
@@ -308,9 +300,7 @@
                     {{-- SPECIFICATIONS --}}
                     <div>
 
-                        <h2
-                            class="text-xl font-bold text-green-900 mb-6"
-                        >
+                        <h2 class="text-xl font-bold text-green-900 mb-6">
                             Caractéristiques
                         </h2>
 
@@ -329,9 +319,7 @@
                                     Catégorie
                                 </p>
 
-                                <p
-                                    class="text-lg font-semibold text-green-900"
-                                >
+                                <p class="text-lg font-semibold text-green-900">
                                     {{ $equipment->category?->name ?? 'Non définie' }}
                                 </p>
                             </div>
@@ -349,9 +337,7 @@
                                     Marque
                                 </p>
 
-                                <p
-                                    class="text-lg font-semibold text-green-900"
-                                >
+                                <p class="text-lg font-semibold text-green-900">
                                     {{ $equipment->brand ?: 'Non renseignée' }}
                                 </p>
                             </div>
@@ -369,14 +355,18 @@
                                     Puissance
                                 </p>
 
-                                <p
-                                    class="text-lg font-semibold text-green-900"
-                                >
+                                <p class="text-lg font-semibold text-green-900">
+
                                     @if($equipment->power)
-                                        {{ number_format((float)$equipment->power, 0) }} W
+
+                                        {{ number_format((float) $equipment->power, 0) }} W
+
                                     @else
+
                                         Non renseignée
+
                                     @endif
+
                                 </p>
                             </div>
 
@@ -393,14 +383,18 @@
                                     Capacité
                                 </p>
 
-                                <p
-                                    class="text-lg font-semibold text-green-900"
-                                >
+                                <p class="text-lg font-semibold text-green-900">
+
                                     @if($equipment->capacity)
-                                        {{ number_format((float)$equipment->capacity, 0) }} Wh
+
+                                        {{ number_format((float) $equipment->capacity, 0) }} Wh
+
                                     @else
+
                                         Non renseignée
+
                                     @endif
+
                                 </p>
                             </div>
 
@@ -417,9 +411,8 @@
                                     État
                                 </p>
 
-                                <p
-                                    class="text-lg font-semibold text-green-900"
-                                >
+                                <p class="text-lg font-semibold text-green-900">
+
                                     @switch($equipment->condition)
 
                                         @case('excellent')
@@ -438,6 +431,7 @@
                                             {{ ucfirst($equipment->condition) }}
 
                                     @endswitch
+
                                 </p>
                             </div>
 
@@ -454,9 +448,7 @@
                                     Localisation
                                 </p>
 
-                                <p
-                                    class="text-lg font-semibold text-green-900"
-                                >
+                                <p class="text-lg font-semibold text-green-900">
                                     {{ $equipment->location }}
                                 </p>
                             </div>
@@ -472,7 +464,7 @@
 
 
             {{-- ================================================= --}}
-            {{-- RIGHT SIDE / RENTAL PREVIEW --}}
+            {{-- RIGHT SIDE / BOOKING + PAYMENT --}}
             {{-- ================================================= --}}
 
             <div class="lg:col-span-1">
@@ -487,9 +479,8 @@
 
                         <span
                             class="text-3xl font-bold text-green-700"
-                            id="bookingPrice"
                         >
-                            {{ number_format((float)$equipment->price_per_day, 2) }}
+                            {{ number_format((float) $equipment->price_per_day, 2) }}
                             TND
                         </span>
 
@@ -500,7 +491,7 @@
                     </div>
 
 
-                    {{-- Booking preview --}}
+                    {{-- Booking --}}
                     <div
                         id="bookingForm"
                         class="space-y-4 mb-6"
@@ -598,26 +589,23 @@
                                pt-4 mb-6 space-y-2"
                     >
 
-                        <div
-                            class="flex justify-between
-                                   text-sm text-gray-600"
-                        >
+                        <div class="flex justify-between text-sm text-gray-600">
+
                             <span id="priceCalc">
-                                {{ number_format((float)$equipment->price_per_day, 2) }}
+                                {{ number_format((float) $equipment->price_per_day, 2) }}
                                 TND × 1 jour
                             </span>
 
                             <span id="priceTotal">
-                                {{ number_format((float)$equipment->price_per_day, 2) }}
+                                {{ number_format((float) $equipment->price_per_day, 2) }}
                                 TND
                             </span>
+
                         </div>
 
 
-                        <div
-                            class="flex justify-between
-                                   text-sm text-gray-600"
-                        >
+                        <div class="flex justify-between text-sm text-gray-600">
+
                             <span>
                                 Frais de service
                             </span>
@@ -625,6 +613,7 @@
                             <span id="serviceFee">
                                 1.00 TND
                             </span>
+
                         </div>
 
 
@@ -633,20 +622,22 @@
                                    text-green-900 pt-2
                                    border-t border-gray-100"
                         >
+
                             <span>
                                 Total
                             </span>
 
                             <span id="grandTotal">
-                                {{ number_format((float)$equipment->price_per_day + 1, 2) }}
+                                {{ number_format((float) $equipment->price_per_day + 1, 2) }}
                                 TND
                             </span>
+
                         </div>
 
                     </div>
 
 
-                    {{-- Button --}}
+                    {{-- Booking action --}}
                     @if($equipment->availability)
 
                         @auth
@@ -657,9 +648,7 @@
                                     class="bg-blue-50 border border-blue-100
                                            rounded-xl p-4 text-center"
                                 >
-                                    <p
-                                        class="text-sm text-blue-800 font-medium"
-                                    >
+                                    <p class="text-sm text-blue-800 font-medium">
                                         Vous êtes le propriétaire de cet équipement.
                                     </p>
                                 </div>
@@ -670,8 +659,8 @@
                                     id="bookingBtn"
                                     type="button"
                                     class="w-full py-4 font-bold rounded-xl
-                                           transition-colors bg-green-600
-                                           hover:bg-green-700 text-white"
+                                           bg-green-600 hover:bg-green-700
+                                           text-white transition-colors"
                                 >
                                     Réserver maintenant
                                 </button>
@@ -707,10 +696,60 @@
                     @endif
 
 
-                    <p
-                        class="text-xs text-center text-gray-400 mt-3"
+                    {{-- Confirmation + payment --}}
+                    <div
+                        id="confirmationMsg"
+                        class="hidden mt-4 bg-green-50
+                               rounded-xl p-4 text-center
+                               border border-green-200"
                     >
-                        Le module de réservation sera connecté prochainement.
+
+                        <div class="text-3xl mb-2">
+                            ✅
+                        </div>
+
+                        <p class="font-semibold text-green-900">
+                            Réservation confirmée !
+                        </p>
+
+                        <p
+                            class="text-sm text-gray-600 mt-2"
+                        >
+                            Votre demande est prête.
+                            Vous pouvez maintenant procéder au paiement.
+                        </p>
+
+                        <div class="mt-4 space-y-2">
+
+                            <button
+                                type="button"
+                                id="proceedPaymentBtn"
+                                class="w-full py-2.5
+                                       bg-green-600 hover:bg-green-700
+                                       text-white font-semibold
+                                       rounded-lg transition-colors text-sm"
+                            >
+                                Procéder au paiement →
+                            </button>
+
+
+                            <button
+                                type="button"
+                                id="resetBtn"
+                                class="w-full py-2
+                                       text-sm text-green-600
+                                       hover:text-green-700 underline"
+                            >
+                                Faire une autre réservation
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <p class="text-xs text-center text-gray-400 mt-3">
+                        Le paiement est sécurisé via SolarShare.
                     </p>
 
                 </div>
@@ -720,6 +759,7 @@
         </div>
 
     </div>
+
 
 
     {{-- ================================================= --}}
@@ -803,16 +843,16 @@
                                     class="flex justify-between
                                            items-center"
                                 >
+
                                     <span class="text-gray-500 text-sm">
                                         {{ $eq->location }}
                                     </span>
 
-                                    <span
-                                        class="font-bold text-green-700"
-                                    >
-                                        {{ number_format((float)$eq->price_per_day, 2) }}
+                                    <span class="font-bold text-green-700">
+                                        {{ number_format((float) $eq->price_per_day, 2) }}
                                         TND/j
                                     </span>
+
                                 </div>
 
                             </div>
@@ -832,11 +872,13 @@
 </div>
 
 
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
-    const equipmentPrice =
-        {{ (float) $equipment->price_per_day }};
+    const equipmentPrice = {{ (float) $equipment->price_per_day }};
+    const equipmentId = {{ $equipment->id }};
+    const equipmentName = @json($equipment->name);
 
     const durationButtons =
         document.querySelectorAll('.durationBtn');
@@ -847,7 +889,24 @@ document.addEventListener('DOMContentLoaded', function () {
     const bookingButton =
         document.getElementById('bookingBtn');
 
+    const bookingForm =
+        document.getElementById('bookingForm');
+
+    const priceBreakdown =
+        document.getElementById('priceBreakdown');
+
+    const confirmationMessage =
+        document.getElementById('confirmationMsg');
+
+    const proceedPaymentButton =
+        document.getElementById('proceedPaymentBtn');
+
+    const resetButton =
+        document.getElementById('resetBtn');
+
+
     let selectedDays = 1;
+    let grandTotal = equipmentPrice + 1;
 
 
     function updatePriceCalculation() {
@@ -857,7 +916,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const serviceFee = 1;
 
-        const grandTotal =
+        grandTotal =
             itemTotal + serviceFee;
 
 
@@ -993,9 +1052,136 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
 
 
-                alert(
-                    'Le module de réservation sera connecté prochainement.'
+                if (bookingForm) {
+                    bookingForm.classList.add('hidden');
+                }
+
+
+                if (priceBreakdown) {
+                    priceBreakdown.classList.add('hidden');
+                }
+
+
+                bookingButton.classList.add('hidden');
+
+
+                if (confirmationMessage) {
+                    confirmationMessage.classList.remove('hidden');
+                }
+
+            }
+        );
+
+    }
+
+
+    if (proceedPaymentButton) {
+
+        proceedPaymentButton.addEventListener(
+            'click',
+            function () {
+
+                const description =
+                    'Location de '
+                    + equipmentName
+                    + ' pour '
+                    + selectedDays
+                    + ' jour'
+                    + (selectedDays > 1 ? 's' : '');
+
+
+                const params =
+                    new URLSearchParams({
+                        amount: grandTotal.toFixed(2),
+                        equipment_id: equipmentId,
+                        description: description,
+                        start_date: startDateInput
+                            ? startDateInput.value
+                            : '',
+                        days: selectedDays
+                    });
+
+
+                window.location.href =
+                    "{{ route('payments.create') }}"
+                    + '?'
+                    + params.toString();
+
+            }
+        );
+
+    }
+
+
+    if (resetButton) {
+
+        resetButton.addEventListener(
+            'click',
+            function () {
+
+                if (startDateInput) {
+                    startDateInput.value = '';
+                }
+
+
+                selectedDays = 1;
+
+
+                durationButtons.forEach(
+                    function (button, index) {
+
+                        button.classList.remove(
+                            'bg-green-600',
+                            'text-white',
+                            'border-green-600'
+                        );
+
+                        button.classList.add(
+                            'border-gray-200',
+                            'text-gray-600'
+                        );
+
+
+                        if (index === 0) {
+
+                            button.classList.add(
+                                'bg-green-600',
+                                'text-white',
+                                'border-green-600'
+                            );
+
+                            button.classList.remove(
+                                'border-gray-200',
+                                'text-gray-600'
+                            );
+
+                        }
+
+                    }
                 );
+
+
+                if (bookingForm) {
+                    bookingForm.classList.remove('hidden');
+                }
+
+
+                if (priceBreakdown) {
+                    priceBreakdown.classList.remove('hidden');
+                }
+
+
+                if (bookingButton) {
+                    bookingButton.classList.remove('hidden');
+                }
+
+
+                if (confirmationMessage) {
+                    confirmationMessage.classList.add('hidden');
+                }
+
+
+                updatePriceCalculation();
 
             }
         );

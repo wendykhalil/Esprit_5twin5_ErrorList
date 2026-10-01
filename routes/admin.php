@@ -7,12 +7,17 @@ use App\Http\Controllers\Admin\EquipmentController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\RentalController;
 use App\Http\Controllers\Admin\SettingsController;
+use App\Http\Controllers\Admin\PaymentController;
+use App\Http\Controllers\Admin\TransactionController;
 
 Route::prefix('admin')->name('admin.')->group(function () {
 
     // Dashboard
     Route::get('/', [DashboardController::class, 'index'])
         ->name('dashboard');
+
+    Route::get('/dashboard/stats', [DashboardController::class, 'stats'])
+        ->name('dashboard.stats');
 
 
     // --------------------------------------------------
@@ -48,4 +53,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
     // Settings
     Route::get('/parametres', [SettingsController::class, 'index'])
         ->name('settings');
+
+
+    // Payments
+    Route::resource('payments', PaymentController::class);
+
+
+    // Transactions
+    Route::resource('transactions', TransactionController::class);
 });
