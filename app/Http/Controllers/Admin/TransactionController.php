@@ -12,14 +12,47 @@ class TransactionController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $transactions = Transaction::with('payment')
-            ->orderBy('created_at', 'desc')
-            ->paginate(15);
+        $query = Transaction::with('payment');
+
+        // Search by reference or ID
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('reference', 'like', '%' . $search . '%')
+                  ->orWhere('id', 'like', '%' . $search . '%');
+            });
+        }
+
+        // Filter by status
+        if ($request->filled('status') && $request->input('status') !== '') {
+            $query->where('status', $request->input('status'));
+        }
+
+        // Filter by type
+        if ($request->filled('type') && $request->input('type') !== '') {
+            $query->where('type', $request->input('type'));
+        }
+
+        // Filter by payment_id
+        if ($request->filled('payment_id') && $request->input('payment_id') !== '') {
+            $query->where('payment_id', $request->input('payment_id'));
+        }
+
+        $transactions = $query->orderBy('created_at', 'desc')
+            ->paginate(15)
+            ->appends(request()->query());
+
+        $payments = Payment::all();
 
         return view('backend.transactions.index', [
             'transactions' => $transactions,
+            'payments' => $payments,
+            'search' => $request->input('search'),
+            'status' => $request->input('status'),
+            'type' => $request->input('type'),
+            'payment_id' => $request->input('payment_id'),
         ]);
     }
 

@@ -11,14 +11,38 @@ class PaymentController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $payments = Payment::with('transactions')
-            ->orderBy('created_at', 'desc')
-            ->paginate(15);
+        $query = Payment::with('transactions');
+
+        // Search by ID or description
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('id', 'like', '%' . $search . '%')
+                  ->orWhere('description', 'like', '%' . $search . '%');
+            });
+        }
+
+        // Filter by status
+        if ($request->filled('status') && $request->input('status') !== '') {
+            $query->where('status', $request->input('status'));
+        }
+
+        // Filter by method
+        if ($request->filled('method') && $request->input('method') !== '') {
+            $query->where('method', $request->input('method'));
+        }
+
+        $payments = $query->orderBy('created_at', 'desc')
+            ->paginate(15)
+            ->appends(request()->query());
 
         return view('backend.payments.index', [
             'payments' => $payments,
+            'search' => $request->input('search'),
+            'status' => $request->input('status'),
+            'method' => $request->input('method'),
         ]);
     }
 

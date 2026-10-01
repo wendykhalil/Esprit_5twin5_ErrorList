@@ -31,6 +31,87 @@
         </div>
     @endif
 
+    {{-- Search & Filters --}}
+    <div class="bg-white rounded-xl border border-slate-200 p-5">
+        <form method="GET" action="{{ route('admin.transactions.index') }}" class="space-y-4">
+            <div class="flex flex-col lg:flex-row gap-3">
+                {{-- Search Input --}}
+                <div class="flex-1">
+                    <input
+                        type="text"
+                        name="search"
+                        placeholder="Rechercher par référence ou ID..."
+                        value="{{ $search }}"
+                        class="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent text-slate-800 placeholder-slate-400"
+                        style="font-family: Outfit, sans-serif"
+                    />
+                </div>
+
+                {{-- Status Filter --}}
+                <div class="w-full lg:w-40">
+                    <select
+                        name="status"
+                        class="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent text-slate-800 bg-white"
+                        style="font-family: Outfit, sans-serif"
+                    >
+                        <option value="">Tous les statuts</option>
+                        <option value="pending" {{ $status === 'pending' ? 'selected' : '' }}>En attente</option>
+                        <option value="completed" {{ $status === 'completed' ? 'selected' : '' }}>Complétée</option>
+                        <option value="failed" {{ $status === 'failed' ? 'selected' : '' }}>Échouée</option>
+                        <option value="refunded" {{ $status === 'refunded' ? 'selected' : '' }}>Remboursée</option>
+                    </select>
+                </div>
+
+                {{-- Type Filter --}}
+                <div class="w-full lg:w-40">
+                    <select
+                        name="type"
+                        class="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent text-slate-800 bg-white"
+                        style="font-family: Outfit, sans-serif"
+                    >
+                        <option value="">Tous les types</option>
+                        <option value="payment" {{ $type === 'payment' ? 'selected' : '' }}>Paiement</option>
+                        <option value="refund" {{ $type === 'refund' ? 'selected' : '' }}>Remboursement</option>
+                    </select>
+                </div>
+
+                {{-- Payment Filter --}}
+                <div class="w-full lg:w-40">
+                    <select
+                        name="payment_id"
+                        class="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent text-slate-800 bg-white"
+                        style="font-family: Outfit, sans-serif"
+                    >
+                        <option value="">Tous les paiements</option>
+                        @foreach($payments as $p)
+                            <option value="{{ $p->id }}" {{ $payment_id == $p->id ? 'selected' : '' }}>
+                                #{{ $p->id }} - {{ number_format($p->amount, 2) }} TND
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                {{-- Action Buttons --}}
+                <div class="flex gap-2">
+                    <button
+                        type="submit"
+                        class="px-4 py-2.5 bg-amber-500 text-white rounded-lg text-sm font-600 hover:bg-amber-600 transition-colors shadow-sm whitespace-nowrap"
+                        style="font-family: Outfit, sans-serif"
+                    >
+                        Rechercher
+                    </button>
+                    <a
+                        href="{{ route('admin.transactions.index') }}"
+                        class="px-4 py-2.5 bg-slate-100 text-slate-700 rounded-lg text-sm font-600 hover:bg-slate-200 transition-colors whitespace-nowrap"
+                        style="font-family: Outfit, sans-serif"
+                    >
+                        Réinitialiser
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+
     {{-- Table --}}
     <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
         <div class="overflow-x-auto">

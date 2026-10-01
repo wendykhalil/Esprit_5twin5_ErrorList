@@ -31,6 +31,72 @@
         </div>
     @endif
 
+    {{-- Search & Filters --}}
+    <div class="bg-white rounded-xl border border-slate-200 p-5">
+        <form method="GET" action="{{ route('admin.payments.index') }}" class="space-y-4">
+            <div class="flex flex-col lg:flex-row gap-3">
+                {{-- Search Input --}}
+                <div class="flex-1">
+                    <input
+                        type="text"
+                        name="search"
+                        placeholder="Rechercher par ID ou description..."
+                        value="{{ $search }}"
+                        class="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent text-slate-800 placeholder-slate-400"
+                        style="font-family: Outfit, sans-serif"
+                    />
+                </div>
+
+                {{-- Status Filter --}}
+                <div class="w-full lg:w-48">
+                    <select
+                        name="status"
+                        class="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent text-slate-800 bg-white"
+                        style="font-family: Outfit, sans-serif"
+                    >
+                        <option value="">Tous les statuts</option>
+                        <option value="pending" {{ $status === 'pending' ? 'selected' : '' }}>En attente</option>
+                        <option value="paid" {{ $status === 'paid' ? 'selected' : '' }}>Payé</option>
+                        <option value="failed" {{ $status === 'failed' ? 'selected' : '' }}>Échoué</option>
+                        <option value="refunded" {{ $status === 'refunded' ? 'selected' : '' }}>Remboursé</option>
+                    </select>
+                </div>
+
+                {{-- Method Filter --}}
+                <div class="w-full lg:w-48">
+                    <select
+                        name="method"
+                        class="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent text-slate-800 bg-white"
+                        style="font-family: Outfit, sans-serif"
+                    >
+                        <option value="">Toutes les méthodes</option>
+                        <option value="card" {{ $method === 'card' ? 'selected' : '' }}>Carte bancaire</option>
+                        <option value="cash" {{ $method === 'cash' ? 'selected' : '' }}>Espèces</option>
+                        <option value="bank_transfer" {{ $method === 'bank_transfer' ? 'selected' : '' }}>Virement bancaire</option>
+                    </select>
+                </div>
+
+                {{-- Action Buttons --}}
+                <div class="flex gap-2">
+                    <button
+                        type="submit"
+                        class="px-4 py-2.5 bg-amber-500 text-white rounded-lg text-sm font-600 hover:bg-amber-600 transition-colors shadow-sm whitespace-nowrap"
+                        style="font-family: Outfit, sans-serif"
+                    >
+                        Rechercher
+                    </button>
+                    <a
+                        href="{{ route('admin.payments.index') }}"
+                        class="px-4 py-2.5 bg-slate-100 text-slate-700 rounded-lg text-sm font-600 hover:bg-slate-200 transition-colors whitespace-nowrap"
+                        style="font-family: Outfit, sans-serif"
+                    >
+                        Réinitialiser
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+
     {{-- Table --}}
     <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
         <div class="overflow-x-auto">
