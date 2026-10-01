@@ -40,7 +40,32 @@ class TransactionController extends Controller
      */
     public function store(Request $request)
     {
-        $transaction = Transaction::create($request->validated());
+        $validated = $request->validate([
+            'payment_id' => 'required|exists:payments,id',
+            'reference' => 'required|string|max:255|unique:transactions,reference',
+            'type' => 'required|in:payment,refund',
+            'amount' => 'required|numeric|gt:0',
+            'status' => 'required|in:pending,completed,failed,refunded',
+            'transaction_date' => 'required|date',
+        ], [
+            'payment_id.required' => 'Le paiement est obligatoire.',
+            'payment_id.exists' => 'Le paiement sélectionné n\'existe pas.',
+            'reference.required' => 'La référence est obligatoire.',
+            'reference.string' => 'La référence doit être un texte.',
+            'reference.max' => 'La référence ne doit pas dépasser 255 caractères.',
+            'reference.unique' => 'Cette référence existe déjà.',
+            'type.required' => 'Le type de transaction est obligatoire.',
+            'type.in' => 'Le type de transaction sélectionné est invalide.',
+            'amount.required' => 'Le montant est obligatoire.',
+            'amount.numeric' => 'Le montant doit être un nombre.',
+            'amount.gt' => 'Le montant doit être supérieur à 0.',
+            'status.required' => 'Le statut est obligatoire.',
+            'status.in' => 'Le statut sélectionné est invalide.',
+            'transaction_date.required' => 'La date de transaction est obligatoire.',
+            'transaction_date.date' => 'La date de transaction doit être une date valide.',
+        ]);
+
+        $transaction = Transaction::create($validated);
 
         return redirect()
             ->route('admin.transactions.show', $transaction)
@@ -77,7 +102,32 @@ class TransactionController extends Controller
      */
     public function update(Request $request, Transaction $transaction)
     {
-        $transaction->update($request->validated());
+        $validated = $request->validate([
+            'payment_id' => 'required|exists:payments,id',
+            'reference' => 'required|string|max:255|unique:transactions,reference,' . $transaction->id,
+            'type' => 'required|in:payment,refund',
+            'amount' => 'required|numeric|gt:0',
+            'status' => 'required|in:pending,completed,failed,refunded',
+            'transaction_date' => 'required|date',
+        ], [
+            'payment_id.required' => 'Le paiement est obligatoire.',
+            'payment_id.exists' => 'Le paiement sélectionné n\'existe pas.',
+            'reference.required' => 'La référence est obligatoire.',
+            'reference.string' => 'La référence doit être un texte.',
+            'reference.max' => 'La référence ne doit pas dépasser 255 caractères.',
+            'reference.unique' => 'Cette référence existe déjà.',
+            'type.required' => 'Le type de transaction est obligatoire.',
+            'type.in' => 'Le type de transaction sélectionné est invalide.',
+            'amount.required' => 'Le montant est obligatoire.',
+            'amount.numeric' => 'Le montant doit être un nombre.',
+            'amount.gt' => 'Le montant doit être supérieur à 0.',
+            'status.required' => 'Le statut est obligatoire.',
+            'status.in' => 'Le statut sélectionné est invalide.',
+            'transaction_date.required' => 'La date de transaction est obligatoire.',
+            'transaction_date.date' => 'La date de transaction doit être une date valide.',
+        ]);
+
+        $transaction->update($validated);
 
         return redirect()
             ->route('admin.transactions.show', $transaction)
