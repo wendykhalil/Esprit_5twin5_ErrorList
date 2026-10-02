@@ -58,6 +58,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
     // Payments
     Route::resource('payments', PaymentController::class);
 
+    // Refund routes
+    Route::get('/payments/{payment}/refund', [PaymentController::class, 'refundCreate'])
+        ->name('payments.refund.create');
+    Route::post('/payments/{payment}/refund', [PaymentController::class, 'refundStore'])
+        ->name('payments.refund.store');
+
 
     // Transactions
     Route::resource('transactions', TransactionController::class);

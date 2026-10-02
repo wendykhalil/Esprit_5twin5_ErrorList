@@ -12,6 +12,18 @@
             <p class="text-slate-500 text-sm mt-0.5" style="font-family: Outfit, sans-serif">Créé le {{ $payment->created_at->format('d/m/Y à H:i') }}</p>
         </div>
         <div class="flex gap-2">
+            @php
+                $totalRefunded = $payment->transactions
+                    ->where('type', 'refund')
+                    ->where('status', 'completed')
+                    ->sum('amount');
+                $remainingRefundable = $payment->amount - $totalRefunded;
+            @endphp
+            @if($payment->status === 'paid' && $remainingRefundable > 0)
+                <a href="{{ route('admin.payments.refund.create', $payment) }}" class="px-4 py-2.5 bg-green-500 text-white rounded-lg text-sm font-600 hover:bg-green-600 transition-colors shadow-sm" style="font-family: Outfit, sans-serif">
+                    Rembourser
+                </a>
+            @endif
             <a href="{{ route('admin.payments.edit', $payment) }}" class="px-4 py-2.5 bg-amber-500 text-white rounded-lg text-sm font-600 hover:bg-amber-600 transition-colors shadow-sm" style="font-family: Outfit, sans-serif">
                 Modifier
             </a>
@@ -123,6 +135,27 @@
 
         {{-- Sidebar --}}
         <div>
+            {{-- Refund Summary (if there are refunds) --}}
+            @if($totalRefunded > 0)
+                <div class="bg-linear-to-br from-blue-50 to-blue-50/50 rounded-xl border border-blue-200 p-6 mb-4">
+                    <h3 class="font-bold text-slate-900 mb-4" style="font-family: Outfit, sans-serif">Remboursements</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between pb-3 border-b border-blue-100">
+                            <span class="text-slate-600 text-sm" style="font-family: Outfit, sans-serif">Total remboursé</span>
+                            <span class="font-bold text-slate-900" style="font-family: Outfit, sans-serif">{{ number_format($totalRefunded, 2, ',', ' ') }} TND</span>
+                        </div>
+                        <div class="flex items-center justify-between pb-3 border-b border-blue-100">
+                            <span class="text-slate-600 text-sm" style="font-family: Outfit, sans-serif">Remboursable restant</span>
+                            <span class="font-bold {{ $remainingRefundable > 0 ? 'text-amber-600' : 'text-green-600' }}" style="font-family: Outfit, sans-serif">{{ number_format($remainingRefundable, 2, ',', ' ') }} TND</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-slate-600 text-sm" style="font-family: Outfit, sans-serif">Remboursement %</span>
+                            <span class="font-bold text-slate-900" style="font-family: Outfit, sans-serif">{{ number_format(($totalRefunded / $payment->amount) * 100, 1, ',', ' ') }}%</span>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             <div class="bg-white rounded-xl border border-slate-200 p-6">
                 <h3 class="font-bold text-slate-900 mb-4" style="font-family: Outfit, sans-serif">Récapitulatif</h3>
                 <div class="space-y-3">
