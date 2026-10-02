@@ -132,34 +132,66 @@
                         </span>
                     </div>
 
-
-                    <!-- Profile -->
-                    <a
-                        href="{{ route('profile.edit') }}"
-                        class="px-4 py-2 text-sm font-medium
-                               text-green-700 hover:text-green-800
-                               transition-colors"
-                    >
-                        Mon profil
-                    </a>
-
-
-                    <!-- Logout -->
-                    <form
-                        method="POST"
-                        action="{{ route('logout') }}"
-                    >
-                        @csrf
-
+                    <!-- Dropdown Menu -->
+                    <div class="relative group">
                         <button
-                            type="submit"
                             class="px-4 py-2 text-sm font-medium
-                                   bg-red-50 text-red-600 rounded-lg
-                                   hover:bg-red-100 transition-colors"
+                                   text-green-700 hover:text-green-800
+                                   transition-colors"
                         >
-                            Déconnexion
+                            Mon compte
+                            <svg class="w-4 h-4 inline-block ml-1 group-hover:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                            </svg>
                         </button>
-                    </form>
+
+                        <!-- Dropdown Content -->
+                        <div
+                            class="absolute right-0 mt-0 w-48 bg-white border border-green-100
+                                   rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100
+                                   group-hover:visible transition-all duration-200 z-50"
+                        >
+                            <a
+                                href="{{ route('profile.edit') }}"
+                                class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700
+                                       transition-colors first:rounded-t-lg"
+                            >
+                                Mon profil
+                            </a>
+
+                            <a
+                                href="{{ route('payments.history') }}"
+                                class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700
+                                       transition-colors border-t border-green-100"
+                            >
+                                Historique des paiements
+                            </a>
+
+                            <a
+                                href="{{ route('payments.invoices') }}"
+                                class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700
+                                       transition-colors border-t border-green-100"
+                            >
+                                Mes factures
+                            </a>
+
+                            <form
+                                method="POST"
+                                action="{{ route('logout') }}"
+                                class="border-t border-green-100"
+                            >
+                                @csrf
+
+                                <button
+                                    type="submit"
+                                    class="w-full text-left px-4 py-2.5 text-sm text-red-600
+                                           hover:bg-red-50 transition-colors last:rounded-b-lg"
+                                >
+                                    Déconnexion
+                                </button>
+                            </form>
+                        </div>
+                    </div>
 
                 @endauth
 
@@ -283,6 +315,27 @@
                         Mon profil
                     </a>
 
+                    <a
+                        href="{{ route('payments.history') }}"
+                        onclick="document.getElementById('mobileMenu').classList.add('hidden')"
+                        class="block px-4 py-2.5 text-sm font-medium
+                               text-center text-green-700
+                               border border-green-200
+                               rounded-lg hover:bg-green-50"
+                    >
+                        Historique des paiements
+                    </a>
+
+                    <a
+                        href="{{ route('payments.invoices') }}"
+                        onclick="document.getElementById('mobileMenu').classList.add('hidden')"
+                        class="block px-4 py-2.5 text-sm font-medium
+                               text-center text-green-700
+                               border border-green-200
+                               rounded-lg hover:bg-green-50"
+                    >
+                        Mes factures
+                    </a>
 
                     <form
                         method="POST"

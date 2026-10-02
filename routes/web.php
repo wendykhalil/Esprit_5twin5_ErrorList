@@ -115,6 +115,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/mes-paiements', [PaymentController::class, 'history'])
         ->name('payments.history');
 
+    Route::get('/mes-factures', [PaymentController::class, 'invoices'])
+        ->name('payments.invoices');
+
     Route::get('/mes-paiements/{payment}/facture', [PaymentController::class, 'invoice'])
         ->name('payments.invoice');
 });

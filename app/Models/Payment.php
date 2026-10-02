@@ -16,6 +16,7 @@ class Payment extends Model
      * @var list<string>
      */
     protected $fillable = [
+        'user_id',
         'amount',
         'method',
         'status',
@@ -33,6 +34,14 @@ class Payment extends Model
         return [
             'payment_date' => 'datetime',
         ];
+    }
+
+    /**
+     * Get the user that owns this payment.
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 
     /**

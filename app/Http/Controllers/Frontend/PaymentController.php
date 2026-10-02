@@ -82,6 +82,7 @@ class PaymentController extends Controller
 
             // Create Payment
             $payment = Payment::create([
+                'user_id' => auth()->id(),
                 'amount' => $validated['amount'],
                 'method' => $validated['method'],
                 'status' => $paymentStatus,
@@ -156,6 +157,11 @@ class PaymentController extends Controller
      */
     public function show(Payment $payment)
     {
+        // Verify ownership - user can only see their own payments
+        if ($payment->user_id !== auth()->id()) {
+            abort(403, 'Vous n\'avez pas accès à ce paiement.');
+        }
+
         $payment->load('transactions');
 
         return view('frontend.payments.show', [
@@ -168,8 +174,9 @@ class PaymentController extends Controller
      */
     public function history()
     {
-        // For now, display all payments (in future, filter by auth()->id())
-        $payments = Payment::with('transactions')
+        // Get only the authenticated user's payments
+        $payments = auth()->user()->payments()
+            ->with('transactions')
             ->orderBy('payment_date', 'desc')
             ->paginate(10);
 
@@ -183,6 +190,11 @@ class PaymentController extends Controller
      */
     public function invoice(Payment $payment)
     {
+        // Verify ownership - user can only see their own invoices
+        if ($payment->user_id !== auth()->id()) {
+            abort(403, 'Vous n\'avez pas accès à cette facture.');
+        }
+
         // Load the first transaction (if exists)
         $payment->load('transactions');
         $transaction = $payment->transactions->first();
@@ -190,6 +202,22 @@ class PaymentController extends Controller
         return view('frontend.payments.invoice', [
             'payment' => $payment,
             'transaction' => $transaction,
+        ]);
+    }
+
+    /**
+     * Display all user invoices
+     */
+    public function invoices()
+    {
+        // Get only the authenticated user's payments (for invoices list)
+        $payments = auth()->user()->payments()
+            ->with('transactions')
+            ->orderBy('payment_date', 'desc')
+            ->paginate(10);
+
+        return view('frontend.payments.invoices', [
+            'payments' => $payments,
         ]);
     }
 }
