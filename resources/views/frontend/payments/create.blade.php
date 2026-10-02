@@ -123,9 +123,9 @@
                     </div>
 
                     {{-- CARD PAYMENT FORM (shown only when card is selected) --}}
-                    <div id="cardPaymentForm" class="space-y-6 p-6 bg-gradient-to-br from-blue-50 to-purple-50 border-2 border-blue-200 rounded-xl {{ old('method') === 'card' || !old('method') ? 'block' : 'hidden' }}">
+                    <div id="cardPaymentForm" class="space-y-6 p-6 bg-linear-to-br from-blue-50 to-purple-50 border-2 border-blue-200 rounded-xl {{ old('method') === 'card' || !old('method') ? 'block' : 'hidden' }}">
                         {{-- Warning Banner --}}
-                        <div class="bg-gradient-to-r from-amber-100 to-orange-100 border border-amber-300 rounded-lg p-4 mb-2">
+                        <div class="bg-linear-to-r from-amber-100 to-orange-100 border border-amber-300 rounded-lg p-4 mb-2">
                             <div class="flex gap-3">
                                 <svg class="w-5 h-5 text-amber-700 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
@@ -138,7 +138,7 @@
                         </div>
 
                         {{-- Virtual Credit Card --}}
-                        <div class="relative h-56 bg-gradient-to-br from-blue-600 via-purple-600 to-pink-500 rounded-2xl p-6 shadow-2xl overflow-hidden">
+                        <div class="relative h-56 bg-linear-to-br from-blue-600 via-purple-600 to-pink-500 rounded-2xl p-6 shadow-2xl overflow-hidden">
                             {{-- Card Background Decorations --}}
                             <div class="absolute top-0 right-0 opacity-10">
                                 <svg class="w-40 h-40" fill="white" viewBox="0 0 100 100">
@@ -153,7 +153,7 @@
                                     <div class="flex flex-col">
                                         <span id="cardType" class="text-white font-bold text-lg tracking-widest">VISA</span>
                                     </div>
-                                    <div class="w-14 h-11 bg-gradient-to-br from-yellow-300 to-yellow-600 rounded-lg shadow-md"></div>
+                                    <div class="w-14 h-11 bg-linear-to-br from-yellow-300 to-yellow-600 rounded-lg shadow-md"></div>
                                 </div>
 
                                 {{-- Card Number Display --}}
@@ -165,7 +165,7 @@
                                 <div class="flex justify-between items-end">
                                     <div class="flex flex-col">
                                         <p class="text-white text-xs opacity-75 mb-1">CARDHOLDER</p>
-                                        <p id="cardHolder" class="text-white font-semibold truncate max-w-[180px]">TEST USER</p>
+                                        <p id="cardHolder" class="text-white font-semibold truncate max-w-45">TEST USER</p>
                                     </div>
                                     <div class="flex flex-col items-end">
                                         <p class="text-white text-xs opacity-75 mb-1">EXPIRES</p>
@@ -201,7 +201,7 @@
                                 placeholder="0000 0000 0000 0000"
                                 value="{{ old('card_number', '4242424242424242') }}"
                                 maxlength="19"
-                                class="w-full px-4 py-3 border {{ $errors->has('card_number') ? 'border-red-300' : 'border-gray-300' }} rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono tracking-widest text-center text-lg"
+                                class="w-full px-4 py-3 border {{ $errors->has('card_number') ? 'border-red-300' : 'border-gray-300' }} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono tracking-widest text-center text-lg"
                                 inputmode="numeric"
                             >
                             <p class="text-xs text-gray-600 mt-2">Commencez par <strong>4</strong> (Visa) ou <strong>5</strong> (Mastercard)</p>
@@ -222,7 +222,7 @@
                                     placeholder="MM/YY"
                                     value="{{ old('card_expiry', '12/30') }}"
                                     maxlength="5"
-                                    class="w-full px-4 py-3 border {{ $errors->has('card_expiry') ? 'border-red-300' : 'border-gray-300' }} rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-center tracking-wider text-lg"
+                                    class="w-full px-4 py-3 border {{ $errors->has('card_expiry') ? 'border-red-300' : 'border-gray-300' }} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-center tracking-wider text-lg"
                                     inputmode="numeric"
                                 >
                                 @error('card_expiry')
@@ -240,7 +240,7 @@
                                     placeholder="•••"
                                     value="{{ old('card_cvv', '123') }}"
                                     maxlength="3"
-                                    class="w-full px-4 py-3 border {{ $errors->has('card_cvv') ? 'border-red-300' : 'border-gray-300' }} rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-center tracking-widest text-lg"
+                                    class="w-full px-4 py-3 border {{ $errors->has('card_cvv') ? 'border-red-300' : 'border-gray-300' }} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-center tracking-widest text-lg"
                                     inputmode="numeric"
                                 >
                                 @error('card_cvv')
@@ -253,7 +253,7 @@
                         <button
                             type="button"
                             id="useTestDataBtn"
-                            class="w-full px-4 py-2.5 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold rounded-lg transition-all duration-200 shadow-md hover:shadow-lg"
+                            class="w-full px-4 py-2.5 bg-linear-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold rounded-lg transition-all duration-200 shadow-md hover:shadow-lg"
                         >
                             ✓ Utiliser les données de test
                         </button>
@@ -271,9 +271,9 @@
                     </div>
 
                     {{-- BANK TRANSFER FORM (shown only when bank_transfer is selected) --}}
-                    <div id="bankTransferForm" class="space-y-5 p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl {{ old('method') === 'bank_transfer' ? 'block' : 'hidden' }}">
+                    <div id="bankTransferForm" class="space-y-5 p-6 bg-linear-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl {{ old('method') === 'bank_transfer' ? 'block' : 'hidden' }}">
                         {{-- Info Banner --}}
-                        <div class="bg-gradient-to-r from-blue-100 to-indigo-100 border border-blue-300 rounded-lg p-4">
+                        <div class="bg-linear-to-r from-blue-100 to-indigo-100 border border-blue-300 rounded-lg p-4">
                             <div class="flex gap-3">
                                 <svg class="w-5 h-5 text-blue-700 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
@@ -326,7 +326,7 @@
                         </div>
 
                         {{-- Important Notice --}}
-                        <div class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg p-4">
+                        <div class="bg-linear-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg p-4">
                             <div class="flex gap-2">
                                 <svg class="w-5 h-5 text-amber-600 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
