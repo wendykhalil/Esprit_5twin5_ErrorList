@@ -114,33 +114,37 @@
 
                 @auth
 
-                    <!-- User name -->
-                    <div
-                        class="flex items-center gap-2 px-3 py-2
-                               bg-green-50 rounded-lg"
-                    >
-                        <div
-                            class="w-8 h-8 rounded-full bg-green-600
-                                   text-white flex items-center justify-center
-                                   font-bold text-sm"
-                        >
-                            {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
-                        </div>
-
-                        <span class="text-sm font-semibold text-green-800">
-                            {{ auth()->user()->name }}
-                        </span>
-                    </div>
-
-                    <!-- Dropdown Menu -->
+                    <!-- User Button with Dropdown -->
                     <div class="relative group">
                         <button
-                            class="px-4 py-2 text-sm font-medium
-                                   text-green-700 hover:text-green-800
-                                   transition-colors"
+                            class="flex items-center gap-2 px-3 py-2 rounded-lg
+                                   bg-green-50 hover:bg-green-100
+                                   transition-colors duration-200
+                                   text-sm font-medium text-green-800"
                         >
-                            Mon compte
-                            <svg class="w-4 h-4 inline-block ml-1 group-hover:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <!-- Avatar -->
+                            @if(auth()->user()->profile_photo)
+                                <img 
+                                    src="{{ asset('storage/' . auth()->user()->profile_photo) }}" 
+                                    alt="{{ auth()->user()->name }}"
+                                    class="w-7 h-7 rounded-full object-cover border border-green-200"
+                                />
+                            @else
+                                <div
+                                    class="w-7 h-7 rounded-full bg-green-600
+                                           text-white flex items-center justify-center
+                                           font-bold text-xs"
+                                >
+                                    {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                                </div>
+                            @endif
+
+                            <!-- Name -->
+                            <span>{{ auth()->user()->name }}</span>
+
+                            <!-- Dropdown Arrow -->
+                            <svg class="w-4 h-4 text-green-700 group-hover:rotate-180 transition-transform duration-200" 
+                                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
                             </svg>
                         </button>

@@ -149,6 +149,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])
         ->name('profile.destroy');
 
+    Route::delete('/profile/photo', [ProfileController::class, 'deleteProfilePhoto'])
+        ->name('profile.photo.delete');
+
     Route::get('/profil', [ProfileController::class, 'edit'])
         ->name('profile');
 });

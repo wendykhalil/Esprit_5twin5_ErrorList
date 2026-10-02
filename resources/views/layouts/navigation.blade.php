@@ -22,8 +22,22 @@
             <div class="hidden sm:flex sm:items-center sm:ms-6">
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
-                        <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
-                            <div>{{ Auth::user()->name }}</div>
+                        <button class="inline-flex items-center gap-3 px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
+                            <!-- Profile Photo in Navbar -->
+                            <div class="flex items-center gap-3">
+                                @if(Auth::user()->getProfilePhotoUrl())
+                                    <img 
+                                        src="{{ Auth::user()->getProfilePhotoUrl() }}" 
+                                        alt="{{ Auth::user()->name }}" 
+                                        class="w-8 h-8 rounded-full object-cover border border-gray-300"
+                                    />
+                                @else
+                                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-xs font-bold text-white border border-gray-300">
+                                        {{ Auth::user()->getInitials() }}
+                                    </div>
+                                @endif
+                                <div>{{ Auth::user()->name }}</div>
+                            </div>
 
                             <div class="ms-1">
                                 <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
