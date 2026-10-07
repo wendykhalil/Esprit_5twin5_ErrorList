@@ -6,6 +6,7 @@ use App\Http\Controllers\EquipmentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Frontend\PaymentController;
 use App\Http\Controllers\ServiceProviderController;
+use App\Http\Controllers\ServiceRequestController;
 
 use App\Models\Category;
 
@@ -180,6 +181,18 @@ Route::middleware('auth')->group(function () {
 
     Route::delete('/services/{serviceProvider}', [ServiceProviderController::class, 'destroy'])
         ->name('service-providers.destroy');
+
+    // Technical Services: Service Requests
+    Route::get('/services/{serviceProvider}/request', [ServiceRequestController::class, 'create'])
+        ->name('service-requests.create');
+    Route::post('/services/{serviceProvider}/request', [ServiceRequestController::class, 'store'])
+        ->name('service-requests.store');
+    Route::get('/my-service-requests', [ServiceRequestController::class, 'index'])
+        ->name('service-requests.index');
+    Route::get('/my-service-requests/{serviceRequest}', [ServiceRequestController::class, 'show'])
+        ->name('service-requests.show');
+    Route::delete('/my-service-requests/{serviceRequest}', [ServiceRequestController::class, 'destroy'])
+        ->name('service-requests.destroy');
 });
 
 Route::get('/services/{serviceProvider}', [ServiceProviderController::class, 'show'])
