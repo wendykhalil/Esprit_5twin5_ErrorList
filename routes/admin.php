@@ -67,4 +67,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     // Transactions
     Route::resource('transactions', TransactionController::class);
+
+    // Service Providers
+    Route::get('/service-providers', [\App\Http\Controllers\Admin\ServiceProviderController::class, 'index'])->name('service-providers.index');
+    Route::get('/service-providers/{serviceProvider}', [\App\Http\Controllers\Admin\ServiceProviderController::class, 'show'])->name('service-providers.show');
+    Route::patch('/service-providers/{serviceProvider}/approve', [\App\Http\Controllers\Admin\ServiceProviderController::class, 'approve'])->name('service-providers.approve');
+    Route::patch('/service-providers/{serviceProvider}/reject', [\App\Http\Controllers\Admin\ServiceProviderController::class, 'reject'])->name('service-providers.reject');
 });
