@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Payment;
+use App\Models\Transaction;
 use Illuminate\Database\Seeder;
 
 $this->call([
@@ -13,16 +13,33 @@ $this->call([
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        // Your Equipment module seeders
+        $this->call([
+            CategorySeeder::class,
+            EquipmentSeeder::class,
         ]);
+
+        // Payment & Transaction module seeders
+        $this->seedPaymentsAndTransactions();
+    }
+
+    /**
+     * Seed Payment and Transaction data.
+     * Creates 10 payments with 1-3 transactions each.
+     */
+    private function seedPaymentsAndTransactions(): void
+    {
+        $payments = Payment::factory(10)->create();
+
+        foreach ($payments as $payment) {
+
+            $transactionCount = rand(1, 3);
+
+            Transaction::factory($transactionCount)
+                ->forPayment($payment)
+                ->create();
+        }
     }
 }
