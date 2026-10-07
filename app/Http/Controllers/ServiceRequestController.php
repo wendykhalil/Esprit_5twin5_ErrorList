@@ -104,4 +104,105 @@ class ServiceRequestController extends Controller
         return redirect()->route('service-requests.index')
             ->with('success', 'Votre demande d\'intervention a été annulée.');
     }
+
+    // --------------------------------------------------
+    // PROVIDER SIDE
+    // --------------------------------------------------
+
+    public function providerIndex()
+    {
+        $user = Auth::user();
+
+        if (!$user->serviceProvider) {
+            abort(403, 'Vous ne possédez pas de profil prestataire.');
+        }
+
+        $serviceRequests = ServiceRequest::with(['user', 'equipment'])
+            ->where('service_provider_id', $user->serviceProvider->id)
+            ->latest()
+            ->paginate(10);
+
+        return view('frontend.provider-requests.index', compact('serviceRequests'));
+    }
+
+    public function providerShow(ServiceRequest $serviceRequest)
+    {
+        $user = Auth::user();
+
+        if (!$user->serviceProvider || $serviceRequest->service_provider_id !== $user->serviceProvider->id) {
+            abort(403, 'Accès non autorisé.');
+        }
+
+        $serviceRequest->load(['user', 'equipment']);
+
+        return view('frontend.provider-requests.show', compact('serviceRequest'));
+    }
+
+    public function accept(ServiceRequest $serviceRequest)
+    {
+        $user = Auth::user();
+
+        if (!$user->serviceProvider || $serviceRequest->service_provider_id !== $user->serviceProvider->id) {
+            abort(403, 'Accès non autorisé.');
+        }
+
+        if ($serviceRequest->status !== 'pending') {
+            return back()->with('error', 'Seules les demandes en attente peuvent être acceptées.');
+        }
+
+        $serviceRequest->update(['status' => 'accepted']);
+
+        return back()->with('success', 'La demande a été acceptée.');
+    }
+
+    public function reject(ServiceRequest $serviceRequest)
+    {
+        $user = Auth::user();
+
+        if (!$user->serviceProvider || $serviceRequest->service_provider_id !== $user->serviceProvider->id) {
+            abort(403, 'Accès non autorisé.');
+        }
+
+        if ($serviceRequest->status !== 'pending') {
+            return back()->with('error', 'Seules les demandes en attente peuvent être rejetées.');
+        }
+
+        $serviceRequest->update(['status' => 'rejected']);
+
+        return back()->with('success', 'La demande a été rejetée.');
+    }
+
+    public function start(ServiceRequest $serviceRequest)
+    {
+        $user = Auth::user();
+
+        if (!$user->serviceProvider || $serviceRequest->service_provider_id !== $user->serviceProvider->id) {
+            abort(403, 'Accès non autorisé.');
+        }
+
+        if ($serviceRequest->status !== 'accepted') {
+            return back()->with('error', 'L\'intervention ne peut être démarrée que si elle est acceptée.');
+        }
+
+        $serviceRequest->update(['status' => 'in_progress']);
+
+        return back()->with('success', 'L\'intervention a été marquée comme en cours.');
+    }
+
+    public function complete(ServiceRequest $serviceRequest)
+    {
+        $user = Auth::user();
+
+        if (!$user->serviceProvider || $serviceRequest->service_provider_id !== $user->serviceProvider->id) {
+            abort(403, 'Accès non autorisé.');
+        }
+
+        if ($serviceRequest->status !== 'in_progress') {
+            return back()->with('error', 'L\'intervention ne peut être terminée que si elle est en cours.');
+        }
+
+        $serviceRequest->update(['status' => 'completed']);
+
+        return back()->with('success', 'L\'intervention a été marquée comme terminée.');
+    }
 }
