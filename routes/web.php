@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EquipmentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Frontend\PaymentController;
+use App\Http\Controllers\ServiceProviderController;
 
 use App\Models\Category;
 
@@ -155,6 +156,34 @@ Route::middleware('auth')->group(function () {
     Route::get('/profil', [ProfileController::class, 'edit'])
         ->name('profile');
 });
+
+
+// --------------------------------------------------
+// TECHNICAL SERVICES: SERVICE PROVIDERS
+// --------------------------------------------------
+
+Route::get('/services', [ServiceProviderController::class, 'index'])
+    ->name('service-providers.index');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/services/create', [ServiceProviderController::class, 'create'])
+        ->name('service-providers.create');
+
+    Route::post('/services', [ServiceProviderController::class, 'store'])
+        ->name('service-providers.store');
+
+    Route::get('/services/{serviceProvider}/edit', [ServiceProviderController::class, 'edit'])
+        ->name('service-providers.edit');
+
+    Route::put('/services/{serviceProvider}', [ServiceProviderController::class, 'update'])
+        ->name('service-providers.update');
+
+    Route::delete('/services/{serviceProvider}', [ServiceProviderController::class, 'destroy'])
+        ->name('service-providers.destroy');
+});
+
+Route::get('/services/{serviceProvider}', [ServiceProviderController::class, 'show'])
+    ->name('service-providers.show');
 
 
 // --------------------------------------------------
