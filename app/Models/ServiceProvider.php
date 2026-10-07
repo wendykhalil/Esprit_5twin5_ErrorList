@@ -7,37 +7,30 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Equipment extends Model
+class ServiceProvider extends Model
 {
     use HasFactory;
 
-    protected $table = 'equipment';
-
     protected $fillable = [
         'user_id',
-        'category_id',
-        'name',
+        'specialty',
         'description',
-        'brand',
-        'power',
-        'capacity',
-        'condition',
-        'price_per_day',
+        'experience_years',
+        'phone',
         'location',
+        'hourly_rate',
         'availability',
-        'image',
         'status',
     ];
 
     protected $casts = [
         'availability' => 'boolean',
-        'power' => 'decimal:2',
-        'capacity' => 'decimal:2',
-        'price_per_day' => 'decimal:2',
+        'hourly_rate' => 'decimal:2',
+        'experience_years' => 'integer',
     ];
 
     /**
-     * Owner of the equipment.
+     * Get the user that owns the service provider profile.
      */
     public function user(): BelongsTo
     {
@@ -45,15 +38,7 @@ class Equipment extends Model
     }
 
     /**
-     * Category of the equipment.
-     */
-    public function category(): BelongsTo
-    {
-        return $this->belongsTo(Category::class);
-    }
-
-    /**
-     * Service requests for this equipment.
+     * Get the service requests for the service provider.
      */
     public function serviceRequests(): HasMany
     {
