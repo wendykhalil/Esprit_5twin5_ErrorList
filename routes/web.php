@@ -193,6 +193,20 @@ Route::middleware('auth')->group(function () {
         ->name('service-requests.show');
     Route::delete('/my-service-requests/{serviceRequest}', [ServiceRequestController::class, 'destroy'])
         ->name('service-requests.destroy');
+
+    // Technical Services: Provider Side Requests
+    Route::get('/provider/service-requests', [ServiceRequestController::class, 'providerIndex'])
+        ->name('provider.service-requests.index');
+    Route::get('/provider/service-requests/{serviceRequest}', [ServiceRequestController::class, 'providerShow'])
+        ->name('provider.service-requests.show');
+    Route::patch('/provider/service-requests/{serviceRequest}/accept', [ServiceRequestController::class, 'accept'])
+        ->name('provider.service-requests.accept');
+    Route::patch('/provider/service-requests/{serviceRequest}/reject', [ServiceRequestController::class, 'reject'])
+        ->name('provider.service-requests.reject');
+    Route::patch('/provider/service-requests/{serviceRequest}/start', [ServiceRequestController::class, 'start'])
+        ->name('provider.service-requests.start');
+    Route::patch('/provider/service-requests/{serviceRequest}/complete', [ServiceRequestController::class, 'complete'])
+        ->name('provider.service-requests.complete');
 });
 
 Route::get('/services/{serviceProvider}', [ServiceProviderController::class, 'show'])
