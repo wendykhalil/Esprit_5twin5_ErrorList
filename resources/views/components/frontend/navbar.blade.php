@@ -56,6 +56,11 @@
                             'label' => 'Équipements'
                         ],
                         [
+                            'route' => 'service-providers.index',
+                            'pattern' => 'service-providers.*',
+                            'label' => 'Services'
+                        ],
+                        [
                             'route' => 'how-it-works',
                             'label' => 'Comment ça marche'
                         ],
@@ -73,7 +78,7 @@
                         href="{{ route($link['route']) }}"
                         class="px-4 py-2 rounded-lg text-sm font-medium transition-all
                         {{
-                            request()->routeIs($link['route'])
+                            request()->routeIs($link['pattern'] ?? $link['route'])
                                 ? 'bg-green-50 text-green-700'
                                 : 'text-gray-600 hover:text-green-700 hover:bg-green-50'
                         }}"
@@ -243,7 +248,7 @@
                     class="block px-4 py-2.5 rounded-lg
                            text-sm font-medium transition-colors
                     {{
-                        request()->routeIs($link['route'])
+                        request()->routeIs($link['pattern'] ?? $link['route'])
                             ? 'bg-green-50 text-green-700'
                             : 'text-gray-600 hover:bg-green-50 hover:text-green-700'
                     }}"
