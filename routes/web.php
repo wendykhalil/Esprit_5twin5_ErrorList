@@ -3,6 +3,9 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EquipmentController;
 
+Route::resource('reservations', ReservationController::class);
+Route::resource('inspections', InspectionController::class);
+
 // Home
 Route::get('/', function () {
     $categories = \App\Data\EquipmentData::getCategories();

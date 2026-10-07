@@ -6,6 +6,11 @@ use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
+$this->call([
+    ReservationSeeder::class,
+    InspectionSeeder::class,
+]);
+
 class DatabaseSeeder extends Seeder
 {
     /**
