@@ -9,8 +9,9 @@ use App\Http\Controllers\Admin\RentalController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\TransactionController;
+use App\Http\Controllers\Admin\SupportTicketController as AdminSupportTicketController;
 
-Route::prefix('admin')->name('admin.')->group(function () {
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
 
     // Dashboard
     Route::get('/', [DashboardController::class, 'index'])
@@ -67,4 +68,17 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     // Transactions
     Route::resource('transactions', TransactionController::class);
+
+    // Support tickets
+    Route::get('/tickets', [AdminSupportTicketController::class, 'index'])
+        ->name('tickets.index');
+
+    Route::get('/tickets/{supportTicket}', [AdminSupportTicketController::class, 'show'])
+        ->name('tickets.show');
+
+    Route::post('/tickets/{supportTicket}/replies', [AdminSupportTicketController::class, 'storeReply'])
+        ->name('tickets.replies.store');
+
+    Route::patch('/tickets/{supportTicket}', [AdminSupportTicketController::class, 'update'])
+        ->name('tickets.update');
 });

@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             CategorySeeder::class,
             EquipmentSeeder::class,
+            SupportTicketSeeder::class,
         ]);
 
         // Payment & Transaction module seeders

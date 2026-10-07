@@ -29,6 +29,7 @@ class User extends Authenticatable
         'country',
         'bio',
         'profile_photo',
+        'role',
     ];
 
     /**
@@ -55,6 +56,19 @@ class User extends Authenticatable
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);
+    }
+
+    /**
+     * Support tickets opened by the user.
+     */
+    public function supportTickets(): HasMany
+    {
+        return $this->hasMany(SupportTicket::class);
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
     }
 
     /**

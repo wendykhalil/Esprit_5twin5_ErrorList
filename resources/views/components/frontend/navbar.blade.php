@@ -179,6 +179,14 @@
                                 Mes factures
                             </a>
 
+                            <a
+                                href="{{ route('support.tickets.index') }}"
+                                class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700
+                                       transition-colors border-t border-green-100"
+                            >
+                                Support
+                            </a>
+
                             <form
                                 method="POST"
                                 action="{{ route('logout') }}"
@@ -339,6 +347,17 @@
                                rounded-lg hover:bg-green-50"
                     >
                         Mes factures
+                    </a>
+
+                    <a
+                        href="{{ route('support.tickets.index') }}"
+                        onclick="document.getElementById('mobileMenu').classList.add('hidden')"
+                        class="block px-4 py-2.5 text-sm font-medium
+                               text-center text-green-700
+                               border border-green-200
+                               rounded-lg hover:bg-green-50"
+                    >
+                        Support
                     </a>
 
                     <form

@@ -6,6 +6,7 @@
         ['url' => route('admin.rentals'), 'label' => 'Locations', 'route' => 'admin.rentals'],
         ['url' => route('admin.payments.index'), 'label' => 'Paiements', 'route' => 'admin.payments.index'],
         ['url' => route('admin.transactions.index'), 'label' => 'Transactions', 'route' => 'admin.transactions.index'],
+        ['url' => route('admin.tickets.index'), 'label' => 'Support', 'route' => 'admin.tickets.index'],
     ];
     
     $bottomItems = [

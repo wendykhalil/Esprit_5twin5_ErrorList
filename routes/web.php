@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EquipmentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Frontend\PaymentController;
+use App\Http\Controllers\SupportTicketController;
 
 use App\Models\Category;
 
@@ -133,6 +134,19 @@ Route::get('/dashboard', function () {
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
+
+// --------------------------------------------------
+// SUPPORT TICKETS (CLIENT)
+// --------------------------------------------------
+
+Route::middleware('auth')->prefix('support')->name('support.tickets.')->group(function () {
+    Route::get('/', [SupportTicketController::class, 'index'])->name('index');
+    Route::get('/create', [SupportTicketController::class, 'create'])->name('create');
+    Route::post('/', [SupportTicketController::class, 'store'])->name('store');
+    Route::get('/{supportTicket}', [SupportTicketController::class, 'show'])->name('show');
+    Route::post('/{supportTicket}/replies', [SupportTicketController::class, 'storeReply'])
+        ->name('replies.store');
+});
 
 // --------------------------------------------------
 // PROFILE
