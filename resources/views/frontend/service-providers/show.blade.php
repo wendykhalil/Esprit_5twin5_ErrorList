@@ -78,11 +78,15 @@
                                class="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 transition">
                                 Modifier mon profil
                             </a>
+                        @elseif($serviceProvider->availability)
+                            <a href="{{ route('service-requests.create', $serviceProvider) }}" 
+                               class="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 transition">
+                                Demander une intervention
+                            </a>
                         @else
                             <button type="button" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 transition opacity-50 cursor-not-allowed">
-                                Demander une intervention
+                                Prestataire indisponible
                             </button>
-                            <p class="text-xs text-center text-gray-500 mt-2">(Bientôt disponible)</p>
                         @endif
                     @else
                         <a href="{{ route('login') }}" 
