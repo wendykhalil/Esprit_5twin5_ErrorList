@@ -23,10 +23,17 @@ class DatabaseSeeder extends Seeder
             EquipmentSeeder::class,
             ReservationSeeder::class,
             InspectionSeeder::class,
+            SupportTicketSeeder::class,
         ]);
 
         // Payment & Transaction module seeders
         $this->seedPaymentsAndTransactions();
+
+        // Technical Services module seeders
+        $this->call([
+            ServiceProviderSeeder::class,
+            ServiceRequestSeeder::class,
+        ]);
     }
 
     /**
