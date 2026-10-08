@@ -20,6 +20,7 @@ class SupportTicket extends Model
         'user_id',
         'subject',
         'message',
+        'attachment',
         'priority',
         'status',
         'closed_at',
@@ -76,6 +77,20 @@ class SupportTicket extends Model
     public function acceptsReplies(): bool
     {
         return ! $this->isClosed();
+    }
+
+    public function hasAttachment(): bool
+    {
+        return filled($this->attachment);
+    }
+
+    public function attachmentUrl(): ?string
+    {
+        if (! $this->hasAttachment()) {
+            return null;
+        }
+
+        return asset('storage/'.$this->attachment);
     }
 
     /**

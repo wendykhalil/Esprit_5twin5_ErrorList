@@ -29,12 +29,20 @@ class SupportTicketController extends Controller
 
     public function store(StoreSupportTicketRequest $request): RedirectResponse
     {
-        $ticket = SupportTicket::create([
+        $data = [
             'user_id' => $request->user()->id,
             'subject' => $request->validated('subject'),
             'message' => $request->validated('message'),
             'priority' => $request->validated('priority') ?? 'normal',
-        ]);
+        ];
+
+        if ($request->hasFile('attachment')) {
+            $data['attachment'] = $request
+                ->file('attachment')
+                ->store('support-tickets', 'public');
+        }
+
+        $ticket = SupportTicket::create($data);
 
         return redirect()
             ->route('support.tickets.show', $ticket)

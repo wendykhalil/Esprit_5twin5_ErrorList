@@ -188,11 +188,13 @@ Route::get('/services', [ServiceProviderController::class, 'index'])
     ->name('service-providers.index');
 
 Route::middleware('auth')->group(function () {
-    Route::get('/services/create', [ServiceProviderController::class, 'create'])
-        ->name('service-providers.create');
+    Route::middleware('client')->group(function () {
+        Route::get('/services/create', [ServiceProviderController::class, 'create'])
+            ->name('service-providers.create');
 
-    Route::post('/services', [ServiceProviderController::class, 'store'])
-        ->name('service-providers.store');
+        Route::post('/services', [ServiceProviderController::class, 'store'])
+            ->name('service-providers.store');
+    });
 
     Route::get('/services/{serviceProvider}/edit', [ServiceProviderController::class, 'edit'])
         ->name('service-providers.edit');
@@ -215,19 +217,21 @@ Route::middleware('auth')->group(function () {
     Route::delete('/my-service-requests/{serviceRequest}', [ServiceRequestController::class, 'destroy'])
         ->name('service-requests.destroy');
 
-    // Technical Services: Provider Side Requests
-    Route::get('/provider/service-requests', [ServiceRequestController::class, 'providerIndex'])
-        ->name('provider.service-requests.index');
-    Route::get('/provider/service-requests/{serviceRequest}', [ServiceRequestController::class, 'providerShow'])
-        ->name('provider.service-requests.show');
-    Route::patch('/provider/service-requests/{serviceRequest}/accept', [ServiceRequestController::class, 'accept'])
-        ->name('provider.service-requests.accept');
-    Route::patch('/provider/service-requests/{serviceRequest}/reject', [ServiceRequestController::class, 'reject'])
-        ->name('provider.service-requests.reject');
-    Route::patch('/provider/service-requests/{serviceRequest}/start', [ServiceRequestController::class, 'start'])
-        ->name('provider.service-requests.start');
-    Route::patch('/provider/service-requests/{serviceRequest}/complete', [ServiceRequestController::class, 'complete'])
-        ->name('provider.service-requests.complete');
+    // Technical Services: Provider Side Requests (rôle prestataire approuvé)
+    Route::middleware('provider')->prefix('provider')->group(function () {
+        Route::get('/service-requests', [ServiceRequestController::class, 'providerIndex'])
+            ->name('provider.service-requests.index');
+        Route::get('/service-requests/{serviceRequest}', [ServiceRequestController::class, 'providerShow'])
+            ->name('provider.service-requests.show');
+        Route::patch('/service-requests/{serviceRequest}/accept', [ServiceRequestController::class, 'accept'])
+            ->name('provider.service-requests.accept');
+        Route::patch('/service-requests/{serviceRequest}/reject', [ServiceRequestController::class, 'reject'])
+            ->name('provider.service-requests.reject');
+        Route::patch('/service-requests/{serviceRequest}/start', [ServiceRequestController::class, 'start'])
+            ->name('provider.service-requests.start');
+        Route::patch('/service-requests/{serviceRequest}/complete', [ServiceRequestController::class, 'complete'])
+            ->name('provider.service-requests.complete');
+    });
 });
 
 Route::get('/services/{serviceProvider}', [ServiceProviderController::class, 'show'])

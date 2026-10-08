@@ -26,6 +26,7 @@
             id="supportTicketForm"
             method="POST"
             action="{{ route('support.tickets.store') }}"
+            enctype="multipart/form-data"
             class="mt-6 bg-white border border-green-100 rounded-xl p-6 space-y-5 shadow-sm"
             novalidate
         >
@@ -58,8 +59,8 @@
                 <select
                     id="priority"
                     name="priority"
-                    aria-describedby="priority-hint"
-                    class="w-full rounded-lg border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                    aria-describedby="priority-hint @error('priority') priority-error @enderror"
+                    class="w-full rounded-lg @error('priority') border-red-500 @enderror"
                 >
                     <option value="normal" @selected(old('priority', 'normal') === 'normal')>Normale — réponse standard</option>
                     <option value="low" @selected(old('priority') === 'low')>Basse — question non urgente</option>
@@ -91,6 +92,26 @@
                 </div>
                 @error('message')
                     <p id="message-error" class="text-sm text-red-600 mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <div>
+                <label for="attachment" class="block text-sm font-medium text-gray-700 mb-1">
+                    Image (optionnelle)
+                </label>
+                <input
+                    type="file"
+                    id="attachment"
+                    name="attachment"
+                    accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                    aria-describedby="attachment-hint @error('attachment') attachment-error @enderror"
+                    class="w-full text-sm rounded-lg border @error('attachment') border-red-500 @else border-gray-300 @enderror bg-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
+                />
+                <p id="attachment-hint" class="mt-1 text-xs text-gray-500">
+                    Capture d'écran ou photo utile (JPG, PNG, WEBP — 2 Mo maximum).
+                </p>
+                @error('attachment')
+                    <p id="attachment-error" class="text-sm text-red-600 mt-1">{{ $message }}</p>
                 @enderror
             </div>
 

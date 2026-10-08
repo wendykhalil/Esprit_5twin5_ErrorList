@@ -16,6 +16,7 @@
             <span class="text-xs font-medium text-green-700 bg-green-50 px-2 py-1 rounded">Client</span>
         </div>
         <p class="text-sm text-slate-700 whitespace-pre-wrap">{{ $ticket->message }}</p>
+        <x-support.ticket-attachment :ticket="$ticket" />
     </article>
 
     @foreach($replies as $reply)

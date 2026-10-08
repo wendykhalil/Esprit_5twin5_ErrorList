@@ -6,6 +6,8 @@ use App\Models\SupportTicket;
 use App\Models\TicketReply;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class SupportTicketTest extends TestCase
@@ -51,6 +53,25 @@ class SupportTicketTest extends TestCase
 
         $ticket = SupportTicket::first();
         $this->assertMatchesRegularExpression('/^TCK-\d{6}$/', $ticket->reference);
+    }
+
+    public function test_authenticated_user_can_attach_image_to_support_ticket(): void
+    {
+        Storage::fake('public');
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->post(route('support.tickets.store'), [
+            'subject' => 'Erreur sur mon paiement',
+            'message' => 'Voici une capture d\'écran en pièce jointe pour illustrer le bug.',
+            'priority' => 'normal',
+            'attachment' => UploadedFile::fake()->image('capture.jpg'),
+        ]);
+
+        $response->assertRedirect();
+
+        $ticket = SupportTicket::first();
+        $this->assertNotNull($ticket->attachment);
+        Storage::disk('public')->assertExists($ticket->attachment);
     }
 
     public function test_user_cannot_view_another_users_ticket(): void

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ServiceProvider;
+use App\Services\UserRoleService;
 use Illuminate\Http\Request;
 
 class ServiceProviderController extends Controller
@@ -38,6 +39,15 @@ class ServiceProviderController extends Controller
     {
         $user = auth()->user();
 
+        if ($user->isAdmin()) {
+            return redirect()->route('admin.dashboard')
+                ->with('info', 'Les administrateurs gèrent les prestataires depuis le back-office.');
+        }
+
+        if (! $user->isClient()) {
+            abort(403, 'Seuls les comptes client peuvent soumettre un nouveau profil prestataire.');
+        }
+
         // Redirect if the user already has a profile
         if ($user->serviceProvider) {
             return redirect()->route('service-providers.edit', $user->serviceProvider)
@@ -53,6 +63,14 @@ class ServiceProviderController extends Controller
     public function store(Request $request)
     {
         $user = auth()->user();
+
+        if ($user->isAdmin()) {
+            return redirect()->route('admin.dashboard');
+        }
+
+        if (! $user->isClient()) {
+            abort(403, 'Seuls les comptes client peuvent soumettre un nouveau profil prestataire.');
+        }
 
         if ($user->serviceProvider) {
             return redirect()->route('service-providers.edit', $user->serviceProvider);
@@ -145,7 +163,9 @@ class ServiceProviderController extends Controller
                 ->with('error', 'Ce profil ne peut pas être supprimé car il possède des demandes de service.');
         }
 
+        $user = $serviceProvider->user;
         $serviceProvider->delete();
+        app(UserRoleService::class)->syncAfterProviderProfileDeleted($user);
 
         return redirect()->route('service-providers.index')
             ->with('success', 'Votre profil a été supprimé avec succès.');

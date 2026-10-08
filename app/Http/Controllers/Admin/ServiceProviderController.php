@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\ServiceProvider;
+use App\Services\UserRoleService;
 use Illuminate\Http\Request;
 
 class ServiceProviderController extends Controller
@@ -38,16 +39,18 @@ class ServiceProviderController extends Controller
         return view('backend.service-providers.show', compact('serviceProvider'));
     }
 
-    public function approve(ServiceProvider $serviceProvider)
+    public function approve(ServiceProvider $serviceProvider, UserRoleService $userRoleService)
     {
         $serviceProvider->update(['status' => 'approved']);
+        $userRoleService->syncAfterProviderApproval($serviceProvider);
 
-        return back()->with('success', 'Le profil prestataire a été approuvé.');
+        return back()->with('success', 'Le profil prestataire a été approuvé. Le compte a le rôle prestataire.');
     }
 
-    public function reject(ServiceProvider $serviceProvider)
+    public function reject(ServiceProvider $serviceProvider, UserRoleService $userRoleService)
     {
         $serviceProvider->update(['status' => 'rejected']);
+        $userRoleService->syncAfterProviderRejection($serviceProvider);
 
         return back()->with('success', 'Le profil prestataire a été rejeté.');
     }

@@ -20,12 +20,17 @@
                 </div>
 
                 @auth
-                    @if(auth()->user()->serviceProvider)
+                    @if(auth()->user()->isAdmin())
+                        <a href="{{ route('admin.service-providers.index') }}"
+                           class="inline-flex items-center justify-center px-5 py-3 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-xl transition shrink-0">
+                            Gérer les prestataires
+                        </a>
+                    @elseif(auth()->user()->isProvider() && auth()->user()->serviceProvider)
                         <a href="{{ route('service-providers.edit', auth()->user()->serviceProvider) }}"
                            class="inline-flex items-center justify-center px-5 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl transition shrink-0">
-                            Gérer mon profil
+                            Gérer mon profil prestataire
                         </a>
-                    @else
+                    @elseif(auth()->user()->isClient())
                         <a href="{{ route('service-providers.create') }}"
                            class="inline-flex items-center justify-center px-5 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl transition shrink-0">
                             Proposer mes services

@@ -21,6 +21,7 @@ class StoreSupportTicketRequest extends FormRequest
             'subject' => ['required', 'string', 'min:5', 'max:150'],
             'message' => ['required', 'string', 'min:20', 'max:5000'],
             'priority' => ['nullable', Rule::in(['low', 'normal', 'high'])],
+            'attachment' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ];
     }
 
@@ -37,6 +38,9 @@ class StoreSupportTicketRequest extends FormRequest
             'message.min' => 'Décrivez votre demande avec au moins :min caractères.',
             'message.max' => 'Le message ne doit pas dépasser :max caractères.',
             'priority.in' => 'La priorité sélectionnée n\'est pas valide.',
+            'attachment.image' => 'La pièce jointe doit être une image.',
+            'attachment.mimes' => 'Formats acceptés : JPG, JPEG, PNG ou WEBP.',
+            'attachment.max' => 'L\'image ne doit pas dépasser 2 Mo.',
         ];
     }
 
@@ -49,6 +53,7 @@ class StoreSupportTicketRequest extends FormRequest
             'subject' => 'sujet',
             'message' => 'message',
             'priority' => 'priorité',
+            'attachment' => 'image jointe',
         ];
     }
 }

@@ -174,8 +174,11 @@
                             </a>
 
                             <a href="{{ route('service-requests.index') }}" class="block px-4 py-2.5 text-sm transition-colors border-t border-green-100 {{ request()->routeIs('service-requests.*') ? 'bg-green-50 text-green-800 font-medium' : 'text-gray-700 hover:bg-green-50 hover:text-green-700' }}">Mes demandes</a>
-                            @if(auth()->user()->serviceProvider)
-                            <a href="{{ route('provider.service-requests.index') }}" class="block px-4 py-2.5 text-sm transition-colors border-t border-green-100 {{ request()->routeIs('provider.service-requests.*') ? 'bg-green-50 text-green-800 font-medium' : 'text-gray-700 hover:bg-green-50 hover:text-green-700' }}">Demandes reçues</a>
+                            @if(auth()->user()->isProvider())
+                            <a href="{{ route('provider.service-requests.index') }}" class="block px-4 py-2.5 text-sm transition-colors border-t border-green-100 {{ request()->routeIs('provider.service-requests.*') ? 'bg-green-50 text-green-800 font-medium' : 'text-gray-700 hover:bg-green-50 hover:text-green-700' }}">Demandes reçues (prestataire)</a>
+                            @endif
+                            @if(auth()->user()->isAdmin())
+                            <a href="{{ route('admin.dashboard') }}" class="block px-4 py-2.5 text-sm transition-colors border-t border-green-100 text-gray-700 hover:bg-green-50 hover:text-green-700">Administration</a>
                             @endif
 
                             <a

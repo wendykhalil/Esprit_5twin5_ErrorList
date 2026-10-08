@@ -55,6 +55,18 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     // Users
     Route::get('/utilisateurs', [UserController::class, 'index'])
         ->name('users');
+    Route::get('/utilisateurs/{user}', [UserController::class, 'show'])
+        ->whereNumber('user')
+        ->name('users.show');
+    Route::get('/utilisateurs/{user}/edit', [UserController::class, 'edit'])
+        ->whereNumber('user')
+        ->name('users.edit');
+    Route::put('/utilisateurs/{user}', [UserController::class, 'update'])
+        ->whereNumber('user')
+        ->name('users.update');
+    Route::delete('/utilisateurs/{user}', [UserController::class, 'destroy'])
+        ->whereNumber('user')
+        ->name('users.destroy');
 
 
     // Rentals

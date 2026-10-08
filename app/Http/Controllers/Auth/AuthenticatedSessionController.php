@@ -29,9 +29,12 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
 
         $user = $request->user();
-        $defaultDestination = $user?->isAdmin()
-            ? route('admin.dashboard')
-            : route('home');
+
+        $defaultDestination = match (true) {
+            $user?->isAdmin() => route('admin.dashboard'),
+            $user?->isProvider() => route('provider.service-requests.index'),
+            default => route('home'),
+        };
 
         return redirect()->intended($defaultDestination);
     }
