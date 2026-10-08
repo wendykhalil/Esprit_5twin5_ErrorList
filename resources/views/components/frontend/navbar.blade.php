@@ -1,5 +1,5 @@
-<nav class="sticky top-0 z-[70] bg-white border-b border-green-100 shadow-sm">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<nav id="frontend-site-nav" class="sticky top-0 z-[1000] w-full bg-white border-b border-green-100 shadow-md overflow-visible">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 overflow-visible">
 
         <div class="flex items-center justify-between h-16">
 
@@ -92,7 +92,7 @@
 
 
             <!-- Desktop authentication -->
-            <div class="hidden md:flex items-center gap-3">
+            <div class="hidden md:flex items-center gap-3 overflow-visible">
 
                 @guest
 
@@ -120,7 +120,7 @@
                 @auth
 
                     <!-- User Button with Dropdown -->
-                    <div id="userMenuWrapper" class="relative">
+                    <div id="userMenuWrapper" class="relative overflow-visible">
                         <button
                             type="button"
                             id="userMenuButton"
@@ -161,8 +161,9 @@
                         <!-- Dropdown Content -->
                         <div
                             id="userMenu"
-                            class="hidden absolute right-0 top-full mt-2 w-52 bg-white border border-green-100
-                                rounded-lg shadow-lg z-[80]"
+                            class="hidden w-52 bg-white border border-green-100
+                                rounded-lg shadow-xl z-[9999]"
+                            role="menu"
                         >
                             <a
                                 href="{{ route('profile.edit') }}"
@@ -480,21 +481,85 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     if (userMenuButton && userMenu && userMenuWrapper) {
+
+        let userMenuAnchor = null;
+
+        function positionUserMenu() {
+            const rect = userMenuButton.getBoundingClientRect();
+            const menuWidth = userMenu.offsetWidth || 208;
+
+            userMenu.style.position = 'fixed';
+            userMenu.style.top = `${rect.bottom + 8}px`;
+            userMenu.style.left = `${Math.max(8, rect.right - menuWidth)}px`;
+        }
+
+        function mountUserMenuInBody() {
+            if (! userMenuAnchor) {
+                userMenuAnchor = document.createComment('user-menu-anchor');
+                userMenu.parentNode.insertBefore(userMenuAnchor, userMenu);
+            }
+
+            document.body.appendChild(userMenu);
+        }
+
+        function restoreUserMenuInNav() {
+            if (userMenuAnchor && userMenuAnchor.parentNode) {
+                userMenuAnchor.parentNode.insertBefore(userMenu, userMenuAnchor.nextSibling);
+            }
+        }
+
+        function closeUserMenu() {
+            userMenu.classList.add('hidden');
+            userMenuButton.setAttribute('aria-expanded', 'false');
+            userMenuArrow.classList.remove('rotate-180');
+            userMenu.style.position = '';
+            userMenu.style.top = '';
+            userMenu.style.left = '';
+            restoreUserMenuInNav();
+        }
+
+        function openUserMenu() {
+            mountUserMenuInBody();
+            userMenu.classList.remove('hidden');
+            userMenuButton.setAttribute('aria-expanded', 'true');
+            userMenuArrow.classList.add('rotate-180');
+            positionUserMenu();
+        }
+
         userMenuButton.addEventListener('click', function (event) {
             event.stopPropagation();
-            const isOpen = !userMenu.classList.contains('hidden');
 
-            userMenu.classList.toggle('hidden', isOpen);
-            userMenuButton.setAttribute('aria-expanded', String(!isOpen));
-            userMenuArrow.classList.toggle('rotate-180', !isOpen);
+            if (userMenu.classList.contains('hidden')) {
+                openUserMenu();
+            } else {
+                closeUserMenu();
+            }
+        });
+
+        window.addEventListener('scroll', function () {
+            if (! userMenu.classList.contains('hidden')) {
+                positionUserMenu();
+            }
+        }, true);
+
+        window.addEventListener('resize', function () {
+            if (! userMenu.classList.contains('hidden')) {
+                positionUserMenu();
+            }
         });
 
         document.addEventListener('click', function (event) {
-            if (!userMenuWrapper.contains(event.target)) {
-                userMenu.classList.add('hidden');
-                userMenuButton.setAttribute('aria-expanded', 'false');
-                userMenuArrow.classList.remove('rotate-180');
+            if (userMenu.classList.contains('hidden')) {
+                return;
             }
+
+            const target = event.target;
+
+            if (userMenu.contains(target) || userMenuButton.contains(target)) {
+                return;
+            }
+
+            closeUserMenu();
         });
     }
 

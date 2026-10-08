@@ -41,7 +41,7 @@
 
         {{-- Add equipment --}}
         <a
-            href="{{ route('equipments.create') }}"
+            href="{{ route('admin.equipments.create') }}"
             class="flex items-center gap-2 px-4 py-2.5
                    bg-amber-500 text-white rounded-lg
                    text-sm font-semibold hover:bg-amber-600

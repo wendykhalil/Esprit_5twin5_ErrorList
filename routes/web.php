@@ -36,14 +36,7 @@ Route::get('/equipements', [EquipmentController::class, 'index'])
 
 Route::middleware('auth')->group(function () {
 
-    // Create
-    Route::get('/equipements/create', [EquipmentController::class, 'create'])
-        ->name('equipments.create');
-
-    Route::post('/equipements', [EquipmentController::class, 'store'])
-        ->name('equipments.store');
-
-    // Edit
+    // Edit (la création se fait uniquement dans le back-office /admin/equipements/create)
     Route::get('/equipements/{equipment}/edit', [EquipmentController::class, 'edit'])
         ->whereNumber('equipment')
         ->name('equipments.edit');

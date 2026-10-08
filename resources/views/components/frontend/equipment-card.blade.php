@@ -1,6 +1,6 @@
 @props(['equipment'])
 
-<div class="bg-white rounded-2xl shadow-sm border border-green-100 overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col">
+<div class="relative z-0 bg-white rounded-2xl shadow-sm border border-green-100 overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col">
     <div class="relative">
         <img
             src="{{ $equipment['image'] }}"

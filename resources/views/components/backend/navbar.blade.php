@@ -105,9 +105,16 @@
                     </a>
                 </div>
                 <div class="py-1.5 border-t border-slate-100">
-                    <button class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-red-500 hover:bg-red-50 transition-colors text-left" style="font-family: Outfit, sans-serif">
-                        🚪 Déconnexion
-                    </button>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button
+                            type="submit"
+                            class="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-red-500 hover:bg-red-50 transition-colors text-left"
+                            style="font-family: Outfit, sans-serif"
+                        >
+                            🚪 Déconnexion
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>

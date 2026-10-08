@@ -18,6 +18,21 @@ class SupportTicketTest extends TestCase
         $this->withoutVite();
     }
 
+    public function test_support_ticket_creation_requires_valid_input(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->from(route('support.tickets.create'))->post(route('support.tickets.store'), [
+            'subject' => 'Hi',
+            'message' => 'Trop court',
+            'priority' => 'normal',
+        ]);
+
+        $response
+            ->assertRedirect(route('support.tickets.create'))
+            ->assertSessionHasErrors(['subject', 'message']);
+    }
+
     public function test_authenticated_user_can_create_support_ticket(): void
     {
         $user = User::factory()->create();

@@ -471,7 +471,7 @@
 
                 <div
                     class="bg-white rounded-2xl border
-                           border-green-100 p-6 shadow-sm sticky top-24"
+                           border-green-100 p-6 shadow-sm sticky top-24 z-30"
                 >
 
                     {{-- PRICE --}}

@@ -85,8 +85,8 @@
                 @endforeach
             </div>
             <div class="text-center mt-8">
-                <a href="{{ route('equipments.create') }}" class="px-8 py-4 bg-yellow-400 hover:bg-yellow-300 text-green-900 font-bold rounded-xl transition-colors shadow-md">
-                    Publier mon équipement
+                <a href="{{ route('equipments.index') }}" class="px-8 py-4 bg-yellow-400 hover:bg-yellow-300 text-green-900 font-bold rounded-xl transition-colors shadow-md">
+                    Explorer les équipements
                 </a>
             </div>
         </div>

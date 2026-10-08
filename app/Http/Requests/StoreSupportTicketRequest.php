@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreSupportTicketRequest extends FormRequest
 {
@@ -17,9 +18,9 @@ class StoreSupportTicketRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'subject' => ['required', 'string', 'max:150'],
-            'message' => ['required', 'string', 'max:5000'],
-            'priority' => ['nullable', 'in:low,normal,high'],
+            'subject' => ['required', 'string', 'min:5', 'max:150'],
+            'message' => ['required', 'string', 'min:20', 'max:5000'],
+            'priority' => ['nullable', Rule::in(['low', 'normal', 'high'])],
         ];
     }
 
@@ -30,8 +31,24 @@ class StoreSupportTicketRequest extends FormRequest
     {
         return [
             'subject.required' => 'Le sujet est obligatoire.',
-            'subject.max' => 'Le sujet ne doit pas dépasser 150 caractères.',
+            'subject.min' => 'Le sujet doit contenir au moins :min caractères.',
+            'subject.max' => 'Le sujet ne doit pas dépasser :max caractères.',
             'message.required' => 'Le message est obligatoire.',
+            'message.min' => 'Décrivez votre demande avec au moins :min caractères.',
+            'message.max' => 'Le message ne doit pas dépasser :max caractères.',
+            'priority.in' => 'La priorité sélectionnée n\'est pas valide.',
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function attributes(): array
+    {
+        return [
+            'subject' => 'sujet',
+            'message' => 'message',
+            'priority' => 'priorité',
         ];
     }
 }

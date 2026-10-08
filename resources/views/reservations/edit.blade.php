@@ -1,7 +1,7 @@
 @extends('layouts.frontend')
 
 @section('content')
-<div class="min-h-[calc(100vh-4rem)] bg-slate-50 px-4 pt-24 pb-10 sm:px-6 lg:px-8">
+<div class="min-h-screen bg-slate-50 px-4 py-10 sm:px-6 lg:px-8">
     <div class="mx-auto max-w-3xl">
         <a href="{{ route('reservations.show', $reservation) }}" class="text-sm font-semibold text-green-700 hover:text-green-800">← Retour aux détails</a>
         <div class="mt-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">

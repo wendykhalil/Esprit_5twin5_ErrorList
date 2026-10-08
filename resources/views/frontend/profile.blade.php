@@ -11,7 +11,7 @@
             <div class="grid lg:grid-cols-3 gap-8">
                 {{-- Sidebar --}}
                 <aside class="lg:col-span-1">
-                    <div class="bg-white rounded-2xl border border-green-100 shadow-sm p-6 sticky top-24">
+                    <div class="bg-white rounded-2xl border border-green-100 shadow-sm p-6 sticky top-24 z-30">
                         <div class="text-center mb-6">
                             <div class="w-20 h-20 bg-green-600 rounded-full flex items-center justify-center text-white text-4xl font-bold mx-auto mb-4">
                                 U

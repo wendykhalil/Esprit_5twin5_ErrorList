@@ -103,12 +103,19 @@
             </a>
         @endforeach
 
-        <button class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-500 text-slate-400 hover:bg-red-500/10 hover:text-red-400 transition-all duration-150" style="font-family: Outfit, sans-serif">
-            <svg class="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
-            </svg>
-            Déconnexion
-        </button>
+        <form method="POST" action="{{ route('logout') }}" class="w-full">
+            @csrf
+            <button
+                type="submit"
+                class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-500 text-slate-400 hover:bg-red-500/10 hover:text-red-400 transition-all duration-150"
+                style="font-family: Outfit, sans-serif"
+            >
+                <svg class="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+                </svg>
+                Déconnexion
+            </button>
+        </form>
 
         {{-- Admin profile --}}
         <div class="flex items-center gap-3 px-3 py-3 mt-2 rounded-lg bg-slate-800">

@@ -142,7 +142,7 @@
 
                 {{-- Sidebar --}}
                 <div class="lg:col-span-1">
-                    <div class="bg-white rounded-2xl border border-green-100 shadow-sm p-6 sticky top-24 space-y-4">
+                    <div class="bg-white rounded-2xl border border-green-100 shadow-sm p-6 sticky top-24 z-30 space-y-4">
                         <h3 class="text-lg font-bold text-green-900 mb-4">Prochaines étapes</h3>
                         
                         <div class="space-y-3">

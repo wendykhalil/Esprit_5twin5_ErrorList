@@ -30,6 +30,15 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::get('/equipements', [EquipmentController::class, 'index'])
         ->name('equipments');
 
+    Route::get('/equipements/create', [EquipmentController::class, 'create'])
+        ->name('equipments.create');
+
+    Route::post('/equipements/create/validate-step', [EquipmentController::class, 'validateWizardStep'])
+        ->name('equipments.create.validate-step');
+
+    Route::post('/equipements', [EquipmentController::class, 'store'])
+        ->name('equipments.store');
+
     Route::get('/equipements/{equipment}/edit', [EquipmentController::class, 'edit'])
         ->whereNumber('equipment')
         ->name('equipments.edit');

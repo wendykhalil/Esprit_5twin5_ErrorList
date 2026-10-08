@@ -27,17 +27,6 @@
                 </div>
 
 
-                @auth
-                    <a
-                        href="{{ route('equipments.create') }}"
-                        class="inline-flex items-center justify-center
-                               px-5 py-3 bg-green-600 hover:bg-green-700
-                               text-white font-semibold rounded-xl transition"
-                    >
-                        + Publier un équipement
-                    </a>
-                @endauth
-
             </div>
 
 
@@ -134,7 +123,7 @@
 
                 <div
                     class="bg-white rounded-2xl border border-green-100
-                           p-6 space-y-6 sticky top-24"
+                           p-6 space-y-6 sticky top-24 z-30"
                 >
 
                     <h2 class="font-bold text-green-900 text-lg">
@@ -366,16 +355,16 @@
                                 Réinitialiser les filtres
                             </a>
 
-                        @elseif(auth()->check())
+                        @elseif(auth()->check() && auth()->user()->isAdmin())
 
                             <a
-                                href="{{ route('equipments.create') }}"
+                                href="{{ route('admin.equipments.create') }}"
                                 class="inline-block px-5 py-3
                                        bg-green-600 hover:bg-green-700
                                        text-white rounded-xl
                                        font-semibold transition"
                             >
-                                Publier le premier équipement
+                                Ajouter un équipement (admin)
                             </a>
 
                         @endif

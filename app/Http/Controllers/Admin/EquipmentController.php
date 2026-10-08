@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreEquipmentRequest;
+use App\Http\Requests\UpdateEquipmentRequest;
+use App\Http\Requests\ValidateEquipmentWizardStepRequest;
 use App\Models\Category;
 use App\Models\Equipment;
 use Illuminate\Http\Request;
@@ -70,6 +73,50 @@ class EquipmentController extends Controller
 
 
     /**
+     * Show admin create form.
+     */
+    public function create()
+    {
+        $categories = Category::orderBy('name')->get();
+
+        return view(
+            'backend.equipments.create',
+            compact('categories')
+        );
+    }
+
+    /**
+     * Validate wizard step fields (JSON) before advancing to the next step.
+     */
+    public function validateWizardStep(ValidateEquipmentWizardStepRequest $request)
+    {
+        return response()->json(['ok' => true]);
+    }
+
+    /**
+     * Store equipment from admin.
+     */
+    public function store(StoreEquipmentRequest $request)
+    {
+        $validated = $request->validated();
+
+        $validated['user_id'] = $request->user()->id;
+        $validated['availability'] = $request->boolean('availability');
+
+        if ($request->hasFile('image')) {
+            $validated['image'] = $request
+                ->file('image')
+                ->store('equipments', 'public');
+        }
+
+        Equipment::create($validated);
+
+        return redirect()
+            ->route('admin.equipments')
+            ->with('success', 'Équipement ajouté avec succès.');
+    }
+
+    /**
      * Show admin edit form.
      */
     public function edit(Equipment $equipment)
@@ -91,34 +138,10 @@ class EquipmentController extends Controller
      * Update equipment from admin.
      */
     public function update(
-        Request $request,
+        UpdateEquipmentRequest $request,
         Equipment $equipment
     ) {
-        $validated = $request->validate([
-            'category_id' => 'required|exists:categories,id',
-
-            'name' => 'required|string|min:3|max:255',
-
-            'description' => 'required|string|min:10',
-
-            'brand' => 'nullable|string|max:255',
-
-            'power' => 'nullable|numeric|min:0',
-
-            'capacity' => 'nullable|numeric|min:0',
-
-            'condition' => 'required|in:excellent,good,used',
-
-            'price_per_day' => 'required|numeric|min:0',
-
-            'location' => 'required|string|max:255',
-
-            'availability' => 'nullable|boolean',
-
-            'status' => 'required|in:active,inactive',
-
-            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-        ]);
+        $validated = $request->validated();
 
         $validated['availability'] =
             $request->boolean('availability');

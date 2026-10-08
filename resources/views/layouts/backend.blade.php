@@ -16,10 +16,11 @@
 
     @include('components.backend.sidebar')
 
-    <div class="flex-1 flex flex-col min-w-0 overflow-hidden lg:ml-64">
+    {{-- Scroll sur la page entière (navbar + contenu), pas seulement dans <main> --}}
+    <div class="min-w-0 lg:ml-64">
         @include('components.backend.navbar')
 
-        <main class="flex-1 overflow-y-auto">
+        <main>
             <div class="p-4 lg:p-6">
                 @yield('content')
             </div>

@@ -32,10 +32,10 @@
                         Voir les équipements
                     </a>
                     <a
-                        href="{{ route('equipments.create') }}"
+                        href="{{ route('contact') }}"
                         class="px-8 py-4 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-xl border border-white/20 transition-colors text-center backdrop-blur-sm"
                     >
-                        Partager mon équipement
+                        Nous contacter
                     </a>
                 </div>
 
@@ -254,10 +254,10 @@
             </p>
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
                 <a
-                    href="{{ route('equipments.create') }}"
+                    href="{{ route('contact') }}"
                     class="px-8 py-4 bg-yellow-400 hover:bg-yellow-300 text-green-900 font-bold rounded-xl transition-colors shadow-lg"
                 >
-                    Partager mon équipement
+                    Proposer un équipement
                 </a>
                 <a
                     href="{{ route('how-it-works') }}"

@@ -22,18 +22,18 @@
                 @auth
                     @if(auth()->user()->serviceProvider)
                         <a href="{{ route('service-providers.edit', auth()->user()->serviceProvider) }}"
-                           class="inline-flex items-center justify-center px-5 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl transition">
+                           class="inline-flex items-center justify-center px-5 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl transition shrink-0">
                             Gérer mon profil
                         </a>
                     @else
                         <a href="{{ route('service-providers.create') }}"
-                           class="inline-flex items-center justify-center px-5 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl transition">
+                           class="inline-flex items-center justify-center px-5 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl transition shrink-0">
                             Proposer mes services
                         </a>
                     @endif
                 @else
                     <a href="{{ route('login') }}"
-                       class="inline-flex items-center justify-center px-5 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl transition">
+                       class="inline-flex items-center justify-center px-5 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl transition shrink-0">
                         Proposer mes services
                     </a>
                 @endauth
@@ -41,10 +41,8 @@
         </div>
     </div>
 
-    {{-- Main Content --}}
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
-        {{-- Flash Messages --}}
+
         @if(session('success'))
             <div class="mb-6 bg-green-50 border border-green-200 text-green-800 px-5 py-4 rounded-xl">
                 {{ session('success') }}
@@ -61,96 +59,127 @@
             </div>
         @endif
 
-        <div class="flex flex-col md:flex-row gap-8">
-            
-            {{-- Filters --}}
-            <div class="w-full md:w-64 flex-shrink-0">
-                <form method="GET" action="{{ route('service-providers.index') }}" class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                    <h2 class="font-bold text-gray-900 mb-4">Filtres</h2>
+        <div class="flex flex-col lg:flex-row gap-8 items-start">
 
-                    <div class="mb-4">
-                        <label for="specialty" class="block text-sm font-medium text-gray-700 mb-1">Spécialité</label>
-                        <input type="text" name="specialty" id="specialty" value="{{ request('specialty') }}"
-                               class="w-full border-gray-300 rounded-lg shadow-sm focus:border-green-500 focus:ring-green-500">
+            {{-- Filtres (colonne fixe à gauche sur grand écran) --}}
+            <aside class="w-full lg:w-64 shrink-0 lg:sticky lg:top-24 lg:z-30">
+                <form
+                    method="GET"
+                    action="{{ route('service-providers.index') }}"
+                    class="bg-white p-6 rounded-2xl shadow-sm border border-green-100 space-y-4"
+                >
+                    <h2 class="font-bold text-green-900 text-lg">Filtres</h2>
+
+                    <div>
+                        <label for="specialty" class="block text-sm font-semibold text-gray-700 mb-2">Spécialité</label>
+                        <input
+                            type="text"
+                            name="specialty"
+                            id="specialty"
+                            value="{{ request('specialty') }}"
+                            placeholder="Ex : installation, maintenance…"
+                            class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+                        >
                     </div>
 
-                    <div class="mb-4">
-                        <label for="location" class="block text-sm font-medium text-gray-700 mb-1">Localisation</label>
-                        <input type="text" name="location" id="location" value="{{ request('location') }}"
-                               class="w-full border-gray-300 rounded-lg shadow-sm focus:border-green-500 focus:ring-green-500">
+                    <div>
+                        <label for="location" class="block text-sm font-semibold text-gray-700 mb-2">Localisation</label>
+                        <input
+                            type="text"
+                            name="location"
+                            id="location"
+                            value="{{ request('location') }}"
+                            placeholder="Ex : Tunis, Sousse…"
+                            class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+                        >
                     </div>
 
-                    <div class="mb-6">
-                        <label class="flex items-center">
-                            <input type="checkbox" name="availability" value="1" {{ request('availability') ? 'checked' : '' }}
-                                   class="rounded border-gray-300 text-green-600 focus:ring-green-500">
-                            <span class="ml-2 text-sm text-gray-700">Disponible uniquement</span>
-                        </label>
-                    </div>
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input
+                            type="checkbox"
+                            name="availability"
+                            value="1"
+                            {{ request('availability') ? 'checked' : '' }}
+                            class="w-4 h-4 accent-green-600 rounded border-gray-300"
+                        >
+                        <span class="text-sm font-medium text-gray-700">Disponible uniquement</span>
+                    </label>
 
-                    <button type="submit" class="w-full py-2 bg-gray-900 hover:bg-gray-800 text-white font-medium rounded-lg transition">
+                    <button
+                        type="submit"
+                        class="w-full py-2.5 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl transition text-sm"
+                    >
                         Filtrer
                     </button>
-                    
+
                     @if(request()->anyFilled(['specialty', 'location', 'availability']))
-                        <a href="{{ route('service-providers.index') }}" class="block text-center mt-3 text-sm text-green-600 hover:text-green-700">
-                            Réinitialiser
+                        <a
+                            href="{{ route('service-providers.index') }}"
+                            class="block text-center text-sm text-green-600 hover:text-green-700 font-medium"
+                        >
+                            Réinitialiser les filtres
                         </a>
                     @endif
                 </form>
-            </div>
+            </aside>
 
-            {{-- List --}}
-            <div class="flex-1">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    @forelse($serviceProviders as $provider)
-                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col">
-                            <div class="flex items-start justify-between mb-4">
-                                <div>
-                                    <h3 class="text-lg font-bold text-gray-900">{{ $provider->user->name }}</h3>
-                                    <p class="text-green-600 font-medium">{{ $provider->specialty }}</p>
+            {{-- Liste des prestataires --}}
+            <div class="flex-1 min-w-0 w-full">
+                @if($serviceProviders->count() === 0)
+                    <div class="bg-white border border-green-100 rounded-2xl text-center py-16 px-6">
+                        <div class="text-5xl mb-4" aria-hidden="true">🔍</div>
+                        <h3 class="text-xl font-bold text-green-900 mb-2">Aucun professionnel trouvé</h3>
+                        <p class="text-gray-500 mb-6">Aucun prestataire ne correspond à vos critères pour le moment.</p>
+                        <a href="{{ route('service-providers.index') }}" class="inline-block px-5 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-semibold transition">
+                            Voir tous les professionnels
+                        </a>
+                    </div>
+                @else
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        @foreach($serviceProviders as $provider)
+                            <article class="bg-white p-6 rounded-2xl shadow-sm border border-green-100 flex flex-col h-full">
+                                <div class="flex items-start justify-between gap-3 mb-4">
+                                    <div class="min-w-0">
+                                        <h3 class="text-lg font-bold text-gray-900 truncate">{{ $provider->user->name }}</h3>
+                                        <p class="text-green-600 font-medium mt-0.5">{{ $provider->specialty }}</p>
+                                    </div>
+                                    @if($provider->availability)
+                                        <span class="shrink-0 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            Disponible
+                                        </span>
+                                    @else
+                                        <span class="shrink-0 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                                            Indisponible
+                                        </span>
+                                    @endif
                                 </div>
-                                @if($provider->availability)
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                        Disponible
-                                    </span>
-                                @else
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                        Indisponible
-                                    </span>
+
+                                @if($provider->description)
+                                    <p class="text-sm text-gray-600 mb-4 line-clamp-3 flex-1">
+                                        {{ $provider->description }}
+                                    </p>
                                 @endif
-                            </div>
 
-                            <div class="space-y-2 mb-6 flex-1">
-                                <p class="text-sm text-gray-600">
-                                    <span class="font-medium text-gray-900">📍 Localisation :</span> {{ $provider->location }}
-                                </p>
-                                <p class="text-sm text-gray-600">
-                                    <span class="font-medium text-gray-900">⏳ Expérience :</span> {{ $provider->experience_years }} ans
-                                </p>
-                                <p class="text-sm text-gray-600">
-                                    <span class="font-medium text-gray-900">💰 Tarif :</span> {{ number_format($provider->hourly_rate, 2) }} TND/h
-                                </p>
-                            </div>
+                                <ul class="space-y-2 mb-6 text-sm text-gray-600">
+                                    <li><span class="font-medium text-gray-800">Localisation :</span> {{ $provider->location }}</li>
+                                    <li><span class="font-medium text-gray-800">Expérience :</span> {{ $provider->experience_years }} ans</li>
+                                    <li><span class="font-medium text-gray-800">Tarif :</span> {{ number_format($provider->hourly_rate, 2) }} TND/h</li>
+                                </ul>
 
-                            <a href="{{ route('service-providers.show', $provider) }}"
-                               class="w-full text-center py-2.5 border border-green-600 text-green-600 hover:bg-green-50 font-medium rounded-lg transition">
-                                Voir le profil
-                            </a>
-                        </div>
-                    @empty
-                        <div class="col-span-full bg-white p-10 text-center rounded-2xl shadow-sm border border-gray-100">
-                            <p class="text-gray-500 mb-4">Aucun professionnel ne correspond à vos critères.</p>
-                            <a href="{{ route('service-providers.index') }}" class="text-green-600 font-medium hover:underline">
-                                Voir tous les professionnels
-                            </a>
-                        </div>
-                    @endforelse
-                </div>
+                                <a
+                                    href="{{ route('service-providers.show', $provider) }}"
+                                    class="mt-auto w-full text-center py-2.5 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl transition text-sm"
+                                >
+                                    Voir le profil
+                                </a>
+                            </article>
+                        @endforeach
+                    </div>
 
-                <div class="mt-8">
-                    {{ $serviceProviders->links() }}
-                </div>
+                    <div class="mt-8">
+                        {{ $serviceProviders->links() }}
+                    </div>
+                @endif
             </div>
 
         </div>

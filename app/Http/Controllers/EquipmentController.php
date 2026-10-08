@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\UpdateEquipmentRequest;
 use App\Models\Category;
 use App\Models\Equipment;
 use Illuminate\Http\Request;
@@ -86,75 +87,6 @@ class EquipmentController extends Controller
     }
 
     /**
-     * Show create form.
-     */
-    public function create()
-    {
-        $categories = Category::orderBy('name')->get();
-
-        return view(
-            'frontend.equipments.create',
-            compact('categories')
-        );
-    }
-
-    /**
-     * Store new equipment.
-     */
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'category_id' => 'required|exists:categories,id',
-
-            'name' => 'required|string|min:3|max:255',
-
-            'description' => 'required|string|min:10',
-
-            'brand' => 'nullable|string|max:255',
-
-            'power' => 'nullable|numeric|min:0',
-
-            'capacity' => 'nullable|numeric|min:0',
-
-            'condition' => 'required|in:excellent,good,used',
-
-            'price_per_day' => 'required|numeric|min:0',
-
-            'location' => 'required|string|max:255',
-
-            'availability' => 'nullable|boolean',
-
-            'status' => 'required|in:active,inactive',
-
-            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-        ]);
-
-        // Logged-in user becomes equipment owner
-        $validated['user_id'] = auth()->id();
-
-        // Checkbox
-        $validated['availability'] =
-            $request->boolean('availability');
-
-        // Image upload
-        if ($request->hasFile('image')) {
-
-            $validated['image'] = $request
-                ->file('image')
-                ->store('equipments', 'public');
-        }
-
-        $equipment = Equipment::create($validated);
-
-        return redirect()
-            ->route('equipments.show', $equipment)
-            ->with(
-                'success',
-                'Équipement ajouté avec succès.'
-            );
-    }
-
-    /**
      * Display one equipment.
      */
     public function show(Equipment $equipment)
@@ -218,7 +150,7 @@ class EquipmentController extends Controller
      * Update equipment.
      */
     public function update(
-        Request $request,
+        UpdateEquipmentRequest $request,
         Equipment $equipment
     ) {
         // Only owner can update
@@ -226,31 +158,7 @@ class EquipmentController extends Controller
             abort(403);
         }
 
-        $validated = $request->validate([
-            'category_id' => 'required|exists:categories,id',
-
-            'name' => 'required|string|min:3|max:255',
-
-            'description' => 'required|string|min:10',
-
-            'brand' => 'nullable|string|max:255',
-
-            'power' => 'nullable|numeric|min:0',
-
-            'capacity' => 'nullable|numeric|min:0',
-
-            'condition' => 'required|in:excellent,good,used',
-
-            'price_per_day' => 'required|numeric|min:0',
-
-            'location' => 'required|string|max:255',
-
-            'availability' => 'nullable|boolean',
-
-            'status' => 'required|in:active,inactive',
-
-            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-        ]);
+        $validated = $request->validated();
 
         $validated['availability'] =
             $request->boolean('availability');

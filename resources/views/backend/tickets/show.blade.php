@@ -30,10 +30,10 @@
             <x-support.thread :ticket="$ticket" :show-internal="true" />
 
             @if($ticket->acceptsReplies())
-                <form method="POST" action="{{ route('admin.tickets.replies.store', $ticket) }}" class="bg-white border border-slate-200 rounded-xl p-5 space-y-3">
+                <form method="POST" action="{{ route('admin.tickets.replies.store', $ticket) }}" class="bg-white border border-slate-200 rounded-xl p-5 space-y-3" novalidate>
                     @csrf
                     <label class="block text-sm font-medium text-slate-700">Répondre</label>
-                    <textarea name="body" rows="4" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm">{{ old('body') }}</textarea>
+                    <textarea name="body" rows="4" class="w-full px-3 py-2 border rounded-lg text-sm @error('body') border-red-500 @else border-slate-200 @enderror">{{ old('body') }}</textarea>
                     @error('body')<p class="text-sm text-red-600">{{ $message }}</p>@enderror
                     <label class="inline-flex items-center gap-2 text-sm text-slate-700">
                         <input type="checkbox" name="is_internal" value="1" class="rounded border-slate-300 text-amber-600" @checked(old('is_internal')) />

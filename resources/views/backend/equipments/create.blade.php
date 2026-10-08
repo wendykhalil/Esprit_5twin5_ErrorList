@@ -1,29 +1,49 @@
-@extends('layouts.frontend')
+@extends('layouts.backend')
 
-@section('title', 'Publier un équipement - SolarShare')
+@section('title', 'Ajouter un équipement - SolarShare Admin')
 
 @section('content')
 
-<div class="bg-gray-50 py-12">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="py-6">
+    <div class="max-w-4xl mx-auto">
 
         {{-- Header --}}
-        <div class="mb-8">
-            <h1 class="text-4xl font-bold text-green-900 mb-2"
-                style="font-family: Fraunces, Georgia, serif">
-                Publier un équipement
-            </h1>
-
-            <p class="text-gray-600 text-lg">
-                Partagez votre équipement avec la communauté SolarShare
-            </p>
+        <div class="mb-8 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+            <div>
+                <h1 class="text-3xl font-bold text-slate-900 mb-2" style="font-family: Outfit, sans-serif">
+                    Publier un équipement
+                </h1>
+                <p class="text-slate-500 text-sm" style="font-family: Outfit, sans-serif">
+                    Partagez votre équipement avec la communauté SolarShare. Validation côté serveur après envoi.
+                </p>
+            </div>
+            <a
+                href="{{ route('admin.equipments') }}"
+                class="shrink-0 px-4 py-2 border border-slate-200 rounded-lg text-sm font-semibold text-slate-600 hover:bg-white transition-colors"
+                style="font-family: Outfit, sans-serif"
+            >
+                ← Retour à la liste
+            </a>
         </div>
+
+        @php
+            $validationStep = 1;
+            if ($errors->hasAny(['location'])) {
+                $validationStep = 2;
+            } elseif ($errors->hasAny(['image'])) {
+                $validationStep = 3;
+            } elseif ($errors->hasAny(['price_per_day', 'status', 'availability'])) {
+                $validationStep = 4;
+            } elseif ($errors->hasAny(['name', 'category_id', 'description', 'brand', 'power', 'capacity', 'condition'])) {
+                $validationStep = 1;
+            }
+        @endphp
 
         {{-- Global validation errors --}}
         @if ($errors->any())
-            <div class="mb-6 bg-red-50 border border-red-200 rounded-xl p-5">
+            <div class="mb-6 bg-red-50 border border-red-200 rounded-xl p-5" role="alert">
                 <p class="font-semibold text-red-800 mb-2">
-                    Veuillez corriger les erreurs suivantes :
+                    Veuillez corriger les champs suivants :
                 </p>
 
                 <ul class="list-disc list-inside text-sm text-red-700 space-y-1">
@@ -85,22 +105,29 @@
         </div>
 
         {{-- Form --}}
-        <div class="bg-white rounded-2xl shadow-md border border-gray-200 p-8">
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-8">
 
             <form
                 id="equipmentForm"
                 method="POST"
-                action="{{ route('equipments.store') }}"
+                action="{{ route('admin.equipments.store') }}"
+                data-validate-step-url="{{ route('admin.equipments.create.validate-step') }}"
                 enctype="multipart/form-data"
                 class="space-y-6"
+                novalidate
             >
                 @csrf
+
+                <div id="wizardStepAlert" class="hidden mb-4 bg-red-50 border border-red-200 rounded-xl p-4" role="alert">
+                    <p class="font-semibold text-red-800 mb-2">Veuillez corriger les champs de cette étape :</p>
+                    <ul id="wizardStepAlertList" class="list-disc list-inside text-sm text-red-700 space-y-1"></ul>
+                </div>
 
                 {{-- STEP 1 --}}
                 <div id="step-1" class="form-step">
 
-                    <h2 class="text-2xl font-bold text-green-900 mb-6"
-                        style="font-family: Fraunces, Georgia, serif">
+                    <h2 class="text-2xl font-bold text-slate-900 mb-6"
+                        style="font-family: Outfit, sans-serif">
                         Informations générales
                     </h2>
 
@@ -109,7 +136,7 @@
                         {{-- Name --}}
                         <div>
                             <label for="name"
-                                   class="block text-sm font-semibold text-gray-700 mb-2">
+                                   class="block text-sm font-semibold text-slate-700 mb-2">
                                 Nom de l'équipement
                                 <span class="text-red-500">*</span>
                             </label>
@@ -119,23 +146,21 @@
                                 id="name"
                                 name="name"
                                 value="{{ old('name') }}"
-                                required
                                 placeholder="Ex: Panneau solaire portable 200W"
-                                class="w-full px-4 py-3 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500
-                                @error('name') border-red-500 @else border-gray-300 @enderror"
+                                class="w-full px-4 py-3 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400
+                                @error('name') border-red-500 @else border-slate-200 @enderror"
                             >
 
+                            <p class="mt-1 text-xs text-slate-500">3 à 255 caractères.</p>
                             @error('name')
-                                <p class="text-red-500 text-sm mt-1">
-                                    {{ $message }}
-                                </p>
+                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                             @enderror
                         </div>
 
                         {{-- Category --}}
                         <div>
                             <label for="category_id"
-                                   class="block text-sm font-semibold text-gray-700 mb-2">
+                                   class="block text-sm font-semibold text-slate-700 mb-2">
                                 Catégorie
                                 <span class="text-red-500">*</span>
                             </label>
@@ -143,9 +168,8 @@
                             <select
                                 id="category_id"
                                 name="category_id"
-                                required
-                                class="w-full px-4 py-3 border rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-green-500
-                                @error('category_id') border-red-500 @else border-gray-300 @enderror"
+                                class="w-full px-4 py-3 border rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-400
+                                @error('category_id') border-red-500 @else border-slate-200 @enderror"
                             >
                                 <option value="">
                                     Sélectionner une catégorie
@@ -171,7 +195,7 @@
                         {{-- Brand --}}
                         <div>
                             <label for="brand"
-                                   class="block text-sm font-semibold text-gray-700 mb-2">
+                                   class="block text-sm font-semibold text-slate-700 mb-2">
                                 Marque
                             </label>
 
@@ -181,7 +205,7 @@
                                 name="brand"
                                 value="{{ old('brand') }}"
                                 placeholder="Ex: EcoFlow, Jackery, Bluetti..."
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                                class="w-full px-4 py-3 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
                             >
 
                             @error('brand')
@@ -194,7 +218,7 @@
                         {{-- Description --}}
                         <div>
                             <label for="description"
-                                   class="block text-sm font-semibold text-gray-700 mb-2">
+                                   class="block text-sm font-semibold text-slate-700 mb-2">
                                 Description
                                 <span class="text-red-500">*</span>
                             </label>
@@ -202,18 +226,15 @@
                             <textarea
                                 id="description"
                                 name="description"
-                                required
                                 rows="5"
-                                maxlength="1000"
                                 placeholder="Décrivez votre équipement : caractéristiques, état, accessoires inclus..."
-                                class="w-full px-4 py-3 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 resize-none
-                                @error('description') border-red-500 @else border-gray-300 @enderror"
+                                class="w-full px-4 py-3 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none
+                                @error('description') border-red-500 @else border-slate-200 @enderror"
                             >{{ old('description') }}</textarea>
 
+                            <p class="mt-1 text-xs text-slate-500">10 à 1000 caractères.</p>
                             @error('description')
-                                <p class="text-red-500 text-sm mt-1">
-                                    {{ $message }}
-                                </p>
+                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                             @enderror
                         </div>
 
@@ -222,19 +243,18 @@
 
                             <div>
                                 <label for="power"
-                                       class="block text-sm font-semibold text-gray-700 mb-2">
+                                       class="block text-sm font-semibold text-slate-700 mb-2">
                                     Puissance (W)
                                 </label>
 
                                 <input
                                     type="number"
                                     step="0.01"
-                                    min="0"
                                     id="power"
                                     name="power"
                                     value="{{ old('power') }}"
                                     placeholder="Ex: 200"
-                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                                    class="w-full px-4 py-3 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
                                 >
 
                                 @error('power')
@@ -246,19 +266,18 @@
 
                             <div>
                                 <label for="capacity"
-                                       class="block text-sm font-semibold text-gray-700 mb-2">
+                                       class="block text-sm font-semibold text-slate-700 mb-2">
                                     Capacité (Wh)
                                 </label>
 
                                 <input
                                     type="number"
                                     step="0.01"
-                                    min="0"
                                     id="capacity"
                                     name="capacity"
                                     value="{{ old('capacity') }}"
                                     placeholder="Ex: 512"
-                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                                    class="w-full px-4 py-3 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
                                 >
 
                                 @error('capacity')
@@ -271,15 +290,15 @@
                         </div>
 
                         {{-- Condition --}}
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-3">
+                        <div id="condition-wizard-group">
+                            <label class="block text-sm font-semibold text-slate-700 mb-3">
                                 État de l'équipement
                                 <span class="text-red-500">*</span>
                             </label>
 
                             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
 
-                                <label class="condition-option flex items-center justify-center gap-2 p-3 border-2 border-gray-300 rounded-lg cursor-pointer hover:border-green-400">
+                                <label class="condition-option flex items-center justify-center gap-2 p-3 border-2 border-slate-200 rounded-lg cursor-pointer hover:border-amber-400">
                                     <input
                                         type="radio"
                                         name="condition"
@@ -290,7 +309,7 @@
                                     <span>✨ Excellent</span>
                                 </label>
 
-                                <label class="condition-option flex items-center justify-center gap-2 p-3 border-2 border-gray-300 rounded-lg cursor-pointer hover:border-green-400">
+                                <label class="condition-option flex items-center justify-center gap-2 p-3 border-2 border-slate-200 rounded-lg cursor-pointer hover:border-amber-400">
                                     <input
                                         type="radio"
                                         name="condition"
@@ -301,7 +320,7 @@
                                     <span>👍 Bon</span>
                                 </label>
 
-                                <label class="condition-option flex items-center justify-center gap-2 p-3 border-2 border-gray-300 rounded-lg cursor-pointer hover:border-green-400">
+                                <label class="condition-option flex items-center justify-center gap-2 p-3 border-2 border-slate-200 rounded-lg cursor-pointer hover:border-amber-400">
                                     <input
                                         type="radio"
                                         name="condition"
@@ -327,8 +346,8 @@
                 {{-- STEP 2 --}}
                 <div id="step-2" class="form-step hidden">
 
-                    <h2 class="text-2xl font-bold text-green-900 mb-6"
-                        style="font-family: Fraunces, Georgia, serif">
+                    <h2 class="text-2xl font-bold text-slate-900 mb-6"
+                        style="font-family: Outfit, sans-serif">
                         Localisation
                     </h2>
 
@@ -336,7 +355,7 @@
 
                         <div>
                             <label for="location"
-                                   class="block text-sm font-semibold text-gray-700 mb-2">
+                                   class="block text-sm font-semibold text-slate-700 mb-2">
                                 Ville
                                 <span class="text-red-500">*</span>
                             </label>
@@ -344,9 +363,8 @@
                             <select
                                 id="location"
                                 name="location"
-                                required
-                                class="w-full px-4 py-3 border rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-green-500
-                                @error('location') border-red-500 @else border-gray-300 @enderror"
+                                class="w-full px-4 py-3 border rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-400
+                                @error('location') border-red-500 @else border-slate-200 @enderror"
                             >
                                 <option value="">Sélectionner une ville</option>
 
@@ -383,7 +401,7 @@
                             @enderror
                         </div>
 
-                        <div class="bg-green-50 border border-green-200 rounded-lg p-4 flex gap-3">
+                        <div class="bg-amber-50 border border-green-200 rounded-lg p-4 flex gap-3">
                             <span class="text-2xl">📍</span>
 
                             <p class="text-sm text-green-800">
@@ -398,8 +416,8 @@
                 {{-- STEP 3 --}}
                 <div id="step-3" class="form-step hidden">
 
-                    <h2 class="text-2xl font-bold text-green-900 mb-6"
-                        style="font-family: Fraunces, Georgia, serif">
+                    <h2 class="text-2xl font-bold text-slate-900 mb-6"
+                        style="font-family: Outfit, sans-serif">
                         Photo de l'équipement
                     </h2>
 
@@ -407,19 +425,19 @@
 
                         <label
                             for="image"
-                            class="block border-2 border-dashed border-green-300 rounded-lg p-12 text-center hover:border-green-500 transition-colors cursor-pointer bg-green-50"
+                            class="block border-2 border-dashed border-amber-300 rounded-lg p-12 text-center hover:border-amber-500 transition-colors cursor-pointer bg-amber-50"
                         >
                             <div class="text-5xl mb-3">📸</div>
 
-                            <p class="font-semibold text-green-900 mb-1">
+                            <p class="font-semibold text-slate-900 mb-1">
                                 Ajouter une photo
                             </p>
 
-                            <p class="text-sm text-gray-600 mb-4">
+                            <p class="text-sm text-slate-600 mb-4">
                                 Cliquez pour sélectionner une image
                             </p>
 
-                            <p class="text-xs text-gray-500">
+                            <p class="text-xs text-slate-500">
                                 JPG, JPEG, PNG ou WEBP · Maximum 2 Mo
                             </p>
 
@@ -433,7 +451,7 @@
                         </label>
 
                         <div id="selectedImageName"
-                             class="hidden bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm text-gray-700">
+                             class="hidden bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm text-slate-700">
                         </div>
 
                         @error('image')
@@ -461,8 +479,8 @@
                 {{-- STEP 4 --}}
                 <div id="step-4" class="form-step hidden">
 
-                    <h2 class="text-2xl font-bold text-green-900 mb-6"
-                        style="font-family: Fraunces, Georgia, serif">
+                    <h2 class="text-2xl font-bold text-slate-900 mb-6"
+                        style="font-family: Outfit, sans-serif">
                         Tarification et disponibilité
                     </h2>
 
@@ -471,7 +489,7 @@
                         {{-- Price --}}
                         <div>
                             <label for="price_per_day"
-                                   class="block text-sm font-semibold text-gray-700 mb-2">
+                                   class="block text-sm font-semibold text-slate-700 mb-2">
                                 Prix par jour
                                 <span class="text-red-500">*</span>
                             </label>
@@ -480,30 +498,27 @@
                                 <input
                                     type="number"
                                     step="0.01"
-                                    min="0"
                                     id="price_per_day"
                                     name="price_per_day"
                                     value="{{ old('price_per_day') }}"
-                                    required
                                     placeholder="0"
-                                    class="w-full px-4 py-3 pr-16 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500
-                                    @error('price_per_day') border-red-500 @else border-gray-300 @enderror"
+                                    class="w-full px-4 py-3 pr-16 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400
+                                    @error('price_per_day') border-red-500 @else border-slate-200 @enderror"
                                 >
 
-                                <span class="absolute right-3 top-3 text-gray-500 font-medium">
+                                <span class="absolute right-3 top-3 text-slate-500 font-medium">
                                     TND
                                 </span>
                             </div>
 
+                            <p class="mt-1 text-xs text-slate-500">Tarif journalier en TND (0 à 99 999).</p>
                             @error('price_per_day')
-                                <p class="text-red-500 text-sm mt-1">
-                                    {{ $message }}
-                                </p>
+                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                             @enderror
                         </div>
 
                         {{-- Availability --}}
-                        <div class="border border-gray-200 rounded-lg p-4">
+                        <div class="border border-slate-200 rounded-lg p-4">
 
                             <label class="flex items-center gap-3 cursor-pointer">
                                 <input
@@ -511,15 +526,15 @@
                                     name="availability"
                                     value="1"
                                     {{ old('availability', true) ? 'checked' : '' }}
-                                    class="w-5 h-5 text-green-600 rounded border-gray-300 focus:ring-green-500"
+                                    class="w-5 h-5 text-green-600 rounded border-slate-200 focus:ring-amber-400"
                                 >
 
                                 <div>
-                                    <p class="font-semibold text-gray-800">
+                                    <p class="font-semibold text-slate-800">
                                         Équipement disponible
                                     </p>
 
-                                    <p class="text-sm text-gray-500">
+                                    <p class="text-sm text-slate-500">
                                         Les utilisateurs pourront voir cet équipement
                                         comme disponible à la location.
                                     </p>
@@ -531,15 +546,14 @@
                         {{-- Status --}}
                         <div>
                             <label for="status"
-                                   class="block text-sm font-semibold text-gray-700 mb-2">
+                                   class="block text-sm font-semibold text-slate-700 mb-2">
                                 Statut
                             </label>
 
                             <select
                                 id="status"
                                 name="status"
-                                required
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                                class="w-full px-4 py-3 border border-slate-200 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
                             >
                                 <option
                                     value="active"
@@ -564,43 +578,43 @@
                         </div>
 
                         {{-- Revenue estimation --}}
-                        <div class="bg-green-50 border border-green-200 rounded-lg p-6">
+                        <div class="bg-amber-50 border border-green-200 rounded-lg p-6">
 
-                            <p class="text-sm font-semibold text-green-900 mb-4">
+                            <p class="text-sm font-semibold text-slate-900 mb-4">
                                 Estimation de revenus
                             </p>
 
                             <div class="grid grid-cols-3 gap-3">
 
                                 <div class="bg-white border border-green-200 rounded-lg p-3 text-center">
-                                    <p class="text-lg font-bold text-green-700"
+                                    <p class="text-lg font-bold text-amber-700"
                                        id="estimate-week">
                                         0 TND
                                     </p>
 
-                                    <p class="text-xs text-gray-600">
+                                    <p class="text-xs text-slate-600">
                                         1 semaine
                                     </p>
                                 </div>
 
                                 <div class="bg-white border border-green-200 rounded-lg p-3 text-center">
-                                    <p class="text-lg font-bold text-green-700"
+                                    <p class="text-lg font-bold text-amber-700"
                                        id="estimate-2weeks">
                                         0 TND
                                     </p>
 
-                                    <p class="text-xs text-gray-600">
+                                    <p class="text-xs text-slate-600">
                                         2 semaines
                                     </p>
                                 </div>
 
                                 <div class="bg-white border border-green-200 rounded-lg p-3 text-center">
-                                    <p class="text-lg font-bold text-green-700"
+                                    <p class="text-lg font-bold text-amber-700"
                                        id="estimate-month">
                                         0 TND
                                     </p>
 
-                                    <p class="text-xs text-gray-600">
+                                    <p class="text-xs text-slate-600">
                                         1 mois
                                     </p>
                                 </div>
@@ -614,59 +628,59 @@
                 {{-- STEP 5 --}}
                 <div id="step-5" class="form-step hidden">
 
-                    <h2 class="text-2xl font-bold text-green-900 mb-6"
-                        style="font-family: Fraunces, Georgia, serif">
+                    <h2 class="text-2xl font-bold text-slate-900 mb-6"
+                        style="font-family: Outfit, sans-serif">
                         Prêt à publier !
                     </h2>
 
                     <div class="text-center mb-8">
                         <div class="text-6xl mb-4">🎉</div>
 
-                        <p class="text-gray-600">
+                        <p class="text-slate-600">
                             Vérifiez vos informations avant de publier votre équipement.
                         </p>
                     </div>
 
                     {{-- Summary --}}
-                    <div class="bg-green-50 border border-green-200 rounded-lg p-6 mb-6">
+                    <div class="bg-amber-50 border border-green-200 rounded-lg p-6 mb-6">
 
                         <div class="space-y-3">
 
                             <div class="flex justify-between text-sm">
-                                <span class="text-gray-600">Nom</span>
-                                <span class="font-semibold text-green-900"
+                                <span class="text-slate-600">Nom</span>
+                                <span class="font-semibold text-slate-900"
                                       id="summary-name">
                                     —
                                 </span>
                             </div>
 
                             <div class="flex justify-between text-sm">
-                                <span class="text-gray-600">Catégorie</span>
-                                <span class="font-semibold text-green-900"
+                                <span class="text-slate-600">Catégorie</span>
+                                <span class="font-semibold text-slate-900"
                                       id="summary-category">
                                     —
                                 </span>
                             </div>
 
                             <div class="flex justify-between text-sm">
-                                <span class="text-gray-600">Localisation</span>
-                                <span class="font-semibold text-green-900"
+                                <span class="text-slate-600">Localisation</span>
+                                <span class="font-semibold text-slate-900"
                                       id="summary-location">
                                     —
                                 </span>
                             </div>
 
                             <div class="flex justify-between text-sm">
-                                <span class="text-gray-600">État</span>
-                                <span class="font-semibold text-green-900"
+                                <span class="text-slate-600">État</span>
+                                <span class="font-semibold text-slate-900"
                                       id="summary-condition">
                                     —
                                 </span>
                             </div>
 
                             <div class="flex justify-between text-sm">
-                                <span class="text-gray-600">Prix</span>
-                                <span class="font-semibold text-green-700"
+                                <span class="text-slate-600">Prix</span>
+                                <span class="font-semibold text-amber-700"
                                       id="summary-price">
                                     —
                                 </span>
@@ -677,7 +691,7 @@
 
                     <button
                         type="submit"
-                        class="w-full py-4 px-6 bg-green-600 hover:bg-green-700 text-white font-bold text-lg rounded-lg transition-colors"
+                        class="w-full py-4 px-6 bg-amber-500 hover:bg-amber-600 text-white font-bold text-lg rounded-lg transition-colors"
                     >
                         Publier mon équipement
                     </button>
@@ -685,12 +699,12 @@
                 </div>
 
                 {{-- Navigation --}}
-                <div class="flex gap-3 pt-6 border-t border-gray-200">
+                <div class="flex gap-3 pt-6 border-t border-slate-200">
 
                     <button
                         type="button"
                         id="prevBtn"
-                        class="hidden px-6 py-3 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-100 transition-colors"
+                        class="hidden px-6 py-3 border border-slate-200 text-slate-700 font-semibold rounded-lg hover:bg-gray-100 transition-colors"
                     >
                         Retour
                     </button>
@@ -698,7 +712,7 @@
                     <button
                         type="button"
                         id="nextBtn"
-                        class="flex-1 py-3 px-6 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors"
+                        class="flex-1 py-3 px-6 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-lg transition-colors"
                     >
                         Continuer
                     </button>
@@ -757,18 +771,112 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
-    let currentStep = 1;
+    let currentStep = {{ $validationStep }};
     const totalSteps = 5;
 
     const stepIndicators = document.querySelectorAll('.step-indicator');
     const stepConnectors = document.querySelectorAll('.step-connector');
     const formSteps = document.querySelectorAll('.form-step');
 
+    const form = document.getElementById('equipmentForm');
     const prevBtn = document.getElementById('prevBtn');
     const nextBtn = document.getElementById('nextBtn');
+    const wizardStepAlert = document.getElementById('wizardStepAlert');
+    const wizardStepAlertList = document.getElementById('wizardStepAlertList');
+    const validateStepUrl = form.dataset.validateStepUrl;
+    const csrfToken = form.querySelector('input[name="_token"]').value;
 
     const priceInput = document.getElementById('price_per_day');
     const imageInput = document.getElementById('image');
+
+    function clearWizardStepErrors() {
+        wizardStepAlert.classList.add('hidden');
+        wizardStepAlertList.innerHTML = '';
+
+        form.querySelectorAll('.wizard-client-error').forEach(function (el) {
+            el.remove();
+        });
+
+        form.querySelectorAll('.border-red-500').forEach(function (el) {
+            el.classList.remove('border-red-500');
+            if (!el.classList.contains('border-slate-200')) {
+                el.classList.add('border-slate-200');
+            }
+        });
+    }
+
+    function showWizardStepErrors(errors) {
+        const messages = [];
+
+        Object.keys(errors).forEach(function (field) {
+            const fieldMessages = errors[field];
+            if (!fieldMessages || !fieldMessages.length) {
+                return;
+            }
+
+            messages.push(fieldMessages[0]);
+
+            const stepRoot = document.getElementById('step-' + currentStep);
+            const errorEl = document.createElement('p');
+            errorEl.className = 'wizard-client-error text-red-500 text-sm mt-1';
+            errorEl.textContent = fieldMessages[0];
+
+            if (field === 'condition') {
+                const group = stepRoot.querySelector('#condition-wizard-group');
+                if (group) {
+                    group.appendChild(errorEl);
+                }
+                return;
+            }
+
+            const control = stepRoot.querySelector('[name="' + field + '"]');
+
+            if (control) {
+                control.classList.add('border-red-500');
+                control.classList.remove('border-slate-200');
+
+                const wrapper = control.closest('div') || control.parentElement;
+                wrapper.appendChild(errorEl);
+            }
+        });
+
+        if (messages.length) {
+            wizardStepAlertList.innerHTML = '';
+            messages.forEach(function (msg) {
+                const li = document.createElement('li');
+                li.textContent = msg;
+                wizardStepAlertList.appendChild(li);
+            });
+            wizardStepAlert.classList.remove('hidden');
+        }
+    }
+
+    async function validateCurrentStepOnServer() {
+        const formData = new FormData(form);
+        formData.set('wizard_step', String(currentStep));
+
+        const response = await fetch(validateStepUrl, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+            },
+            body: formData,
+        });
+
+        if (response.status === 422) {
+            const payload = await response.json();
+            showWizardStepErrors(payload.errors || {});
+            return false;
+        }
+
+        if (!response.ok) {
+            throw new Error('Validation request failed');
+        }
+
+        return true;
+    }
 
     function updateStepIndicators() {
 
@@ -840,35 +948,35 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    function validateCurrentStep() {
-
-        const currentStepElement =
-            document.getElementById('step-' + currentStep);
-
-        const requiredInputs =
-            currentStepElement.querySelectorAll('[required]');
-
-        for (const input of requiredInputs) {
-
-            if (!input.checkValidity()) {
-                input.reportValidity();
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    nextBtn.addEventListener('click', function () {
-
-        if (!validateCurrentStep()) {
+    nextBtn.addEventListener('click', async function () {
+        if (currentStep >= totalSteps) {
             return;
         }
 
-        if (currentStep < totalSteps) {
-            currentStep++;
-            showStep(currentStep);
+        if (currentStep <= 4) {
+            clearWizardStepErrors();
+            nextBtn.disabled = true;
+            nextBtn.classList.add('opacity-70', 'cursor-wait');
+
+            try {
+                const valid = await validateCurrentStepOnServer();
+                if (!valid) {
+                    return;
+                }
+            } catch (error) {
+                wizardStepAlertList.innerHTML =
+                    '<li>Impossible de valider cette étape. Réessayez.</li>';
+                wizardStepAlert.classList.remove('hidden');
+                return;
+            } finally {
+                nextBtn.disabled = false;
+                nextBtn.classList.remove('opacity-70', 'cursor-wait');
+            }
         }
+
+        currentStep++;
+        showStep(currentStep);
+        clearWizardStepErrors();
     });
 
     prevBtn.addEventListener('click', function () {
@@ -876,6 +984,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (currentStep > 1) {
             currentStep--;
             showStep(currentStep);
+            clearWizardStepErrors();
         }
     });
 
@@ -888,19 +997,19 @@ document.addEventListener('DOMContentLoaded', function () {
                 const label = radio.closest('label');
 
                 label.classList.remove(
-                    'border-green-500',
-                    'bg-green-50'
+                    'border-amber-500',
+                    'bg-amber-50'
                 );
 
-                label.classList.add('border-gray-300');
+                label.classList.add('border-slate-200');
 
                 if (radio.checked) {
 
-                    label.classList.remove('border-gray-300');
+                    label.classList.remove('border-slate-200');
 
                     label.classList.add(
-                        'border-green-500',
-                        'bg-green-50'
+                        'border-amber-500',
+                        'bg-amber-50'
                     );
                 }
 
@@ -999,7 +1108,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     updateConditionDisplay();
     updateRevenueEstimates();
-    showStep(1);
+    showStep(currentStep);
 });
 </script>
 
