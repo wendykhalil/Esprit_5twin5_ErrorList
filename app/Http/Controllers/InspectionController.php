@@ -10,37 +10,52 @@ class InspectionController extends Controller
 {
     public function index()
     {
-        $inspections = Inspection::with('reservation.equipement')->latest('date_inspection')->paginate(10);
+        $inspections = Inspection::with('reservation.equipment')
+            ->whereHas('reservation', fn ($query) => $query->where('user_id', auth()->id()))
+            ->latest('date_inspection')
+            ->paginate(10);
         return view('inspections.index', compact('inspections'));
     }
 
     public function create()
     {
-        return view('inspections.create', $this->formData());
+        $reservation_id = request('reservation_id');
+
+        return view('inspections.create', $this->formData() + [
+            'reservation_id' => $reservation_id,
+        ]);
     }
 
     public function store(InspectionRequest $request)
     {
-        $inspection = Inspection::create($request->validated());
+        $data = $request->validated();
+        $inspection = Inspection::create($data);
         $this->verifierLitige($inspection);
 
-        return redirect()->route('inspections.index')->with('success', 'Inspection ajoutée.');
+        return redirect()->route('reservations.show', $inspection->reservation_id)
+            ->with('success', 'Inspection ajoutée.');
     }
 
     public function show(Inspection $inspection)
     {
-        $inspection->load('reservation.equipement', 'reservation.user');
+        abort_unless($inspection->reservation->user_id === auth()->id(), 403);
+        $inspection->load('reservation.equipment', 'reservation.user');
         return view('inspections.show', compact('inspection'));
     }
 
     public function edit(Inspection $inspection)
     {
+        abort_unless($inspection->reservation->user_id === auth()->id(), 403);
+        $inspection->load('reservation.equipment');
         return view('inspections.edit', $this->formData() + compact('inspection'));
     }
 
     public function update(InspectionRequest $request, Inspection $inspection)
     {
-        $inspection->update($request->validated());
+        abort_unless($inspection->reservation->user_id === auth()->id(), 403);
+        $inspection->load('reservation.equipment');
+        $data = $request->validated();
+        $inspection->update($data);
         $this->verifierLitige($inspection);
 
         return redirect()->route('inspections.show', $inspection)->with('success', 'Inspection modifiée.');
@@ -48,6 +63,8 @@ class InspectionController extends Controller
 
     public function destroy(Inspection $inspection)
     {
+        abort_unless($inspection->reservation->user_id === auth()->id(), 403);
+        $inspection->load('reservation.equipment');
         $inspection->delete();
         return redirect()->route('inspections.index')->with('success', 'Inspection supprimée.');
     }
@@ -55,7 +72,10 @@ class InspectionController extends Controller
     private function formData(): array
     {
         return [
-            'reservations' => Reservation::with('equipement')->latest()->get(),
+            'reservations' => Reservation::with('equipment')
+                ->where('user_id', auth()->id())
+                ->latest()
+                ->get(),
             'types' => Inspection::TYPES,
             'etats' => Inspection::ETATS,
         ];

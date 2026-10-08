@@ -18,7 +18,11 @@ class InspectionRequest extends FormRequest
         $inspection = $this->route('inspection');
 
         return [
-            'reservation_id' => ['required', 'exists:reservations,id'],
+            'reservation_id' => [
+                'required',
+                Rule::exists('reservations', 'id')
+                    ->where(fn ($query) => $query->where('user_id', auth()->id())),
+            ],
             'type' => [
                 'required',
                 Rule::in(Inspection::TYPES),
