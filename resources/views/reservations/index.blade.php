@@ -1,48 +1,97 @@
 @extends('layouts.frontend')
 
 @section('content')
-<div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1>Réservations</h1>
-        <a href="{{ route('reservations.create') }}" class="btn btn-primary">Ajouter une réservation</a>
+<div class="bg-slate-50 min-h-[calc(100vh-4rem)] pt-16">
+    <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+        <div class="mb-8 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+                <p class="mb-2 text-sm font-semibold uppercase tracking-[0.18em] text-green-600">SolarShare</p>
+                <h1 class="text-4xl font-bold tracking-tight text-slate-900">Réservations</h1>
+                <p class="mt-2 max-w-2xl text-slate-500">Consultez les réservations de matériel solaire et leur état.</p>
+            </div>
+
+            @if($reservations->isNotEmpty())
+                <a href="{{ route('reservations.create') }}"
+                   class="inline-flex items-center justify-center rounded-xl bg-green-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                    + Ajouter une réservation
+                </a>
+            @endif
+        </div>
+
+        @if (session('success'))
+            <div class="mb-6 rounded-xl border border-green-200 bg-green-50 px-5 py-4 text-sm font-medium text-green-800" role="alert">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-slate-200 text-left">
+                    <thead class="bg-slate-50">
+                        <tr class="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                            <th class="px-6 py-4">Équipement</th>
+                            <th class="px-6 py-4">Période</th>
+                            <th class="px-6 py-4">Statut</th>
+                            <th class="px-6 py-4">Prix</th>
+                            @auth
+                                <th class="px-6 py-4 text-right">Actions</th>
+                            @endauth
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                    @forelse ($reservations as $reservation)
+                        @php
+                            $statusClasses = match ($reservation->statut) {
+                                'confirmee', 'confirmée' => 'bg-green-100 text-green-700',
+                                'annulee', 'annulée' => 'bg-red-100 text-red-700',
+                                default => 'bg-amber-100 text-amber-700',
+                            };
+                        @endphp
+                        <tr class="transition hover:bg-green-50/40">
+                            <td class="whitespace-nowrap px-6 py-5 text-sm font-medium text-slate-800">{{ $reservation->equipment_label }}</td>
+                            <td class="whitespace-nowrap px-6 py-5 text-sm text-slate-600">
+                                {{ $reservation->date_debut->format('d/m/Y') }} <span class="text-slate-400">→</span> {{ $reservation->date_fin->format('d/m/Y') }}
+                            </td>
+                            <td class="whitespace-nowrap px-6 py-5">
+                                <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold {{ $statusClasses }}">
+                                    {{ ucfirst(str_replace('_', ' ', $reservation->statut)) }}
+                                </span>
+                            </td>
+                            <td class="whitespace-nowrap px-6 py-5 text-sm font-semibold text-slate-800">{{ number_format($reservation->prix_total, 2) }} DT</td>
+                            @auth
+                                <td class="whitespace-nowrap px-6 py-5 text-right">
+                                    <div class="flex justify-end gap-2">
+                                        <a href="{{ route('reservations.show', $reservation) }}" class="rounded-lg px-3 py-2 text-xs font-semibold text-green-700 hover:bg-green-50">Voir</a>
+                                        <a href="{{ route('reservations.edit', $reservation) }}" class="rounded-lg px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100">Modifier</a>
+                                        <form action="{{ route('reservations.destroy', $reservation) }}" method="POST" onsubmit="return confirm('Supprimer cette réservation ?')">
+                                            @csrf @method('DELETE')
+                                            <button type="submit" class="rounded-lg px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50">Supprimer</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            @endauth
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="px-6 py-16 text-center">
+                                <p class="text-lg font-semibold text-slate-800">Vous n'avez pas encore de réservation.</p>
+                                <p class="mt-1 text-sm text-slate-500">Choisissez un équipement pour commencer.</p>
+                                <a href="{{ route('reservations.create') }}" class="mt-5 inline-flex items-center justify-center rounded-xl bg-green-600 px-5 py-3 text-sm font-semibold text-white hover:bg-green-700">
+                                    Réserver un équipement
+                                </a>
+                            </td>
+                        </tr>
+                    @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            @if ($reservations->hasPages())
+                <div class="border-t border-slate-100 px-6 py-4">
+                    {{ $reservations->links() }}
+                </div>
+            @endif
+        </div>
     </div>
-
-    @if (session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
-
-    <table class="table">
-        <thead>
-            <tr>
-                <th>#</th><th>Utilisateur</th><th>Équipement</th><th>Du</th><th>Au</th><th>Statut</th><th>Prix</th><th></th>
-            </tr>
-        </thead>
-        <tbody>
-        @forelse ($reservations as $reservation)
-            <tr>
-                <td>{{ $reservation->id }}</td>
-                <td>{{ $reservation->user->name }}</td>
-                <td>{{ $reservation->equipement->nom ?? '#'.$reservation->equipement_id }}</td>
-                <td>{{ $reservation->date_debut->format('d/m/Y') }}</td>
-                <td>{{ $reservation->date_fin->format('d/m/Y') }}</td>
-                <td>{{ ucfirst(str_replace('_', ' ', $reservation->statut)) }}</td>
-                <td>{{ number_format($reservation->prix_total, 2) }} DT</td>
-                <td class="d-flex gap-1">
-                    <a href="{{ route('reservations.show', $reservation) }}" class="btn btn-sm btn-info">Voir</a>
-                    <a href="{{ route('reservations.edit', $reservation) }}" class="btn btn-sm btn-warning">Modifier</a>
-                    <form action="{{ route('reservations.destroy', $reservation) }}" method="POST"
-                          onsubmit="return confirm('Supprimer cette réservation ?')">
-                        @csrf @method('DELETE')
-                        <button class="btn btn-sm btn-danger">Supprimer</button>
-                    </form>
-                </td>
-            </tr>
-        @empty
-            <tr><td colspan="8">Aucune réservation pour le moment.</td></tr>
-        @endforelse
-        </tbody>
-    </table>
-
-    {{ $reservations->links() }}
 </div>
 @endsection
