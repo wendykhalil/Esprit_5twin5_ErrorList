@@ -1,4 +1,4 @@
-<nav class="sticky top-0 z-50 bg-white border-b border-green-100 shadow-sm">
+<nav class="sticky top-0 z-[70] bg-white border-b border-green-100 shadow-sm">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         <div class="flex items-center justify-between h-16">
@@ -115,8 +115,12 @@
                 @auth
 
                     <!-- User Button with Dropdown -->
-                    <div class="relative group">
+                    <div id="userMenuWrapper" class="relative">
                         <button
+                            type="button"
+                            id="userMenuButton"
+                            aria-expanded="false"
+                            aria-controls="userMenu"
                             class="flex items-center gap-2 px-3 py-2 rounded-lg
                                    bg-green-50 hover:bg-green-100
                                    transition-colors duration-200
@@ -143,7 +147,7 @@
                             <span>{{ auth()->user()->name }}</span>
 
                             <!-- Dropdown Arrow -->
-                            <svg class="w-4 h-4 text-green-700 group-hover:rotate-180 transition-transform duration-200" 
+                            <svg id="userMenuArrow" class="w-4 h-4 text-green-700 transition-transform duration-200" 
                                  fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
                             </svg>
@@ -151,9 +155,9 @@
 
                         <!-- Dropdown Content -->
                         <div
-                            class="absolute right-0 mt-0 w-48 bg-white border border-green-100
-                                   rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100
-                                   group-hover:visible transition-all duration-200 z-50"
+                            id="userMenu"
+                            class="hidden absolute right-0 top-full mt-2 w-52 bg-white border border-green-100
+                                rounded-lg shadow-lg z-[80]"
                         >
                             <a
                                 href="{{ route('profile.edit') }}"
@@ -161,6 +165,22 @@
                                        transition-colors first:rounded-t-lg"
                             >
                                 Mon profil
+                            </a>
+
+                            <a
+                                href="{{ route('reservations.index') }}"
+                                class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700
+                                       transition-colors border-t border-green-100"
+                            >
+                                Mes réservations
+                            </a>
+
+                            <a
+                                href="{{ route('inspections.index') }}"
+                                class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700
+                                       transition-colors border-t border-green-100"
+                            >
+                                Mes inspections
                             </a>
 
                             <a
@@ -320,6 +340,28 @@
                     </a>
 
                     <a
+                        href="{{ route('reservations.index') }}"
+                        onclick="document.getElementById('mobileMenu').classList.add('hidden')"
+                        class="block px-4 py-2.5 text-sm font-medium
+                               text-center text-green-700
+                               border border-green-200
+                               rounded-lg hover:bg-green-50"
+                    >
+                        Mes réservations
+                    </a>
+
+                    <a
+                        href="{{ route('inspections.index') }}"
+                        onclick="document.getElementById('mobileMenu').classList.add('hidden')"
+                        class="block px-4 py-2.5 text-sm font-medium
+                               text-center text-green-700
+                               border border-green-200
+                               rounded-lg hover:bg-green-50"
+                    >
+                        Mes inspections
+                    </a>
+
+                    <a
                         href="{{ route('payments.history') }}"
                         onclick="document.getElementById('mobileMenu').classList.add('hidden')"
                         class="block px-4 py-2.5 text-sm font-medium
@@ -377,6 +419,18 @@ document.addEventListener('DOMContentLoaded', function () {
     const mobileMenu =
         document.getElementById('mobileMenu');
 
+    const userMenuButton =
+        document.getElementById('userMenuButton');
+
+    const userMenu =
+        document.getElementById('userMenu');
+
+    const userMenuWrapper =
+        document.getElementById('userMenuWrapper');
+
+    const userMenuArrow =
+        document.getElementById('userMenuArrow');
+
 
     if (mobileMenuButton && mobileMenu) {
 
@@ -389,6 +443,25 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         );
 
+    }
+
+    if (userMenuButton && userMenu && userMenuWrapper) {
+        userMenuButton.addEventListener('click', function (event) {
+            event.stopPropagation();
+            const isOpen = !userMenu.classList.contains('hidden');
+
+            userMenu.classList.toggle('hidden', isOpen);
+            userMenuButton.setAttribute('aria-expanded', String(!isOpen));
+            userMenuArrow.classList.toggle('rotate-180', !isOpen);
+        });
+
+        document.addEventListener('click', function (event) {
+            if (!userMenuWrapper.contains(event.target)) {
+                userMenu.classList.add('hidden');
+                userMenuButton.setAttribute('aria-expanded', 'false');
+                userMenuArrow.classList.remove('rotate-180');
+            }
+        });
     }
 
 });
