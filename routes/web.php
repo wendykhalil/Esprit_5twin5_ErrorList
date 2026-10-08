@@ -97,8 +97,13 @@ Route::get('/mes-reservations', function () {
 // RESERVATIONS & INSPECTIONS
 // --------------------------------------------------
 
+Route::get('/reservations', [ReservationController::class, 'index'])
+    ->middleware('auth')
+    ->name('reservations.index');
+
 Route::middleware('auth')->group(function () {
-    Route::resource('reservations', ReservationController::class);
+    Route::resource('reservations', ReservationController::class)
+        ->except(['index']);
     Route::resource('inspections', InspectionController::class);
 });
 

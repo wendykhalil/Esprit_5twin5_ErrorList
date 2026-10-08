@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\Equipement;
+use App\Models\Equipment;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -15,7 +15,7 @@ class ReservationFactory extends Factory
 
         return [
             'user_id' => User::inRandomOrder()->value('id') ?? User::factory(),
-            'equipement_id' => Equipement::inRandomOrder()->value('id') ?? Equipement::factory(),
+            'equipment_id' => Equipment::inRandomOrder()->value('id') ?? Equipment::factory(),
             'date_debut' => $debut,
             'date_fin' => $fin,
             'statut' => fake()->randomElement(['en_attente', 'confirmee', 'en_cours', 'terminee']),

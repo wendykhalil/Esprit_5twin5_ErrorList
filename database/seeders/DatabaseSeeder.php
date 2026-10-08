@@ -4,21 +4,25 @@ namespace Database\Seeders;
 
 use App\Models\Payment;
 use App\Models\Transaction;
+use App\Models\User;
 use Illuminate\Database\Seeder;
-
-$this->call([
-    ReservationSeeder::class,
-    InspectionSeeder::class,
-]);
 
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // Your Equipment module seeders
+        if (User::count() === 0) {
+            User::factory()->create([
+                'name' => 'Utilisateur SolarShare',
+                'email' => 'demo@solarshare.tn',
+            ]);
+        }
+
         $this->call([
             CategorySeeder::class,
             EquipmentSeeder::class,
+            ReservationSeeder::class,
+            InspectionSeeder::class,
         ]);
 
         // Payment & Transaction module seeders
