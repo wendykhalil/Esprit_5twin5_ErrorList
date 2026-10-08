@@ -81,4 +81,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
 
     Route::patch('/tickets/{supportTicket}', [AdminSupportTicketController::class, 'update'])
         ->name('tickets.update');
+
+    // Service Providers
+    Route::get('/service-providers', [\App\Http\Controllers\Admin\ServiceProviderController::class, 'index'])->name('service-providers.index');
+    Route::get('/service-providers/{serviceProvider}', [\App\Http\Controllers\Admin\ServiceProviderController::class, 'show'])->name('service-providers.show');
+    Route::patch('/service-providers/{serviceProvider}/approve', [\App\Http\Controllers\Admin\ServiceProviderController::class, 'approve'])->name('service-providers.approve');
+    Route::patch('/service-providers/{serviceProvider}/reject', [\App\Http\Controllers\Admin\ServiceProviderController::class, 'reject'])->name('service-providers.reject');
 });

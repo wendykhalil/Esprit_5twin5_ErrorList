@@ -56,6 +56,11 @@
                             'label' => 'Équipements'
                         ],
                         [
+                            'route' => 'service-providers.index',
+                            'pattern' => 'service-providers.*',
+                            'label' => 'Services'
+                        ],
+                        [
                             'route' => 'how-it-works',
                             'label' => 'Comment ça marche'
                         ],
@@ -73,7 +78,7 @@
                         href="{{ route($link['route']) }}"
                         class="px-4 py-2 rounded-lg text-sm font-medium transition-all
                         {{
-                            request()->routeIs($link['route'])
+                            request()->routeIs($link['pattern'] ?? $link['route'])
                                 ? 'bg-green-50 text-green-700'
                                 : 'text-gray-600 hover:text-green-700 hover:bg-green-50'
                         }}"
@@ -163,6 +168,11 @@
                                 Mon profil
                             </a>
 
+                            <a href="{{ route('service-requests.index') }}" class="block px-4 py-2.5 text-sm transition-colors border-t border-green-100 {{ request()->routeIs('service-requests.*') ? 'bg-green-50 text-green-800 font-medium' : 'text-gray-700 hover:bg-green-50 hover:text-green-700' }}">Mes demandes</a>
+                            @if(auth()->user()->serviceProvider)
+                            <a href="{{ route('provider.service-requests.index') }}" class="block px-4 py-2.5 text-sm transition-colors border-t border-green-100 {{ request()->routeIs('provider.service-requests.*') ? 'bg-green-50 text-green-800 font-medium' : 'text-gray-700 hover:bg-green-50 hover:text-green-700' }}">Demandes reçues</a>
+                            @endif
+
                             <a
                                 href="{{ route('payments.history') }}"
                                 class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700
@@ -251,7 +261,7 @@
                     class="block px-4 py-2.5 rounded-lg
                            text-sm font-medium transition-colors
                     {{
-                        request()->routeIs($link['route'])
+                        request()->routeIs($link['pattern'] ?? $link['route'])
                             ? 'bg-green-50 text-green-700'
                             : 'text-gray-600 hover:bg-green-50 hover:text-green-700'
                     }}"
@@ -326,6 +336,11 @@
                     >
                         Mon profil
                     </a>
+
+                    <a href="{{ route('service-requests.index') }}" onclick="document.getElementById('mobileMenu').classList.add('hidden')" class="block px-4 py-2.5 text-sm font-medium text-center border rounded-lg hover:bg-green-50 transition-colors {{ request()->routeIs('service-requests.*') ? 'bg-green-50 text-green-900 border-green-300' : 'text-green-700 border-green-200' }}">Mes demandes</a>
+                    @if(auth()->user()->serviceProvider)
+                    <a href="{{ route('provider.service-requests.index') }}" onclick="document.getElementById('mobileMenu').classList.add('hidden')" class="block px-4 py-2.5 text-sm font-medium text-center border rounded-lg hover:bg-green-50 transition-colors {{ request()->routeIs('provider.service-requests.*') ? 'bg-green-50 text-green-900 border-green-300' : 'text-green-700 border-green-200' }}">Demandes reçues</a>
+                    @endif
 
                     <a
                         href="{{ route('payments.history') }}"

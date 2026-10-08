@@ -6,6 +6,8 @@ use App\Http\Controllers\EquipmentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Frontend\PaymentController;
 use App\Http\Controllers\SupportTicketController;
+use App\Http\Controllers\ServiceProviderController;
+use App\Http\Controllers\ServiceRequestController;
 
 use App\Models\Category;
 
@@ -169,6 +171,60 @@ Route::middleware('auth')->group(function () {
     Route::get('/profil', [ProfileController::class, 'edit'])
         ->name('profile');
 });
+
+
+// --------------------------------------------------
+// TECHNICAL SERVICES: SERVICE PROVIDERS
+// --------------------------------------------------
+
+Route::get('/services', [ServiceProviderController::class, 'index'])
+    ->name('service-providers.index');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/services/create', [ServiceProviderController::class, 'create'])
+        ->name('service-providers.create');
+
+    Route::post('/services', [ServiceProviderController::class, 'store'])
+        ->name('service-providers.store');
+
+    Route::get('/services/{serviceProvider}/edit', [ServiceProviderController::class, 'edit'])
+        ->name('service-providers.edit');
+
+    Route::put('/services/{serviceProvider}', [ServiceProviderController::class, 'update'])
+        ->name('service-providers.update');
+
+    Route::delete('/services/{serviceProvider}', [ServiceProviderController::class, 'destroy'])
+        ->name('service-providers.destroy');
+
+    // Technical Services: Service Requests
+    Route::get('/services/{serviceProvider}/request', [ServiceRequestController::class, 'create'])
+        ->name('service-requests.create');
+    Route::post('/services/{serviceProvider}/request', [ServiceRequestController::class, 'store'])
+        ->name('service-requests.store');
+    Route::get('/my-service-requests', [ServiceRequestController::class, 'index'])
+        ->name('service-requests.index');
+    Route::get('/my-service-requests/{serviceRequest}', [ServiceRequestController::class, 'show'])
+        ->name('service-requests.show');
+    Route::delete('/my-service-requests/{serviceRequest}', [ServiceRequestController::class, 'destroy'])
+        ->name('service-requests.destroy');
+
+    // Technical Services: Provider Side Requests
+    Route::get('/provider/service-requests', [ServiceRequestController::class, 'providerIndex'])
+        ->name('provider.service-requests.index');
+    Route::get('/provider/service-requests/{serviceRequest}', [ServiceRequestController::class, 'providerShow'])
+        ->name('provider.service-requests.show');
+    Route::patch('/provider/service-requests/{serviceRequest}/accept', [ServiceRequestController::class, 'accept'])
+        ->name('provider.service-requests.accept');
+    Route::patch('/provider/service-requests/{serviceRequest}/reject', [ServiceRequestController::class, 'reject'])
+        ->name('provider.service-requests.reject');
+    Route::patch('/provider/service-requests/{serviceRequest}/start', [ServiceRequestController::class, 'start'])
+        ->name('provider.service-requests.start');
+    Route::patch('/provider/service-requests/{serviceRequest}/complete', [ServiceRequestController::class, 'complete'])
+        ->name('provider.service-requests.complete');
+});
+
+Route::get('/services/{serviceProvider}', [ServiceProviderController::class, 'show'])
+    ->name('service-providers.show');
 
 
 // --------------------------------------------------

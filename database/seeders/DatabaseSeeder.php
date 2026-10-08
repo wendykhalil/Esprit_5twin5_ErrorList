@@ -19,6 +19,12 @@ class DatabaseSeeder extends Seeder
 
         // Payment & Transaction module seeders
         $this->seedPaymentsAndTransactions();
+
+        // Technical Services module seeders
+        $this->call([
+            ServiceProviderSeeder::class,
+            ServiceRequestSeeder::class,
+        ]);
     }
 
     /**
