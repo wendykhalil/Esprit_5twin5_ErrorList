@@ -6,6 +6,8 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EquipmentController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\RentalController;
+use App\Http\Controllers\Admin\ReservationController;
+use App\Http\Controllers\Admin\InspectionController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\TransactionController;
@@ -49,6 +51,25 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     // Rentals
     Route::get('/locations', [RentalController::class, 'index'])
         ->name('rentals');
+
+    // Reservations
+    Route::get('/reservations', [ReservationController::class, 'index'])
+        ->name('reservations.index');
+    Route::get('/reservations/create', [ReservationController::class, 'create'])
+        ->name('reservations.create');
+    Route::post('/reservations', [ReservationController::class, 'store'])
+        ->name('reservations.store');
+    Route::get('/reservations/{reservation}', [ReservationController::class, 'show'])
+        ->name('reservations.show');
+    Route::get('/reservations/{reservation}/edit', [ReservationController::class, 'edit'])
+        ->name('reservations.edit');
+    Route::put('/reservations/{reservation}', [ReservationController::class, 'update'])
+        ->name('reservations.update');
+    Route::delete('/reservations/{reservation}', [ReservationController::class, 'destroy'])
+        ->name('reservations.destroy');
+
+    // Inspections
+    Route::resource('inspections', InspectionController::class);
 
 
     // Settings

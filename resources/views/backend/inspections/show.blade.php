@@ -1,0 +1,13 @@
+@extends('layouts.backend')
+@section('title', 'Détail inspection - SolarShare Admin')
+@section('content')
+<div class="space-y-5">
+    <a href="{{ route('admin.inspections.index') }}" class="text-sm font-600 text-amber-600 hover:text-amber-700">← Retour aux inspections</a>
+    @if(session('success'))<div class="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-800">{{ session('success') }}</div>@endif
+    <div class="flex items-end justify-between gap-4"><div><h2 class="text-2xl font-bold text-slate-900">Détail de l'inspection</h2><p class="mt-1 text-sm text-slate-500">{{ $inspection->reservation->equipment_label }} · {{ $inspection->reservation->user->name }}</p></div><a href="{{ route('admin.inspections.edit', $inspection) }}" class="rounded-lg bg-amber-500 px-4 py-2.5 text-sm font-600 text-white hover:bg-amber-600">Modifier</a></div>
+    <div class="grid gap-5 lg:grid-cols-2">
+        <div class="rounded-xl border border-slate-200 bg-white p-5"><dl class="divide-y divide-slate-100"><div class="flex justify-between gap-4 py-3"><dt class="text-sm text-slate-500">Client</dt><dd class="text-sm font-600 text-slate-800">{{ $inspection->reservation->user->name }}</dd></div><div class="flex justify-between gap-4 py-3"><dt class="text-sm text-slate-500">Équipement</dt><dd class="text-sm font-600 text-slate-800">{{ $inspection->reservation->equipment_label }}</dd></div><div class="flex justify-between gap-4 py-3"><dt class="text-sm text-slate-500">Type</dt><dd class="text-sm font-600 text-slate-800">{{ ucfirst($inspection->type) }}</dd></div><div class="flex justify-between gap-4 py-3"><dt class="text-sm text-slate-500">État</dt><dd class="text-sm font-600 text-slate-800">{{ ucfirst($inspection->etat) }}</dd></div><div class="flex justify-between gap-4 py-3"><dt class="text-sm text-slate-500">Batterie</dt><dd class="text-sm font-600 text-slate-800">{{ $inspection->niveau_batterie !== null ? $inspection->niveau_batterie.' %' : '-' }}</dd></div><div class="flex justify-between gap-4 py-3"><dt class="text-sm text-slate-500">Date</dt><dd class="text-sm font-600 text-slate-800">{{ $inspection->date_inspection->format('d/m/Y H:i') }}</dd></div></dl></div>
+        <div class="rounded-xl border border-slate-200 bg-white p-5"><h3 class="font-bold text-slate-800">Observations</h3><p class="mt-4 whitespace-pre-line text-sm leading-6 text-slate-600">{{ $inspection->observations ?: 'Aucune observation enregistrée.' }}</p></div>
+    </div>
+</div>
+@endsection
