@@ -64,6 +64,13 @@
                         <p class="font-medium text-slate-900">{{ $serviceRequest->address }}</p>
                     </div>
 
+                    @if(in_array($serviceRequest->status, ['accepted', 'in_progress', 'completed']) && $serviceRequest->estimated_price !== null)
+                    <div>
+                        <p class="text-sm text-slate-500 mb-1" style="font-family: Outfit, sans-serif">Prix estimé</p>
+                        <p class="font-medium text-slate-900">{{ number_format($serviceRequest->estimated_price, 2, ',', ' ') }} TND</p>
+                    </div>
+                    @endif
+
                     @if($serviceRequest->equipment)
                     <div>
                         <p class="text-sm text-slate-500 mb-1" style="font-family: Outfit, sans-serif">Équipement concerné</p>
@@ -101,15 +108,24 @@
         @if(in_array($serviceRequest->status, ['pending', 'accepted', 'in_progress']))
             <div class="p-6 border-t border-slate-200 bg-slate-50 flex flex-wrap gap-3">
                 @if($serviceRequest->status === 'pending')
-                    <form action="{{ route('provider.service-requests.accept', $serviceRequest) }}" method="POST" class="inline-block" onsubmit="return confirm('Voulez-vous accepter cette demande ?');">
+                    <form action="{{ route('provider.service-requests.accept', $serviceRequest) }}" method="POST" class="flex flex-col gap-3" onsubmit="return confirm('Voulez-vous accepter cette demande ?');">
                         @csrf
                         @method('PATCH')
-                        <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors shadow-sm" style="font-family: Outfit, sans-serif">
-                            Accepter
-                        </button>
+                        <div>
+                            <label for="estimated_price" class="block text-sm font-medium text-slate-700 mb-1" style="font-family: Outfit, sans-serif">Prix estimé (TND)</label>
+                            <input type="number" name="estimated_price" id="estimated_price" step="0.01" min="0" required value="{{ old('estimated_price') }}" class="w-full sm:w-auto border-slate-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            @error('estimated_price')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div>
+                            <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors shadow-sm" style="font-family: Outfit, sans-serif">
+                                Accepter
+                            </button>
+                        </div>
                     </form>
 
-                    <form action="{{ route('provider.service-requests.reject', $serviceRequest) }}" method="POST" class="inline-block" onsubmit="return confirm('Voulez-vous rejeter cette demande ?');">
+                    <form action="{{ route('provider.service-requests.reject', $serviceRequest) }}" method="POST" class="flex items-end" onsubmit="return confirm('Voulez-vous rejeter cette demande ?');">
                         @csrf
                         @method('PATCH')
                         <button type="submit" class="px-6 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors shadow-sm" style="font-family: Outfit, sans-serif">

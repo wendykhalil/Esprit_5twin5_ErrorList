@@ -138,7 +138,7 @@ class ServiceRequestController extends Controller
         return view('frontend.provider-requests.show', compact('serviceRequest'));
     }
 
-    public function accept(ServiceRequest $serviceRequest)
+    public function accept(Request $request, ServiceRequest $serviceRequest)
     {
         $user = Auth::user();
 
@@ -150,7 +150,14 @@ class ServiceRequestController extends Controller
             return back()->with('error', 'Seules les demandes en attente peuvent être acceptées.');
         }
 
-        $serviceRequest->update(['status' => 'accepted']);
+        $validated = $request->validate([
+            'estimated_price' => 'required|numeric|min:0|max:999999.99',
+        ]);
+
+        $serviceRequest->update([
+            'status' => 'accepted',
+            'estimated_price' => $validated['estimated_price'],
+        ]);
 
         return back()->with('success', 'La demande a été acceptée.');
     }
