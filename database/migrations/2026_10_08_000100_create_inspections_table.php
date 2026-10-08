@@ -17,7 +17,6 @@ return new class extends Migration
             $table->text('observations')->nullable();
             $table->dateTime('date_inspection');
             $table->timestamps();
-
             $table->unique(['reservation_id', 'type']);
         });
     }

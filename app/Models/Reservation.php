@@ -11,7 +11,7 @@ class Reservation extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'equipement_id', 'date_debut', 'date_fin', 'statut', 'prix_total'];
+    protected $fillable = ['user_id', 'equipment_id', 'date_debut', 'date_fin', 'statut', 'prix_total'];
 
     protected $casts = [
         'date_debut' => 'date',
@@ -25,9 +25,17 @@ class Reservation extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function equipement(): BelongsTo
+    public function equipment(): BelongsTo
     {
-        return $this->belongsTo(Equipement::class);
+        return $this->belongsTo(Equipment::class);
+    }
+
+    public function getEquipmentLabelAttribute(): string
+    {
+        return $this->equipment?->name
+            ?? $this->equipment?->nom
+            ?? $this->equipment?->title
+            ?? 'Équipement #'.$this->equipment_id;
     }
 
     public function inspections(): HasMany
