@@ -2,7 +2,9 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class RegistrationTest extends TestCase
@@ -25,7 +27,21 @@ class RegistrationTest extends TestCase
             'password_confirmation' => 'password',
         ]);
 
+        $this->assertGuest();
+        $response->assertRedirect(route('login', absolute: false));
+        $response->assertSessionHas('status');
+
+        $user = User::query()->where('email', 'test@example.com')->first();
+        $this->assertNotNull($user);
+        $this->assertSame('client', $user->role);
+        $this->assertNotSame('password', $user->password);
+        $this->assertTrue(Hash::check('password', $user->password));
+
+        $this->post('/login', [
+            'email' => 'test@example.com',
+            'password' => 'password',
+        ])->assertRedirect(route('home', absolute: false));
+
         $this->assertAuthenticated();
-        $response->assertRedirect(route('dashboard', absolute: false));
     }
 }

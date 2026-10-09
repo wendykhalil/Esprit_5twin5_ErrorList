@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Http\Requests\Concerns\RejectsUnexpectedFields;
+use App\Rules\PasswordWithinHashLimit;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -12,12 +14,25 @@ use Illuminate\Validation\ValidationException;
 
 class LoginRequest extends FormRequest
 {
+    use RejectsUnexpectedFields;
+
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
         return true;
+    }
+
+    protected function prepareForValidation(): void
+    {
+        if (! is_string($this->input('email'))) {
+            return;
+        }
+
+        $this->merge([
+            'email' => Str::lower(trim($this->input('email'))),
+        ]);
     }
 
     /**
@@ -28,9 +43,40 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email'],
-            'password' => ['required', 'string'],
+            'email' => ['bail', 'required', 'string', 'email:rfc', 'max:255'],
+            'password' => ['bail', 'required', 'string', new PasswordWithinHashLimit],
         ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'email.required' => 'L\'adresse e-mail est obligatoire.',
+            'email.string' => 'L\'adresse e-mail doit être une chaîne de caractères.',
+            'email.email' => 'L\'adresse e-mail n\'est pas valide.',
+            'email.max' => 'L\'adresse e-mail ne doit pas dépasser :max caractères.',
+            'password.required' => 'Le mot de passe est obligatoire.',
+            'password.string' => 'Le mot de passe doit être une chaîne de caractères.',
+        ];
+    }
+
+    public function withValidator($validator): void
+    {
+        $this->rejectUnexpectedFields($validator, [
+            'email',
+            'password',
+            'remember',
+            '_token',
+        ]);
+
+        $validator->after(function ($validator) {
+            if ($this->exists('remember') && ! is_scalar($this->input('remember'))) {
+                $validator->errors()->add('remember', 'La valeur « se souvenir de moi » n\'est pas valide.');
+            }
+        });
     }
 
     /**
@@ -46,7 +92,7 @@ class LoginRequest extends FormRequest
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'email' => trans('auth.failed'),
+                'email' => 'Ces identifiants ne correspondent pas.',
             ]);
         }
 
@@ -69,10 +115,7 @@ class LoginRequest extends FormRequest
         $seconds = RateLimiter::availableIn($this->throttleKey());
 
         throw ValidationException::withMessages([
-            'email' => trans('auth.throttle', [
-                'seconds' => $seconds,
-                'minutes' => ceil($seconds / 60),
-            ]),
+            'email' => 'Trop de tentatives. Réessayez dans '.$seconds.' secondes.',
         ]);
     }
 

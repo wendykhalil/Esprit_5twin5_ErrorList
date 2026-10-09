@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreServiceRequest;
 use App\Models\ServiceRequest;
 use App\Models\ServiceProvider;
 use App\Models\Equipment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rule;
 
 class ServiceRequestController extends Controller
 {
@@ -38,7 +38,7 @@ class ServiceRequestController extends Controller
         return view('frontend.service-requests.create', compact('serviceProvider', 'equipments'));
     }
 
-    public function store(Request $request, ServiceProvider $serviceProvider)
+    public function store(StoreServiceRequest $request, ServiceProvider $serviceProvider)
     {
         if ($serviceProvider->status !== 'approved' || !$serviceProvider->availability) {
             return redirect()->route('service-providers.show', $serviceProvider)
@@ -50,26 +50,14 @@ class ServiceRequestController extends Controller
                 ->with('error', 'Vous ne pouvez pas demander une intervention à vous-même.');
         }
 
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'required|string|min:10',
-            'requested_date' => 'required|date|after_or_equal:today',
-            'address' => 'required|string|max:255',
-            'equipment_id' => [
-                'nullable',
-                Rule::exists('equipment', 'id')
-                    ->where(fn ($query) => $query->where('user_id', Auth::id())),
-            ],
-        ]);
-
         ServiceRequest::create([
-            'user_id' => Auth::id(),
+            'user_id' => $request->user()->id,
             'service_provider_id' => $serviceProvider->id,
-            'equipment_id' => $validated['equipment_id'] ?? null,
-            'title' => $validated['title'],
-            'description' => $validated['description'],
-            'requested_date' => $validated['requested_date'],
-            'address' => $validated['address'],
+            'equipment_id' => $request->validated('equipment_id'),
+            'title' => $request->validated('title'),
+            'description' => $request->validated('description'),
+            'requested_date' => $request->validated('requested_date'),
+            'address' => $request->validated('address'),
             'status' => 'pending',
             'estimated_price' => null,
         ]);

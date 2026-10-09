@@ -45,14 +45,14 @@
                 @endif
             </div>
 
-            <form action="{{ route('service-providers.update', $serviceProvider) }}" method="POST" class="p-6 sm:p-8">
+            <form action="{{ route('service-providers.update', $serviceProvider) }}" method="POST" class="p-6 sm:p-8" novalidate>
                 @csrf
                 @method('PUT')
 
                 <div class="space-y-6">
                     <div>
                         <label for="specialty" class="block text-sm font-medium text-gray-700">Spécialité <span class="text-red-500">*</span></label>
-                        <input type="text" name="specialty" id="specialty" value="{{ old('specialty', $serviceProvider->specialty) }}" required
+                        <input type="text" name="specialty" id="specialty" value="{{ old('specialty', $serviceProvider->specialty) }}"
                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm">
                         @error('specialty')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -61,7 +61,7 @@
 
                     <div>
                         <label for="location" class="block text-sm font-medium text-gray-700">Localisation <span class="text-red-500">*</span></label>
-                        <input type="text" name="location" id="location" value="{{ old('location', $serviceProvider->location) }}" required
+                        <input type="text" name="location" id="location" value="{{ old('location', $serviceProvider->location) }}"
                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm">
                         @error('location')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -71,7 +71,7 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div>
                             <label for="experience_years" class="block text-sm font-medium text-gray-700">Années d'expérience <span class="text-red-500">*</span></label>
-                            <input type="number" name="experience_years" id="experience_years" value="{{ old('experience_years', $serviceProvider->experience_years) }}" min="0" max="100" required
+                            <input type="text" inputmode="numeric" name="experience_years" id="experience_years" value="{{ old('experience_years', $serviceProvider->experience_years) }}"
                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm">
                             @error('experience_years')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -80,7 +80,7 @@
 
                         <div>
                             <label for="hourly_rate" class="block text-sm font-medium text-gray-700">Tarif horaire (TND) <span class="text-red-500">*</span></label>
-                            <input type="number" step="0.01" name="hourly_rate" id="hourly_rate" value="{{ old('hourly_rate', $serviceProvider->hourly_rate) }}" min="0" required
+                            <input type="text" inputmode="decimal" name="hourly_rate" id="hourly_rate" value="{{ old('hourly_rate', $serviceProvider->hourly_rate) }}"
                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm">
                             @error('hourly_rate')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -89,7 +89,7 @@
                     </div>
 
                     <div>
-                        <label for="phone" class="block text-sm font-medium text-gray-700">Téléphone professionnel</label>
+                        <label for="phone" class="block text-sm font-medium text-gray-700">Téléphone professionnel <span class="font-normal text-gray-500">(facultatif)</span></label>
                         <input type="text" name="phone" id="phone" value="{{ old('phone', $serviceProvider->phone) }}"
                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm">
                         @error('phone')
@@ -99,7 +99,7 @@
 
                     <div>
                         <label for="description" class="block text-sm font-medium text-gray-700">Description détaillée <span class="text-red-500">*</span></label>
-                        <textarea name="description" id="description" rows="5" required
+                        <textarea name="description" id="description" rows="5"
                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm">{{ old('description', $serviceProvider->description) }}</textarea>
                         @error('description')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
