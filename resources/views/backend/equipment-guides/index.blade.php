@@ -1,233 +1,85 @@
-
 @extends('layouts.backend')
-
 @section('title', 'Guides d’utilisation - SolarShare Admin')
-
 @section('content')
-
-<div class="space-y-5" style="font-family: Outfit, sans-serif">
-
-    {{-- Success message --}}
+<style>
+/* Scoped admin management layout; independent of Tailwind breakpoint generation. */
+.ss-admin .ss-kpis { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+.ss-admin .ss-filter { display:flex; flex-wrap:wrap; align-items:center; gap:10px; }
+.ss-admin .ss-search { flex:1 1 320px; min-width:180px; }
+.ss-admin .ss-select { flex:0 1 230px; min-width:180px; }
+.ss-admin .ss-filter-button { flex:0 0 auto; min-width:94px; }
+.ss-admin .ss-reset-button { flex:0 0 auto; min-width:90px; }
+.ss-admin .ss-kpi-card { min-height:108px; }
+.ss-admin .ss-kpi-card .ss-kpi-value { font-size:27px; line-height:1.15; }
+.ss-admin .ss-header { min-height:125px; }
+.ss-admin .ss-header-subtitle { line-height:1.6; }
+.ss-admin .ss-table td { vertical-align:middle; }
+.ss-admin .ss-table tbody tr { height:70px; }
+@media(min-width:900px){ .ss-admin .ss-kpis {grid-template-columns:repeat(4,minmax(0,1fr));} }
+@media(max-width:640px){ .ss-admin .ss-kpis {grid-template-columns:repeat(2,minmax(0,1fr));} .ss-admin .ss-search,.ss-admin .ss-select{flex-basis:100%;} .ss-admin .ss-filter-button,.ss-admin .ss-reset-button{flex:1;} }
+</style>
+<div class="ss-admin space-y-4" style="font-family: Outfit, sans-serif">
     @if(session('success'))
-        <div class="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-xl">
-            {{ session('success') }}
-        </div>
+      <div class="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-semibold text-emerald-800">{{ session('success') }}</div>
     @endif
-
-    {{-- Header --}}
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-            <h2 class="text-2xl font-bold text-slate-900">
-                Guides d'utilisation
-            </h2>
-
-            <p class="text-slate-500 text-sm mt-1">
-                {{ $guides->total() }} guide(s) trouvé(s)
-            </p>
-        </div>
-
-        <a href="{{ route('admin.equipment-guides.create') }}"
-           class="flex items-center gap-2 px-4 py-2.5 bg-amber-500 text-white rounded-lg text-sm font-semibold hover:bg-amber-600 transition-colors shadow-sm self-start sm:self-auto">
-            <span class="text-lg leading-none">+</span>
-            Ajouter un guide
-        </a>
+<div class="ss-header relative overflow-hidden rounded-2xl bg-slate-900 px-6 py-5 sm:px-8 text-white shadow-md">
+  <div class="pointer-events-none absolute -right-12 -top-24 h-72 w-72 rounded-full border border-white/10"></div>
+  <div class="pointer-events-none absolute right-10 -bottom-32 h-64 w-64 rounded-full bg-amber-400/10 blur-3xl"></div>
+  <div class="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+    <div><p class="mb-2 text-[11px] font-bold uppercase tracking-[0.22em] text-amber-400">SolarShare</p>
+      <h1 class="text-2xl font-extrabold tracking-tight sm:text-3xl">Guides d'utilisation</h1>
+      <p class="ss-header-subtitle mt-2 text-sm text-slate-300">Organisez les consignes, les niveaux et la publication des guides.</p>
     </div>
-
-    {{-- Search and filters --}}
-    <div class="bg-white rounded-xl border border-slate-200 p-4">
-        <form method="GET"
-              action="{{ route('admin.equipment-guides.index') }}"
-              class="flex flex-col sm:flex-row gap-3">
-
-            <input
-                type="text"
-                name="search"
-                value="{{ request('search') }}"
-                placeholder="Rechercher un guide ou un équipement..."
-                class="flex-1 px-4 py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400 text-slate-700"
-            >
-
-            <select name="status"
-                    class="px-3 py-2.5 text-sm border border-slate-200 rounded-lg bg-white text-slate-700 focus:ring-2 focus:ring-amber-400">
-                <option value="">Tous les statuts</option>
-                <option value="draft" @selected(request('status') === 'draft')>
-                    Brouillon
-                </option>
-                <option value="pending" @selected(request('status') === 'pending')>
-                    En attente
-                </option>
-                <option value="published" @selected(request('status') === 'published')>
-                    Publié
-                </option>
-            </select>
-
-            <button type="submit"
-                    class="px-4 py-2.5 bg-amber-500 text-white rounded-lg text-sm font-semibold hover:bg-amber-600 transition-colors">
-                Filtrer
-            </button>
-
-            <a href="{{ route('admin.equipment-guides.index') }}"
-               class="px-4 py-2.5 border border-slate-200 text-slate-600 rounded-lg text-sm font-semibold hover:bg-slate-50 text-center transition-colors">
-                Réinitialiser
-            </a>
-        </form>
-    </div>
-
-    {{-- Guides table --}}
-    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="w-full text-sm">
-                <thead>
-                    <tr class="bg-slate-50 border-b border-slate-200">
-                        <th class="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                            Guide
-                        </th>
-                        <th class="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                            Équipement
-                        </th>
-                        <th class="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden md:table-cell">
-                            Utilisation
-                        </th>
-                        <th class="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell">
-                            Difficulté
-                        </th>
-                        <th class="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                            Statut
-                        </th>
-                        <th class="text-right px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                            Actions
-                        </th>
-                    </tr>
-                </thead>
-
-                <tbody class="divide-y divide-slate-100">
-                    @forelse($guides as $guide)
-                        <tr class="hover:bg-slate-50 transition-colors">
-                            <td class="px-5 py-4">
-                                <p class="font-semibold text-slate-800">
-                                    {{ $guide->title }}
-                                </p>
-                                <p class="text-xs text-slate-400 mt-1">
-                                    #{{ $guide->id }}
-                                </p>
-                            </td>
-
-                            <td class="px-5 py-4 text-slate-700">
-                                {{ $guide->equipment?->name ?? 'Équipement supprimé' }}
-                            </td>
-
-                            <td class="px-5 py-4 text-slate-600 hidden md:table-cell">
-                                {{ $guide->usage_context }}
-                            </td>
-
-                            <td class="px-5 py-4 text-slate-600 hidden lg:table-cell">
-                                @switch($guide->difficulty_level)
-                                    @case('beginner')
-                                        Débutant
-                                        @break
-                                    @case('intermediate')
-                                        Intermédiaire
-                                        @break
-                                    @case('advanced')
-                                        Avancé
-                                        @break
-                                    @default
-                                        {{ $guide->difficulty_level }}
-                                @endswitch
-                            </td>
-
-                            <td class="px-5 py-4">
-                                @if($guide->status === 'published')
-                                    <span class="inline-flex px-2.5 py-1 rounded-full bg-green-50 text-green-700 text-xs font-semibold">
-                                        Publié
-                                    </span>
-                                @elseif($guide->status === 'pending')
-                                    <span class="inline-flex px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 text-xs font-semibold">
-                                        En attente
-                                    </span>
-                                @else
-                                    <span class="inline-flex px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold">
-                                        Brouillon
-                                    </span>
-                                @endif
-                            </td>
-
-                            <td class="px-5 py-4">
-                                <div class="flex items-center justify-end gap-2">
-
-                                    {{-- View --}}
-                                    <a href="{{ route('admin.equipment-guides.show', $guide) }}"
-                                       title="Voir"
-                                       class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
-                                        <svg class="w-4 h-4" fill="none"
-                                             stroke="currentColor" stroke-width="2"
-                                             viewBox="0 0 24 24">
-                                            <path stroke-linecap="round"
-                                                  stroke-linejoin="round"
-                                                  d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5s8.577 3.01 9.964 7.183c.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5s-8.577-3.01-9.964-7.178z"/>
-                                            <circle cx="12" cy="12" r="3"/>
-                                        </svg>
-                                    </a>
-
-                                    {{-- Edit --}}
-                                    <a href="{{ route('admin.equipment-guides.edit', $guide) }}"
-                                       title="Modifier"
-                                       class="p-2 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors">
-                                        <svg class="w-4 h-4" fill="none"
-                                             stroke="currentColor" stroke-width="2"
-                                             viewBox="0 0 24 24">
-                                            <path stroke-linecap="round"
-                                                  stroke-linejoin="round"
-                                                  d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/>
-                                        </svg>
-                                    </a>
-
-                                    {{-- Delete --}}
-                                    <form method="POST"
-                                          action="{{ route('admin.equipment-guides.destroy', $guide) }}"
-                                          onsubmit="return confirm('Supprimer définitivement ce guide ?')">
-                                        @csrf
-                                        @method('DELETE')
-
-                                        <button type="submit"
-                                                title="Supprimer"
-                                                class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-                                            <svg class="w-4 h-4" fill="none"
-                                                 stroke="currentColor" stroke-width="2"
-                                                 viewBox="0 0 24 24">
-                                                <path stroke-linecap="round"
-                                                      stroke-linejoin="round"
-                                                      d="M3 6h18M8 6V4h8v2m3 0-1 14H6L5 6m5 4v7m4-7v7"/>
-                                            </svg>
-                                        </button>
-                                    </form>
-
-                                </div>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="6" class="text-center py-12 text-slate-400">
-                                Aucun guide trouvé.
-                                <a href="{{ route('admin.equipment-guides.create') }}"
-                                   class="block mt-3 text-amber-600 font-semibold hover:underline">
-                                    Créer votre premier guide
-                                </a>
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    {{-- Pagination --}}
-    @if($guides->hasPages())
-        <div class="mt-4">
-            {{ $guides->links() }}
-        </div>
-    @endif
-
+    <a href="{{ route('admin.equipment-guides.create') }}" class="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-amber-500 px-5 py-3 text-sm font-bold text-slate-950 shadow-sm transition hover:bg-amber-400 focus:outline-none focus:ring-4 focus:ring-amber-400/30">
+      <span class="text-lg leading-none">+</span> Créer un guide
+    </a>
+  </div>
 </div>
-
+<div class="ss-kpis">
+<div class="ss-kpi-card rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:shadow-md">
+ <div class="flex items-center justify-between"><span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Total guides</span><span class="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-amber-600 text-lg">▤</span></div>
+ <div class="ss-kpi-value mt-2 font-extrabold tracking-tight text-slate-900">{{ \App\Models\EquipmentGuide::count() }}</div></div><div class="ss-kpi-card rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:shadow-md">
+ <div class="flex items-center justify-between"><span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Publiés</span><span class="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 text-lg">✓</span></div>
+ <div class="ss-kpi-value mt-2 font-extrabold tracking-tight text-slate-900">{{ \App\Models\EquipmentGuide::where('status', 'published')->count() }}</div></div><div class="ss-kpi-card rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:shadow-md">
+ <div class="flex items-center justify-between"><span class="text-xs font-semibold uppercase tracking-wider text-slate-500">En attente</span><span class="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-amber-600 text-lg">◷</span></div>
+ <div class="ss-kpi-value mt-2 font-extrabold tracking-tight text-slate-900">{{ \App\Models\EquipmentGuide::where('status', 'pending')->count() }}</div></div><div class="ss-kpi-card rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:shadow-md">
+ <div class="flex items-center justify-between"><span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Brouillons</span><span class="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-50 text-slate-600 text-lg">✎</span></div>
+ <div class="ss-kpi-value mt-2 font-extrabold tracking-tight text-slate-900">{{ \App\Models\EquipmentGuide::where('status', 'draft')->count() }}</div></div></div>
+<section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+ <div class="border-b border-slate-100 px-5 py-5 sm:px-6"><h2 class="text-base font-extrabold text-slate-900">Bibliothèque des guides</h2><p class="mt-1 text-xs text-slate-500">{{ $guides->total() }} résultat(s) • Contrôlez les contenus publiés et en attente.</p></div>
+ <form method="GET" action="{{ route('admin.equipment-guides.index') }}" class="ss-filter border-b border-slate-100 bg-slate-50/60 p-4">
+  <div class="ss-search relative">
+   <svg class="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+   <input type="text" name="search" value="{{ request('search') }}" placeholder="Rechercher un guide ou un équipement..." aria-label="Rechercher des guides" class="w-full rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-4 text-sm text-slate-800 placeholder-slate-400 outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100">
+  </div>
+  <select name="status" aria-label="Statut" class="ss-select rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-100">
+   <option value="">Tous les statuts</option><option value="draft" @selected(request('status') === 'draft')>Brouillon</option><option value="pending" @selected(request('status') === 'pending')>En attente</option><option value="published" @selected(request('status') === 'published')>Publié</option>
+  </select>
+  <button type="submit" class="ss-filter-button rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold text-white transition hover:bg-slate-700">Filtrer</button>
+  <a href="{{ route('admin.equipment-guides.index') }}" class="ss-reset-button rounded-xl border border-slate-200 bg-white px-4 py-3 text-center text-sm font-semibold text-slate-600 transition hover:bg-slate-100">Effacer</a>
+ </form>
+ <div class="overflow-x-auto"><table class="ss-table w-full min-w-[950px] text-left text-sm">
+  <thead class="bg-slate-50 text-[11px] font-bold uppercase tracking-wider text-slate-500"><tr><th class="px-6 py-4">Guide</th><th class="px-5 py-4">Équipement</th><th class="px-5 py-4">Contexte</th><th class="px-5 py-4">Difficulté</th><th class="px-5 py-4">Publication</th><th class="px-6 py-4 text-right">Actions</th></tr></thead>
+  <tbody class="divide-y divide-slate-100">
+   @forelse($guides as $guide)
+    <tr class="transition-colors hover:bg-amber-50/30">
+     <td class="px-6 py-4"><div class="flex items-center gap-3"><div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-xl text-amber-700" aria-hidden="true">▤</div><div><a href="{{ route('admin.equipment-guides.show', $guide) }}" class="font-bold text-slate-900 hover:text-amber-700">{{ $guide->title }}</a><p class="mt-1 text-xs text-slate-400">Guide #{{ $guide->id }}</p></div></div></td>
+     <td class="px-5 py-4 font-medium text-slate-700">{{ $guide->equipment?->name ?? 'Équipement indisponible' }}</td>
+     <td class="max-w-xs px-5 py-4 text-slate-500">{{ \Illuminate\Support\Str::limit($guide->usage_context ?: 'Non renseigné', 55) }}</td>
+     <td class="px-5 py-4"><span class="inline-flex rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-700">@switch($guide->difficulty_level) @case('beginner') Débutant @break @case('intermediate') Intermédiaire @break @case('advanced') Avancé @break @default {{ $guide->difficulty_level }} @endswitch</span></td>
+     <td class="px-5 py-4">@if($guide->status === 'published')<span class="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-700"><span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>Publié</span>@elseif($guide->status === 'pending')<span class="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-700">En attente</span>@else<span class="inline-flex rounded-full border border-slate-200 bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-600">Brouillon</span>@endif</td>
+     <td class="px-6 py-4"><div class="flex items-center justify-end gap-2">
+      <a href="{{ route('admin.equipment-guides.show', $guide) }}" class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:border-amber-300 hover:text-amber-700">Voir</a>
+      <a href="{{ route('admin.equipment-guides.edit', $guide) }}" class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:border-amber-300 hover:text-amber-700">Modifier</a>
+      <form method="POST" action="{{ route('admin.equipment-guides.destroy', $guide) }}" onsubmit="return confirm('Supprimer définitivement ce guide ?')">@csrf @method('DELETE')<button type="submit" class="rounded-lg border border-red-100 bg-white px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50">Supprimer</button></form>
+     </div></td>
+    </tr>
+   @empty
+    <tr><td colspan="6" class="px-6 py-16 text-center"><div class="text-3xl">▤</div><p class="mt-3 font-bold text-slate-800">Aucun guide trouvé</p><p class="mt-1 text-sm text-slate-500">Créez un guide ou ajustez les filtres.</p><a href="{{ route('admin.equipment-guides.create') }}" class="mt-4 inline-block text-sm font-bold text-amber-700 hover:underline">Créer un guide</a></td></tr>
+   @endforelse
+  </tbody>
+ </table></div>
+ @if($guides->hasPages())<div class="border-t border-slate-100 px-5 py-4">{{ $guides->links() }}</div>@endif
+</section>
+</div>
 @endsection

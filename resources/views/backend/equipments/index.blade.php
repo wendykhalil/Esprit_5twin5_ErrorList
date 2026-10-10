@@ -1,531 +1,108 @@
 @extends('layouts.backend')
-
 @section('title', 'Équipements - SolarShare Admin')
-
 @section('content')
-
-<div class="space-y-5">
-
-    {{-- Success Message --}}
+<style>
+/* Scoped admin management layout; independent of Tailwind breakpoint generation. */
+.ss-admin .ss-kpis { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+.ss-admin .ss-filter { display:flex; flex-wrap:wrap; align-items:center; gap:10px; }
+.ss-admin .ss-search { flex:1 1 320px; min-width:180px; }
+.ss-admin .ss-select { flex:0 1 230px; min-width:180px; }
+.ss-admin .ss-filter-button { flex:0 0 auto; min-width:94px; }
+.ss-admin .ss-reset-button { flex:0 0 auto; min-width:90px; }
+.ss-admin .ss-kpi-card { min-height:108px; }
+.ss-admin .ss-kpi-card .ss-kpi-value { font-size:27px; line-height:1.15; }
+.ss-admin .ss-header { min-height:125px; }
+.ss-admin .ss-header-subtitle { line-height:1.6; }
+.ss-admin .ss-table td { vertical-align:middle; }
+.ss-admin .ss-table tbody tr { height:70px; }
+@media(min-width:900px){ .ss-admin .ss-kpis {grid-template-columns:repeat(4,minmax(0,1fr));} }
+@media(max-width:640px){ .ss-admin .ss-kpis {grid-template-columns:repeat(2,minmax(0,1fr));} .ss-admin .ss-search,.ss-admin .ss-select{flex-basis:100%;} .ss-admin .ss-filter-button,.ss-admin .ss-reset-button{flex:1;} }
+</style>
+<div class="ss-admin space-y-4" style="font-family: Outfit, sans-serif">
     @if(session('success'))
-        <div
-            class="bg-green-50 border border-green-200
-                   text-green-800 px-4 py-3 rounded-xl"
-            style="font-family: Outfit, sans-serif"
-        >
-            {{ session('success') }}
-        </div>
+      <div class="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-semibold text-emerald-800">{{ session('success') }}</div>
     @endif
-
-
-    {{-- Header --}}
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-
-        <div>
-            <h2
-                class="text-2xl font-bold text-slate-900"
-                style="font-family: Outfit, sans-serif"
-            >
-                Équipements
-            </h2>
-
-            <p
-                class="text-slate-500 text-sm mt-0.5"
-                style="font-family: Outfit, sans-serif"
-            >
-                {{ $equipments->total() }}
-                {{ $equipments->total() > 1 ? 'équipements trouvés' : 'équipement trouvé' }}
-            </p>
-        </div>
-
-
-        {{-- Add equipment --}}
-        <a
-            href="{{ route('admin.equipments.create') }}"
-            class="flex items-center gap-2 px-4 py-2.5
-                   bg-amber-500 text-white rounded-lg
-                   text-sm font-semibold hover:bg-amber-600
-                   transition-colors shadow-sm
-                   self-start sm:self-auto"
-            style="font-family: Outfit, sans-serif"
-        >
-            <svg
-                class="w-4 h-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                stroke-width="2.5"
-            >
-                <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M12 4.5v15m7.5-7.5h-15"
-                />
-            </svg>
-
-            Ajouter un équipement
-        </a>
-
+<div class="ss-header relative overflow-hidden rounded-2xl bg-slate-900 px-6 py-5 sm:px-8 text-white shadow-md">
+  <div class="pointer-events-none absolute -right-12 -top-24 h-72 w-72 rounded-full border border-white/10"></div>
+  <div class="pointer-events-none absolute right-10 -bottom-32 h-64 w-64 rounded-full bg-amber-400/10 blur-3xl"></div>
+  <div class="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+    <div><p class="mb-2 text-[11px] font-bold uppercase tracking-[0.22em] text-amber-400">SolarShare</p>
+      <h1 class="text-2xl font-extrabold tracking-tight sm:text-3xl">Gestion des équipements</h1>
+      <p class="ss-header-subtitle mt-2 text-sm text-slate-300">Pilotez votre catalogue, la disponibilité et les équipements publiés.</p>
     </div>
-
-
-    {{-- Filters --}}
-    <div class="bg-white rounded-xl border border-slate-200 p-4">
-
-        <form
-            method="GET"
-            action="{{ route('admin.equipments') }}"
-            class="flex flex-col sm:flex-row gap-3"
-        >
-
-            {{-- Search --}}
-            <div class="relative flex-1">
-
-                <svg
-                    class="absolute left-3 top-1/2 -translate-y-1/2
-                           w-4 h-4 text-slate-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    stroke-width="2"
-                >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M21 21l-5.197-5.197m0 0A7.5
-                           7.5 0 105.196 5.196a7.5
-                           7.5 0 0010.607 10.607z"
-                    />
-                </svg>
-
-                <input
-                    type="text"
-                    name="search"
-                    value="{{ request('search') }}"
-                    placeholder="Rechercher un équipement, une marque ou un propriétaire..."
-                    class="w-full pl-9 pr-4 py-2.5
-                           text-sm font-medium border border-slate-200
-                           rounded-lg focus:outline-none
-                           focus:ring-2 focus:ring-amber-400
-                           focus:border-transparent text-slate-700
-                           placeholder-slate-400"
-                    style="font-family: Outfit, sans-serif"
-                >
-
-            </div>
-
-
-            {{-- Category filter --}}
-            <select
-                name="category"
-                class="px-3 py-2.5 text-sm font-medium
-                       border border-slate-200 rounded-lg
-                       focus:outline-none focus:ring-2
-                       focus:ring-amber-400
-                       text-slate-700 bg-white"
-                style="font-family: Outfit, sans-serif"
-            >
-
-                <option value="">
-                    Toutes les catégories
-                </option>
-
-                @foreach($categories as $category)
-
-                    <option
-                        value="{{ $category->id }}"
-                        {{ (string) request('category') === (string) $category->id ? 'selected' : '' }}
-                    >
-                        {{ $category->name }}
-                    </option>
-
-                @endforeach
-
-            </select>
-
-
-            {{-- Filter button --}}
-            <button
-                type="submit"
-                class="px-4 py-2.5
-                       bg-amber-500 text-white rounded-lg
-                       text-sm font-semibold
-                       hover:bg-amber-600 transition-colors"
-                style="font-family: Outfit, sans-serif"
-            >
-                Filtrer
-            </button>
-
-
-            {{-- Reset --}}
-            <a
-                href="{{ route('admin.equipments') }}"
-                class="px-4 py-2.5
-                       border border-slate-200
-                       text-slate-600 rounded-lg
-                       text-sm font-semibold
-                       hover:bg-slate-50
-                       transition-colors text-center"
-                style="font-family: Outfit, sans-serif"
-            >
-                Réinitialiser
-            </a>
-
-        </form>
-
-    </div>
-
-
-    {{-- Table --}}
-    <div
-        class="bg-white rounded-xl
-               border border-slate-200 overflow-hidden"
-    >
-
-        <div class="overflow-x-auto">
-
-            <table class="w-full text-sm">
-
-                <thead>
-
-                    <tr class="bg-slate-50 border-b border-slate-200">
-
-                        <th
-                            class="text-left px-5 py-3.5
-                                   text-xs font-semibold text-slate-500
-                                   uppercase tracking-wider"
-                            style="font-family: Outfit, sans-serif"
-                        >
-                            Équipement
-                        </th>
-
-                        <th
-                            class="text-left px-5 py-3.5
-                                   text-xs font-semibold text-slate-500
-                                   uppercase tracking-wider
-                                   hidden md:table-cell"
-                            style="font-family: Outfit, sans-serif"
-                        >
-                            Catégorie
-                        </th>
-
-                        <th
-                            class="text-left px-5 py-3.5
-                                   text-xs font-semibold text-slate-500
-                                   uppercase tracking-wider
-                                   hidden lg:table-cell"
-                            style="font-family: Outfit, sans-serif"
-                        >
-                            Propriétaire
-                        </th>
-
-                        <th
-                            class="text-left px-5 py-3.5
-                                   text-xs font-semibold text-slate-500
-                                   uppercase tracking-wider
-                                   hidden sm:table-cell"
-                            style="font-family: Outfit, sans-serif"
-                        >
-                            Prix/jour
-                        </th>
-
-                        <th
-                            class="text-left px-5 py-3.5
-                                   text-xs font-semibold text-slate-500
-                                   uppercase tracking-wider"
-                            style="font-family: Outfit, sans-serif"
-                        >
-                            Disponibilité
-                        </th>
-
-                        <th
-                            class="text-right px-5 py-3.5
-                                   text-xs font-semibold text-slate-500
-                                   uppercase tracking-wider"
-                            style="font-family: Outfit, sans-serif"
-                        >
-                            Actions
-                        </th>
-
-                    </tr>
-
-                </thead>
-
-
-                <tbody class="divide-y divide-slate-100">
-
-                    @forelse($equipments as $equipment)
-
-                        <tr class="hover:bg-slate-50 transition-colors">
-
-                            {{-- Equipment --}}
-                            <td class="px-5 py-4">
-
-                                <div class="flex items-center gap-3">
-
-                                    @if($equipment->image)
-
-                                        <img
-                                            src="{{ asset('storage/' . $equipment->image) }}"
-                                            alt="{{ $equipment->name }}"
-                                            class="w-10 h-10 rounded-lg
-                                                   object-cover bg-slate-100
-                                                   flex-shrink-0"
-                                        >
-
-                                    @else
-
-                                        <div
-                                            class="w-10 h-10 rounded-lg
-                                                   bg-green-50 flex
-                                                   items-center justify-center
-                                                   flex-shrink-0"
-                                        >
-                                            ☀️
-                                        </div>
-
-                                    @endif
-
-
-                                    <div>
-
-                                        <p
-                                            class="font-medium text-slate-800"
-                                            style="font-family: Outfit, sans-serif"
-                                        >
-                                            {{ $equipment->name }}
-                                        </p>
-
-
-                                        @if($equipment->brand)
-
-                                            <p
-                                                class="text-xs text-slate-400"
-                                                style="font-family: Outfit, sans-serif"
-                                            >
-                                                {{ $equipment->brand }}
-                                            </p>
-
-                                        @endif
-
-
-                                        <p
-                                            class="text-xs text-slate-400 md:hidden"
-                                            style="font-family: Outfit, sans-serif"
-                                        >
-                                            {{ $equipment->category?->name ?? 'Sans catégorie' }}
-                                        </p>
-
-                                    </div>
-
-                                </div>
-
-                            </td>
-
-
-                            {{-- Category --}}
-                            <td
-                                class="px-5 py-4
-                                       text-slate-600 hidden md:table-cell"
-                                style="font-family: Outfit, sans-serif"
-                            >
-                                {{ $equipment->category?->name ?? 'Sans catégorie' }}
-                            </td>
-
-
-                            {{-- Owner --}}
-                            <td
-                                class="px-5 py-4
-                                       text-slate-600 hidden lg:table-cell"
-                                style="font-family: Outfit, sans-serif"
-                            >
-                                {{ $equipment->user?->name ?? 'Utilisateur inconnu' }}
-                            </td>
-
-
-                            {{-- Price --}}
-                            <td
-                                class="px-5 py-4
-                                       font-semibold text-slate-800
-                                       hidden sm:table-cell"
-                                style="font-family: Outfit, sans-serif"
-                            >
-                                {{ number_format((float) $equipment->price_per_day, 2) }}
-                                TND
-                            </td>
-
-
-                            {{-- Availability --}}
-                            <td class="px-5 py-4">
-
-                                <x-backend.status-badge
-                                    :status="$equipment->availability
-                                        ? 'Disponible'
-                                        : 'Indisponible'"
-                                />
-
-                            </td>
-
-
-                            {{-- Actions --}}
-                            <td class="px-5 py-4">
-
-                                <div
-                                    class="flex items-center
-                                           justify-end gap-2"
-                                >
-
-                                    {{-- VIEW --}}
-                                    <a
-href="{{ route('admin.equipments.show', $equipment) }}"
-                                        class="p-1.5 text-slate-400
-                                               hover:text-blue-600
-                                               hover:bg-blue-50
-                                               rounded-lg transition-colors"
-                                        title="Voir"
-                                    >
-                                        <svg
-                                            class="w-4 h-4"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                            stroke="currentColor"
-                                            stroke-width="2"
-                                        >
-                                            <path
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                d="M2.036 12.322a1.012
-                                                   1.012 0 010-.639C3.423
-                                                   7.51 7.36 4.5 12 4.5c4.638
-                                                   0 8.573 3.007 9.963
-                                                   7.178.07.207.07.431
-                                                   0 .639C20.577 16.49
-                                                   16.64 19.5 12 19.5c-4.638
-                                                   0-8.573-3.007-9.963-7.178z"
-                                            />
-
-                                            <path
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                d="M15 12a3 3 0 11-6
-                                                   0 3 3 0 016 0z"
-                                            />
-                                        </svg>
-                                    </a>
-
-
-                                    {{-- EDIT --}}
-                                    <a
-                                        href="{{ route('admin.equipments.edit', $equipment) }}"
-                                        class="p-1.5 text-slate-400
-                                               hover:text-amber-600
-                                               hover:bg-amber-50
-                                               rounded-lg transition-colors"
-                                        title="Modifier"
-                                    >
-                                        <svg
-                                            class="w-4 h-4"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                            stroke="currentColor"
-                                            stroke-width="2"
-                                        >
-                                            <path
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                d="M16.862 4.487l1.687-1.688
-                                                   a1.875 1.875 0 112.652
-                                                   2.652L10.582 16.07a4.5
-                                                   4.5 0 01-1.897 1.13L6
-                                                   18l.8-2.685a4.5 4.5
-                                                   0 011.13-1.897l8.932-8.931z"
-                                            />
-                                        </svg>
-                                    </a>
-
-
-                                    {{-- DELETE --}}
-                                    <form
-                                        method="POST"
-                                        action="{{ route('admin.equipments.destroy', $equipment) }}"
-                                        onsubmit="return confirm('Voulez-vous vraiment supprimer cet équipement ?')"
-                                    >
-                                        @csrf
-                                        @method('DELETE')
-
-                                        <button
-                                            type="submit"
-                                            class="p-1.5 text-slate-400
-                                                   hover:text-red-600
-                                                   hover:bg-red-50
-                                                   rounded-lg transition-colors"
-                                            title="Supprimer"
-                                        >
-                                            <svg
-                                                class="w-4 h-4"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                stroke="currentColor"
-                                                stroke-width="2"
-                                            >
-                                                <path
-                                                    stroke-linecap="round"
-                                                    stroke-linejoin="round"
-                                                    d="M14.74 9l-.346 9m-4.788
-                                                       0L9.26 9m9.968-3.21c.342
-                                                       .052.682.107 1.022.166M4.772
-                                                       5.79l1.068 13.883A2.25
-                                                       2.25 0 008.084
-                                                       21.75h7.832a2.25 2.25
-                                                       0 002.244-2.077L19.228
-                                                       5.79"
-                                                />
-                                            </svg>
-                                        </button>
-
-                                    </form>
-
-                                </div>
-
-                            </td>
-
-                        </tr>
-
-                    @empty
-
-                        <tr>
-                            <td
-                                colspan="6"
-                                class="text-center py-12
-                                       text-slate-400"
-                                style="font-family: Outfit, sans-serif"
-                            >
-                                Aucun équipement trouvé.
-                            </td>
-                        </tr>
-
-                    @endforelse
-
-                </tbody>
-
-            </table>
-
-        </div>
-
-    </div>
-
-
-    {{-- Pagination --}}
-    @if($equipments->hasPages())
-
-        <div class="mt-4">
-
-            {{ $equipments->links() }}
-
-        </div>
-
-    @endif
-
+    <a href="{{ route('admin.equipments.create') }}" class="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-amber-500 px-5 py-3 text-sm font-bold text-slate-950 shadow-sm transition hover:bg-amber-400 focus:outline-none focus:ring-4 focus:ring-amber-400/30">
+      <span class="text-lg leading-none">+</span> Ajouter un équipement
+    </a>
+  </div>
 </div>
-
+<div class="ss-kpis">
+<div class="ss-kpi-card rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:shadow-md">
+ <div class="flex items-center justify-between"><span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Total équipements</span><span class="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-amber-600 text-lg">▦</span></div>
+ <div class="ss-kpi-value mt-2 font-extrabold tracking-tight text-slate-900">{{ \App\Models\Equipment::count() }}</div></div><div class="ss-kpi-card rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:shadow-md">
+ <div class="flex items-center justify-between"><span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Disponibles</span><span class="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 text-lg">✓</span></div>
+ <div class="ss-kpi-value mt-2 font-extrabold tracking-tight text-slate-900">{{ \App\Models\Equipment::where('availability', true)->count() }}</div></div><div class="ss-kpi-card rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:shadow-md">
+ <div class="flex items-center justify-between"><span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Indisponibles</span><span class="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-50 text-slate-600 text-lg">–</span></div>
+ <div class="ss-kpi-value mt-2 font-extrabold tracking-tight text-slate-900">{{ \App\Models\Equipment::where('availability', false)->count() }}</div></div><div class="ss-kpi-card rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:shadow-md">
+ <div class="flex items-center justify-between"><span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Guides publiés</span><span class="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-amber-600 text-lg">▤</span></div>
+ <div class="ss-kpi-value mt-2 font-extrabold tracking-tight text-slate-900">{{ \App\Models\EquipmentGuide::where('status', 'published')->count() }}</div></div></div>
+<section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+ <div class="flex flex-col gap-1 border-b border-slate-100 px-5 py-5 sm:px-6">
+  <h2 class="text-base font-extrabold text-slate-900">Catalogue des équipements</h2>
+  <p class="text-xs text-slate-500">{{ $equipments->total() }} résultat(s) • Recherchez et gérez les équipements depuis cette page.</p>
+ </div>
+ <form method="GET" action="{{ route('admin.equipments') }}" class="ss-filter border-b border-slate-100 bg-slate-50/60 p-4">
+  <div class="ss-search relative">
+   <svg class="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+   <input name="search" value="{{ request('search') }}" placeholder="Nom, marque ou propriétaire..." aria-label="Rechercher des équipements" class="w-full rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-4 text-sm text-slate-800 placeholder-slate-400 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-100">
+  </div>
+  <div class="ss-select"><select name="category" aria-label="Catégorie" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-100">
+   <option value="">Toutes les catégories</option>
+   @foreach($categories as $category)
+    <option value="{{ $category->id }}" @selected((string) request('category') === (string) $category->id)>{{ $category->name }}</option>
+   @endforeach
+  </select></div>
+  <button type="submit" class="ss-filter-button rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold text-white transition hover:bg-slate-700">Filtrer</button>
+  <a href="{{ route('admin.equipments') }}" class="ss-reset-button rounded-xl border border-slate-200 bg-white px-4 py-3 text-center text-sm font-semibold text-slate-600 transition hover:bg-slate-100">Effacer</a>
+ </form>
+ <div class="overflow-x-auto">
+  <table class="ss-table w-full min-w-[900px] text-left text-sm">
+   <thead class="bg-slate-50 text-[11px] font-bold uppercase tracking-wider text-slate-500"><tr>
+    <th class="px-6 py-4">Équipement</th><th class="px-5 py-4">Catégorie</th><th class="px-5 py-4">Propriétaire</th><th class="px-5 py-4">Prix / jour</th><th class="px-5 py-4">Disponibilité</th><th class="px-6 py-4 text-right">Actions</th>
+   </tr></thead>
+   <tbody class="divide-y divide-slate-100">
+    @forelse($equipments as $equipment)
+    <tr class="group transition-colors hover:bg-amber-50/30">
+     <td class="px-6 py-4"><div class="flex items-center gap-3">
+      @if($equipment->image)
+       <img src="{{ asset('storage/' . $equipment->image) }}" alt="{{ $equipment->name }}" class="h-12 w-12 shrink-0 rounded-xl border border-slate-100 object-cover">
+      @else
+       <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-emerald-100 bg-emerald-50 text-xl" aria-hidden="true">☀️</div>
+      @endif
+      <div class="min-w-0"><a href="{{ route('admin.equipments.show', $equipment) }}" class="font-bold text-slate-900 hover:text-amber-700">{{ $equipment->name }}</a><p class="mt-1 text-xs text-slate-400">{{ $equipment->brand ?: 'Sans marque' }} · #{{ $equipment->id }}</p></div>
+     </div></td>
+     <td class="px-5 py-4 text-slate-600">{{ $equipment->category?->name ?? 'Sans catégorie' }}</td>
+     <td class="px-5 py-4 text-slate-600">{{ $equipment->user?->name ?? 'Non renseigné' }}</td>
+     <td class="whitespace-nowrap px-5 py-4 font-extrabold text-slate-900">{{ number_format((float) $equipment->price_per_day, 2, ',', ' ') }} <span class="text-xs font-medium text-slate-400">TND</span></td>
+     <td class="px-5 py-4">@if($equipment->availability)
+      <span class="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-700"><span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>Disponible</span>
+      @else
+      <span class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-600"><span class="h-1.5 w-1.5 rounded-full bg-slate-400"></span>Indisponible</span>
+      @endif</td>
+     <td class="px-6 py-4"><div class="flex items-center justify-end gap-2">
+      <a href="{{ route('admin.equipments.show', $equipment) }}" title="Voir" aria-label="Voir {{ $equipment->name }}" class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 transition hover:border-amber-300 hover:text-amber-700">Voir</a>
+      <a href="{{ route('admin.equipments.edit', $equipment) }}" title="Modifier" aria-label="Modifier {{ $equipment->name }}" class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 transition hover:border-amber-300 hover:text-amber-700">Modifier</a>
+      <form method="POST" action="{{ route('admin.equipments.destroy', $equipment) }}" onsubmit="return confirm('Supprimer définitivement cet équipement ?')">@csrf @method('DELETE')
+       <button type="submit" title="Supprimer" aria-label="Supprimer {{ $equipment->name }}" class="rounded-lg border border-red-100 bg-white px-3 py-2 text-xs font-bold text-red-600 transition hover:bg-red-50">Supprimer</button>
+      </form>
+     </div></td>
+    </tr>
+    @empty
+    <tr><td colspan="6" class="px-6 py-16 text-center"><div class="text-3xl">▦</div><p class="mt-3 font-bold text-slate-800">Aucun équipement trouvé</p><p class="mt-1 text-sm text-slate-500">Essayez d'ajuster les filtres.</p></td></tr>
+    @endforelse
+   </tbody>
+  </table>
+ </div>
+ @if($equipments->hasPages())<div class="border-t border-slate-100 px-5 py-4">{{ $equipments->links() }}</div>@endif
+</section>
+</div>
 @endsection
