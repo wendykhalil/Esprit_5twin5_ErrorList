@@ -86,7 +86,7 @@
                             {{-- Date --}}
                             <div class="bg-gray-50 rounded-lg p-4">
                                 <p class="text-xs text-gray-500 font-semibold uppercase mb-1 tracking-wide">Date</p>
-                                <p class="font-semibold text-gray-900">{{ $payment->payment_date->format('d/m/Y à H:i') }}</p>
+                                <p class="font-semibold text-gray-900">{{ $payment->payment_date?->format('d/m/Y à H:i') ?? 'Non disponible' }}</p>
                             </div>
 
                             {{-- Payment ID --}}
@@ -130,7 +130,7 @@
                                             </div>
                                             <div>
                                                 <p class="text-gray-500">Date</p>
-                                                <p class="font-semibold text-gray-900">{{ $transaction->transaction_date->format('d/m/Y à H:i') }}</p>
+                                                <p class="font-semibold text-gray-900">{{ $transaction->transaction_date?->format('d/m/Y à H:i') ?? 'N/A' }}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -156,30 +156,61 @@
                                 </div>
                             </div>
 
-                            <div class="flex gap-3">
-                                <div class="shrink-0">
-                                    <div class="w-6 h-6 rounded-full bg-gray-100 text-gray-600 font-semibold text-xs flex items-center justify-center">2</div>
+                            @if ($contract)
+                                <div class="flex gap-3">
+                                    <div class="shrink-0">
+                                        <div class="w-6 h-6 rounded-full bg-green-100 text-green-700 font-semibold text-xs flex items-center justify-center">✓</div>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-semibold text-gray-900">Contrat généré</p>
+                                        <p class="text-xs text-gray-500">Consultez les conditions de location</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <p class="text-sm font-semibold text-gray-900">Détails disponibles</p>
-                                    <p class="text-xs text-gray-500">Consultez votre historique de paiements</p>
-                                </div>
-                            </div>
 
-                            <div class="flex gap-3">
-                                <div class="shrink-0">
-                                    <div class="w-6 h-6 rounded-full bg-gray-100 text-gray-600 font-semibold text-xs flex items-center justify-center">3</div>
+                                <div class="flex gap-3">
+                                    <div class="shrink-0">
+                                        <div class="w-6 h-6 rounded-full bg-gray-100 text-gray-600 font-semibold text-xs flex items-center justify-center">3</div>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-semibold text-gray-900">Accepter le contrat</p>
+                                        <p class="text-xs text-gray-500">Préparation de la location</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <p class="text-sm font-semibold text-gray-900">Préparation de la location</p>
-                                    <p class="text-xs text-gray-500">L'équipement est mis à disposition</p>
+                            @else
+                                <div class="flex gap-3">
+                                    <div class="shrink-0">
+                                        <div class="w-6 h-6 rounded-full bg-gray-100 text-gray-600 font-semibold text-xs flex items-center justify-center">2</div>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-semibold text-gray-900">Détails disponibles</p>
+                                        <p class="text-xs text-gray-500">Consultez votre historique de paiements</p>
+                                    </div>
                                 </div>
-                            </div>
+
+                                <div class="flex gap-3">
+                                    <div class="shrink-0">
+                                        <div class="w-6 h-6 rounded-full bg-gray-100 text-gray-600 font-semibold text-xs flex items-center justify-center">3</div>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-semibold text-gray-900">Préparation de la location</p>
+                                        <p class="text-xs text-gray-500">L'équipement est mis à disposition</p>
+                                    </div>
+                                </div>
+                            @endif
                         </div>
 
                         <hr class="my-4 border-gray-100">
 
                         <div class="space-y-2">
+                            @if ($contract)
+                                <a
+                                    href="{{ route('contracts.show', $contract) }}"
+                                    class="block w-full px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors text-center text-sm"
+                                >
+                                    🧾 Voir mon contrat
+                                </a>
+                            @endif
+
                             <a
                                 href="{{ route('payments.invoice', $payment) }}"
                                 class="block w-full px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors text-center text-sm"

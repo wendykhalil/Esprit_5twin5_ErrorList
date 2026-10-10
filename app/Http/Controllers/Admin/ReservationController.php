@@ -42,6 +42,7 @@ class ReservationController extends Controller
                 'terminee' => 'Terminée',
                 'litige' => 'Litige',
                 'annulee' => 'Annulée',
+                'refusee' => 'Refusée',
             ],
             'search' => $request->input('search', ''),
             'selectedStatus' => $selectedStatus,
@@ -84,8 +85,72 @@ class ReservationController extends Controller
         return redirect()->route('admin.reservations.show', $reservation)->with('success', 'Réservation mise à jour.');
     }
 
+    /**
+     * Accepter une réservation en attente (transition en_attente → confirmee)
+     * L'admin doit vérifier que les dates sont toujours disponibles.
+     * 
+     * IMPORTANT: La livraison n'est plus créée ici.
+     * Elle sera créée automatiquement quand le client accepte le contrat.
+     */
+    public function approve(Reservation $reservation)
+    {
+        // Vérification 1: Statut doit être "en_attente"
+        if ($reservation->statut !== 'en_attente') {
+            return redirect()->route('admin.reservations.show', $reservation)
+                ->with('error', 'Seules les réservations en attente peuvent être acceptées.');
+        }
+
+        // Vérification 2: Vérifier que les dates sont toujours disponibles
+        $conflict = Reservation::where('equipment_id', $reservation->equipment_id)
+            ->whereNotIn('statut', ['annulee', 'terminee', 'refusee'])
+            ->where('id', '!=', $reservation->id)
+            ->where('date_debut', '<', $reservation->date_fin)
+            ->where('date_fin', '>', $reservation->date_debut)
+            ->exists();
+
+        if ($conflict) {
+            return redirect()->route('admin.reservations.show', $reservation)
+                ->with('error', 'Les dates de cette réservation ne sont plus disponibles. Une autre réservation a été confirmée sur cette période.');
+        }
+
+        // Transition: en_attente → confirmee
+        $reservation->update(['statut' => 'confirmee']);
+
+        return redirect()->route('admin.reservations.show', $reservation)
+            ->with('success', 'Réservation acceptée et confirmée. Le client pourra créer la livraison après acceptation du contrat et paiement.');
+    }
+
+    /**
+     * Refuser une réservation en attente (transition en_attente → refusee)
+     */
+    public function reject(Reservation $reservation)
+    {
+        // Vérification: Statut doit être "en_attente"
+        if ($reservation->statut !== 'en_attente') {
+            return redirect()->route('admin.reservations.show', $reservation)
+                ->with('error', 'Seules les réservations en attente peuvent être refusées.');
+        }
+
+        // Transition: en_attente → refusee
+        $reservation->update(['statut' => 'refusee']);
+
+        return redirect()->route('admin.reservations.show', $reservation)
+            ->with('success', 'Réservation refusée.');
+    }
+
     public function destroy(Reservation $reservation)
     {
+        // Sécurité: Empêcher la suppression des réservations confirmées ou liées à un paiement
+        if (in_array($reservation->statut, ['confirmee', 'en_cours', 'litige'])) {
+            return redirect()->route('admin.reservations.index')
+                ->with('error', 'Impossible de supprimer une réservation confirmée ou en cours. Utilisez le refus ou l\'annulation.');
+        }
+
+        if ($reservation->payments()->whereNotIn('status', ['failed', 'refunded'])->exists()) {
+            return redirect()->route('admin.reservations.index')
+                ->with('error', 'Impossible de supprimer une réservation liée à un paiement actif.');
+        }
+
         $reservation->delete();
 
         return redirect()->route('admin.reservations.index')->with('success', 'Réservation supprimée.');
@@ -100,11 +165,20 @@ class ReservationController extends Controller
         ];
     }
 
+    /**
+     * Calcule le prix total d'une réservation.
+     * Prix = nombre de jours × prix par jour de l'équipement
+     *
+     * @param array $data Les données validées
+     * @return float Le prix total arrondi à 2 décimales
+     */
     private function calculatePrice(array $data): float
     {
         $equipment = Equipment::findOrFail($data['equipment_id']);
         $days = Carbon::parse($data['date_debut'])->diffInDays(Carbon::parse($data['date_fin']));
 
-        return round(max($days, 1) * ($equipment->price_per_day ?? $equipment->prix_jour ?? $equipment->price ?? 0), 2);
+        $pricePerDay = $equipment->price_per_day ?? $equipment->prix_jour ?? $equipment->price ?? 0;
+
+        return round(max($days, 1) * $pricePerDay, 2);
     }
 }

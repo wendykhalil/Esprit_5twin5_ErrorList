@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\EquipmentController;
 use App\Http\Controllers\Frontend\PaymentController;
+use App\Http\Controllers\ContractController;
 use App\Http\Controllers\InspectionController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReservationController;
@@ -103,6 +104,8 @@ Route::get('/reservations', [ReservationController::class, 'index'])
 Route::middleware('auth')->group(function () {
     Route::resource('reservations', ReservationController::class)
         ->except(['index']);
+    Route::patch('/reservations/{reservation}/cancel', [ReservationController::class, 'cancel'])
+        ->name('reservations.cancel');
     Route::resource('inspections', InspectionController::class);
 });
 
@@ -130,6 +133,43 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/mes-paiements/{payment}/facture', [PaymentController::class, 'invoice'])
         ->name('payments.invoice');
+});
+
+
+// --------------------------------------------------
+// CONTRACTS
+// --------------------------------------------------
+
+Route::middleware('auth')->group(function () {
+    Route::get('/contracts', [ContractController::class, 'index'])
+        ->name('contracts.index');
+    
+    Route::get('/contracts/{contract}', [ContractController::class, 'show'])
+        ->name('contracts.show');
+    
+    Route::post('/contracts/{contract}/accept', [ContractController::class, 'accept'])
+        ->name('contracts.accept');
+    
+    Route::get('/contracts/{contract}/print', [ContractController::class, 'print'])
+        ->name('contracts.print');
+    
+    Route::get('/contracts/{contract}/download', [ContractController::class, 'download'])
+        ->name('contracts.download');
+});
+
+
+// --------------------------------------------------
+// DELIVERIES
+// --------------------------------------------------
+
+use App\Http\Controllers\DeliveryController;
+
+Route::middleware('auth')->group(function () {
+    Route::get('/livraisons', [DeliveryController::class, 'index'])
+        ->name('deliveries.index');
+    
+    Route::get('/livraisons/{delivery}', [DeliveryController::class, 'show'])
+        ->name('deliveries.show');
 });
 
 

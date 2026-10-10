@@ -121,11 +121,10 @@ class PaymentTransactionFlowTest extends TestCase
             'payment_date' => now(),
         ]);
 
-        $transaction = Transaction::factory()->create([
+        $transaction = Transaction::factory()->completed()->create([
             'payment_id' => $payment->id,
             'type' => 'payment',
             'amount' => 150.00,
-            'status' => 'completed',
         ]);
 
         $response = $this->actingAs($this->user)

@@ -24,7 +24,7 @@
         </div>
     @endif
 
-    <form method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data" onsubmit="console.log('PROFILE FORM SUBMIT');">
+    <form method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data">
         @csrf
         @method('PATCH')
 
@@ -34,7 +34,7 @@
             
             <div class="flex items-center gap-6">
                 <!-- Photo Preview -->
-                <div class="flex-shrink-0">
+                <div class="shrink-0">
                     @if ($user->profile_photo)
                         <img 
                             src="{{ $user->getProfilePhotoUrl() }}" 

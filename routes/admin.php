@@ -10,8 +10,10 @@ use App\Http\Controllers\Admin\ReservationController;
 use App\Http\Controllers\Admin\InspectionController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\PaymentController;
+use App\Http\Controllers\Admin\ContractController;
 use App\Http\Controllers\Admin\TransactionController;
 use App\Http\Controllers\Admin\SupportTicketController as AdminSupportTicketController;
+use App\Http\Controllers\Admin\DeliveryController;
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
 
@@ -86,6 +88,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
         ->name('reservations.edit');
     Route::put('/reservations/{reservation}', [ReservationController::class, 'update'])
         ->name('reservations.update');
+    Route::patch('/reservations/{reservation}/approve', [ReservationController::class, 'approve'])
+        ->name('reservations.approve');
+    Route::patch('/reservations/{reservation}/reject', [ReservationController::class, 'reject'])
+        ->name('reservations.reject');
     Route::delete('/reservations/{reservation}', [ReservationController::class, 'destroy'])
         ->name('reservations.destroy');
 
@@ -106,6 +112,24 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
         ->name('payments.refund.create');
     Route::post('/payments/{payment}/refund', [PaymentController::class, 'refundStore'])
         ->name('payments.refund.store');
+
+    // Contracts
+    Route::get('/contracts', [ContractController::class, 'index'])
+        ->name('contracts.index');
+    Route::get('/contracts/{contract}', [ContractController::class, 'show'])
+        ->name('contracts.show');
+    Route::patch('/contracts/{contract}/status', [ContractController::class, 'updateStatus'])
+        ->name('contracts.updateStatus');
+    Route::get('/contracts/{contract}/print', [ContractController::class, 'print'])
+        ->name('contracts.print');
+
+    // Deliveries
+    Route::get('/livraisons', [DeliveryController::class, 'index'])
+        ->name('deliveries.index');
+    Route::get('/livraisons/{delivery}', [DeliveryController::class, 'show'])
+        ->name('deliveries.show');
+    Route::patch('/livraisons/{delivery}/status', [DeliveryController::class, 'updateStatus'])
+        ->name('deliveries.updateStatus');
 
 
     // Transactions

@@ -18,7 +18,7 @@ class Reservation extends Model
         'date_fin' => 'date',
     ];
 
-    public const STATUTS = ['en_attente', 'confirmee', 'en_cours', 'terminee', 'litige', 'annulee'];
+    public const STATUTS = ['en_attente', 'confirmee', 'en_cours', 'terminee', 'litige', 'annulee', 'refusee'];
 
     public function user(): BelongsTo
     {
@@ -41,5 +41,20 @@ class Reservation extends Model
     public function inspections(): HasMany
     {
         return $this->hasMany(Inspection::class);
+    }
+
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    public function contract(): HasMany
+    {
+        return $this->hasMany(Contract::class);
+    }
+
+    public function delivery()
+    {
+        return $this->hasOne(Delivery::class);
     }
 }
