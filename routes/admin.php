@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\TransactionController;
 use App\Http\Controllers\Admin\SupportTicketController as AdminSupportTicketController;
+use App\Http\Controllers\Admin\EquipmentGuideController;
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
 
@@ -129,4 +130,22 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::get('/service-providers/{serviceProvider}', [\App\Http\Controllers\Admin\ServiceProviderController::class, 'show'])->name('service-providers.show');
     Route::patch('/service-providers/{serviceProvider}/approve', [\App\Http\Controllers\Admin\ServiceProviderController::class, 'approve'])->name('service-providers.approve');
     Route::patch('/service-providers/{serviceProvider}/reject', [\App\Http\Controllers\Admin\ServiceProviderController::class, 'reject'])->name('service-providers.reject');
+Route::get('/equipements/create', [EquipmentController::class, 'create'])
+    ->name('equipments.create');
+
+    Route::get('/equipements/{equipment}', [EquipmentController::class, 'show'])
+    ->whereNumber('equipment')
+    ->name('equipments.show');
+
+
+    
+    // --------------------------------------------------
+    // EQUIPMENT USAGE GUIDES - ADMIN ONLY
+    // --------------------------------------------------
+
+    Route::resource(
+        'equipment-guides',
+        EquipmentGuideController::class
+    )->whereNumber('equipment_guide');
+
 });

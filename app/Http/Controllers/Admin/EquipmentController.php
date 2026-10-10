@@ -190,4 +190,17 @@ class EquipmentController extends Controller
                 'Équipement supprimé avec succès.'
             );
     }
+    /**
+ * Display equipment details in admin.
+ */
+public function show(Equipment $equipment)
+{
+    $equipment->load(['category', 'user']);
+
+    return view('backend.equipments.show', compact('equipment'));
+}
+
+
+
+
 }

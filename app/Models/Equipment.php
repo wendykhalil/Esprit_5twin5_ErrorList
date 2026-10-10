@@ -59,4 +59,14 @@ class Equipment extends Model
     {
         return $this->hasMany(ServiceRequest::class);
     }
+
+    
+/**
+ * Usage guides associated with this equipment.
+ */
+public function equipmentGuides(): HasMany
+{
+    return $this->hasMany(EquipmentGuide::class);
+}
+
 }

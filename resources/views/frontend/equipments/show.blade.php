@@ -459,6 +459,58 @@
 
                 </div>
 
+                {{-- PUBLISHED EQUIPMENT GUIDES --}}
+                @if($equipment->equipmentGuides->isNotEmpty())
+                    <section class="bg-white rounded-2xl border border-green-100 p-8 shadow-sm">
+                        <h2 class="text-2xl font-bold text-green-900 mb-2">
+                            Guides d'utilisation
+                        </h2>
+                        <p class="text-sm text-gray-500 mb-6">
+                            Découvrez comment utiliser cet équipement correctement et en toute sécurité.
+                        </p>
+
+                        <div class="space-y-5">
+                            @foreach($equipment->equipmentGuides as $guide)
+                                <article class="border border-green-100 rounded-xl p-6 bg-green-50/50">
+                                    <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
+                                        <h3 class="text-lg font-bold text-green-900">{{ $guide->title }}</h3>
+                                        <span class="text-xs font-semibold bg-green-100 text-green-700 px-3 py-1 rounded-full">
+                                            @switch($guide->difficulty_level)
+                                                @case('beginner') Débutant @break
+                                                @case('intermediate') Intermédiaire @break
+                                                @case('advanced') Avancé @break
+                                                @default {{ $guide->difficulty_level }}
+                                            @endswitch
+                                        </span>
+                                    </div>
+
+                                    <p class="text-sm text-gray-600 mb-5">
+                                        <span class="font-semibold">Contexte :</span>
+                                        {{ $guide->usage_context }}
+                                    </p>
+
+                                    <h4 class="font-semibold text-green-900 mb-2">Instructions d'utilisation</h4>
+                                    <div class="text-sm text-gray-700 leading-relaxed whitespace-pre-line mb-5">{{ $guide->instructions }}</div>
+
+                                    @if($guide->safety_precautions)
+                                        <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-5">
+                                            <h4 class="font-semibold text-amber-800 mb-2">Précautions de sécurité</h4>
+                                            <div class="text-sm text-amber-900 whitespace-pre-line">{{ $guide->safety_precautions }}</div>
+                                        </div>
+                                    @endif
+
+                                    @if($guide->video_url)
+                                        <a href="{{ $guide->video_url }}" target="_blank" rel="noopener noreferrer"
+                                           class="inline-flex items-center gap-2 text-sm font-semibold text-green-700 hover:text-green-800 hover:underline">
+                                            ▶ Voir la vidéo explicative
+                                        </a>
+                                    @endif
+                                </article>
+                            @endforeach
+                        </div>
+                    </section>
+                @endif
+
             </div>
 
 

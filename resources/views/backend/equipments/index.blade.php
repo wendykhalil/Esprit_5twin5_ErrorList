@@ -377,7 +377,7 @@
 
                                     {{-- VIEW --}}
                                     <a
-                                        href="{{ route('equipments.show', $equipment) }}"
+href="{{ route('admin.equipments.show', $equipment) }}"
                                         class="p-1.5 text-slate-400
                                                hover:text-blue-600
                                                hover:bg-blue-50
