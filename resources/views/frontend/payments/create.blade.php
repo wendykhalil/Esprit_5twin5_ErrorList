@@ -31,6 +31,11 @@
                 <form action="{{ route('payments.store') }}" method="POST" class="space-y-6" id="paymentForm">
                     @csrf
 
+                    {{-- Hidden reservation_id field --}}
+                    @if(isset($reservation_id))
+                        <input type="hidden" name="reservation_id" value="{{ $reservation_id }}">
+                    @endif
+
                     {{-- Amount Display --}}
                     <div class="bg-green-50 border border-green-100 rounded-xl p-6">
                         <p class="text-sm text-green-600 font-semibold uppercase mb-2 tracking-wide">Montant à payer</p>

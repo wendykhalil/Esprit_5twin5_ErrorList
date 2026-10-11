@@ -1,18 +1,22 @@
+
 <?php
 
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EquipmentController;
+use App\Http\Controllers\Admin\EquipmentGuideController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\RentalController;
 use App\Http\Controllers\Admin\ReservationController;
 use App\Http\Controllers\Admin\InspectionController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\PaymentController;
+use App\Http\Controllers\Admin\ContractController;
+use App\Http\Controllers\Admin\DeliveryController;
+use App\Http\Controllers\Admin\ReclamationController;
 use App\Http\Controllers\Admin\TransactionController;
 use App\Http\Controllers\Admin\SupportTicketController as AdminSupportTicketController;
-use App\Http\Controllers\Admin\EquipmentGuideController;
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
 
@@ -44,6 +48,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
         ->whereNumber('equipment')
         ->name('equipments.edit');
 
+    Route::get('/equipements/{equipment}', [EquipmentController::class, 'show'])
+        ->whereNumber('equipment')
+        ->name('equipments.show');
+
     Route::put('/equipements/{equipment}', [EquipmentController::class, 'update'])
         ->whereNumber('equipment')
         ->name('equipments.update');
@@ -53,18 +61,35 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
         ->name('equipments.destroy');
 
 
-    // Users
+    // --------------------------------------------------
+    // EQUIPMENT USAGE GUIDES - ADMIN ONLY
+    // --------------------------------------------------
+
+    Route::resource(
+        'equipment-guides',
+        EquipmentGuideController::class
+    )->whereNumber('equipment_guide');
+
+
+    // --------------------------------------------------
+    // USERS
+    // --------------------------------------------------
+
     Route::get('/utilisateurs', [UserController::class, 'index'])
         ->name('users');
+
     Route::get('/utilisateurs/{user}', [UserController::class, 'show'])
         ->whereNumber('user')
         ->name('users.show');
+
     Route::get('/utilisateurs/{user}/edit', [UserController::class, 'edit'])
         ->whereNumber('user')
         ->name('users.edit');
+
     Route::put('/utilisateurs/{user}', [UserController::class, 'update'])
         ->whereNumber('user')
         ->name('users.update');
+
     Route::delete('/utilisateurs/{user}', [UserController::class, 'destroy'])
         ->whereNumber('user')
         ->name('users.destroy');
@@ -74,21 +99,38 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::get('/locations', [RentalController::class, 'index'])
         ->name('rentals');
 
-    // Reservations
+
+    // --------------------------------------------------
+    // RESERVATIONS
+    // --------------------------------------------------
+
     Route::get('/reservations', [ReservationController::class, 'index'])
         ->name('reservations.index');
+
     Route::get('/reservations/create', [ReservationController::class, 'create'])
         ->name('reservations.create');
+
     Route::post('/reservations', [ReservationController::class, 'store'])
         ->name('reservations.store');
+
     Route::get('/reservations/{reservation}', [ReservationController::class, 'show'])
         ->name('reservations.show');
+
     Route::get('/reservations/{reservation}/edit', [ReservationController::class, 'edit'])
         ->name('reservations.edit');
+
     Route::put('/reservations/{reservation}', [ReservationController::class, 'update'])
         ->name('reservations.update');
+
+    Route::patch('/reservations/{reservation}/approve', [ReservationController::class, 'approve'])
+        ->name('reservations.approve');
+
+    Route::patch('/reservations/{reservation}/reject', [ReservationController::class, 'reject'])
+        ->name('reservations.reject');
+
     Route::delete('/reservations/{reservation}', [ReservationController::class, 'destroy'])
         ->name('reservations.destroy');
+
 
     // Inspections
     Route::resource('inspections', InspectionController::class);
@@ -99,20 +141,58 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
         ->name('settings');
 
 
-    // Payments
+    // --------------------------------------------------
+    // PAYMENTS
+    // --------------------------------------------------
+
     Route::resource('payments', PaymentController::class);
 
-    // Refund routes
     Route::get('/payments/{payment}/refund', [PaymentController::class, 'refundCreate'])
         ->name('payments.refund.create');
+
     Route::post('/payments/{payment}/refund', [PaymentController::class, 'refundStore'])
         ->name('payments.refund.store');
+
+
+    // --------------------------------------------------
+    // CONTRACTS
+    // --------------------------------------------------
+
+    Route::get('/contracts', [ContractController::class, 'index'])
+        ->name('contracts.index');
+
+    Route::get('/contracts/{contract}', [ContractController::class, 'show'])
+        ->name('contracts.show');
+
+    Route::patch('/contracts/{contract}/status', [ContractController::class, 'updateStatus'])
+        ->name('contracts.updateStatus');
+
+    Route::get('/contracts/{contract}/print', [ContractController::class, 'print'])
+        ->name('contracts.print');
+
+
+    // --------------------------------------------------
+    // DELIVERIES
+    // --------------------------------------------------
+
+    Route::get('/livraisons', [DeliveryController::class, 'index'])
+        ->name('deliveries.index');
+
+    Route::get('/livraisons/{delivery}', [DeliveryController::class, 'show'])
+        ->name('deliveries.show');
+
+    Route::patch('/livraisons/{delivery}/status', [DeliveryController::class, 'updateStatus'])
+        ->name('deliveries.updateStatus');
 
 
     // Transactions
     Route::resource('transactions', TransactionController::class);
 
-    // Support tickets
+
+    // --------------------------------------------------
+    // SUPPORT TICKETS
+    // --------------------------------------------------
+
     Route::get('/tickets', [AdminSupportTicketController::class, 'index'])
         ->name('tickets.index');
 
@@ -125,27 +205,44 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::patch('/tickets/{supportTicket}', [AdminSupportTicketController::class, 'update'])
         ->name('tickets.update');
 
-    // Service Providers
-    Route::get('/service-providers', [\App\Http\Controllers\Admin\ServiceProviderController::class, 'index'])->name('service-providers.index');
-    Route::get('/service-providers/{serviceProvider}', [\App\Http\Controllers\Admin\ServiceProviderController::class, 'show'])->name('service-providers.show');
-    Route::patch('/service-providers/{serviceProvider}/approve', [\App\Http\Controllers\Admin\ServiceProviderController::class, 'approve'])->name('service-providers.approve');
-    Route::patch('/service-providers/{serviceProvider}/reject', [\App\Http\Controllers\Admin\ServiceProviderController::class, 'reject'])->name('service-providers.reject');
-Route::get('/equipements/create', [EquipmentController::class, 'create'])
-    ->name('equipments.create');
 
-    Route::get('/equipements/{equipment}', [EquipmentController::class, 'show'])
-    ->whereNumber('equipment')
-    ->name('equipments.show');
-
-
-    
     // --------------------------------------------------
-    // EQUIPMENT USAGE GUIDES - ADMIN ONLY
+    // SERVICE PROVIDERS
     // --------------------------------------------------
 
-    Route::resource(
-        'equipment-guides',
-        EquipmentGuideController::class
-    )->whereNumber('equipment_guide');
+    Route::get('/service-providers', [\App\Http\Controllers\Admin\ServiceProviderController::class, 'index'])
+        ->name('service-providers.index');
+
+    Route::get('/service-providers/{serviceProvider}', [\App\Http\Controllers\Admin\ServiceProviderController::class, 'show'])
+        ->name('service-providers.show');
+
+    Route::patch('/service-providers/{serviceProvider}/approve', [\App\Http\Controllers\Admin\ServiceProviderController::class, 'approve'])
+        ->name('service-providers.approve');
+
+    Route::patch('/service-providers/{serviceProvider}/reject', [\App\Http\Controllers\Admin\ServiceProviderController::class, 'reject'])
+        ->name('service-providers.reject');
+
+
+    // --------------------------------------------------
+    // RECLAMATIONS - ADMIN
+    // --------------------------------------------------
+
+    Route::get('/reclamations', [ReclamationController::class, 'index'])
+        ->name('reclamations.index');
+
+    Route::get('/reclamations/{reclamation}', [ReclamationController::class, 'show'])
+        ->name('reclamations.show');
+
+    Route::get('/reclamations/{reclamation}/approve', [ReclamationController::class, 'approveForm'])
+        ->name('reclamations.approve.form');
+
+    Route::post('/reclamations/{reclamation}/approve', [ReclamationController::class, 'approve'])
+        ->name('reclamations.approve');
+
+    Route::get('/reclamations/{reclamation}/reject', [ReclamationController::class, 'rejectForm'])
+        ->name('reclamations.reject.form');
+
+    Route::post('/reclamations/{reclamation}/reject', [ReclamationController::class, 'reject'])
+        ->name('reclamations.reject');
 
 });

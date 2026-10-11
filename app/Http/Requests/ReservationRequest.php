@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Equipment;
 use App\Models\Reservation;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -30,7 +31,13 @@ class ReservationRequest extends FormRequest
         ];
     }
 
-    // Valeur ajoutée : empêcher deux réservations qui se chevauchent sur le même équipement
+    /**
+     * Validations personnalisées après la validation standard.
+     * Empêche:
+     * - L'auto-réservation (utilisateur réservant son propre équipement)
+     * - Les chevauchements de dates
+     * - Les transitions de statut invalides lors de modifications
+     */
     public function after(): array
     {
         return [
@@ -38,15 +45,43 @@ class ReservationRequest extends FormRequest
                 if ($validator->errors()->isNotEmpty()) {
                     return;
                 }
+
+                $equipment = Equipment::find($this->equipment_id);
+                $userId = auth()->id();
+
+                // Règle 1: Empêcher l'auto-réservation
+                if ($equipment && $equipment->user_id === $userId) {
+                    $validator->errors()->add(
+                        'equipment_id',
+                        'Vous ne pouvez pas réserver votre propre équipement.'
+                    );
+                    return;
+                }
+
+                // Règle 2: Vérifier les chevauchements de dates
+                // Exclut: annulee, terminee, refusee
+                // Inclut: en_attente, confirmee, en_cours, litige
                 $conflit = Reservation::where('equipment_id', $this->equipment_id)
-                    ->whereNotIn('statut', ['annulee', 'terminee'])
+                    ->whereNotIn('statut', ['annulee', 'terminee', 'refusee'])
                     ->when($this->route('reservation'), fn ($q, $r) => $q->where('id', '!=', $r->id))
                     ->where('date_debut', '<', $this->date_fin)
                     ->where('date_fin', '>', $this->date_debut)
                     ->exists();
 
                 if ($conflit) {
-                    $validator->errors()->add('date_debut', 'Cet équipement est déjà réservé sur cette période.');
+                    $validator->errors()->add(
+                        'date_debut',
+                        'Cet équipement est déjà réservé sur cette période.'
+                    );
+                }
+
+                // Règle 3: Si modification, vérifier que le statut permet de changer les dates
+                $reservation = $this->route('reservation');
+                if ($reservation && in_array($reservation->statut, ['confirmee', 'en_cours', 'terminee', 'litige'])) {
+                    $validator->errors()->add(
+                        'date_debut',
+                        'Vous ne pouvez pas modifier une réservation ' . str_replace('_', ' ', $reservation->statut) . '.'
+                    );
                 }
             },
         ];

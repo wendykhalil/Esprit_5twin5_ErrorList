@@ -14,8 +14,16 @@
                 <p class="text-sm font-semibold uppercase tracking-[0.18em] text-green-600">Détail de la réservation</p>
                 <h1 class="mt-2 text-4xl font-bold tracking-tight text-slate-900">Ma réservation</h1>
             </div>
-            <div class="flex gap-3">
-                <a href="{{ route('reservations.edit', $reservation) }}" class="inline-flex items-center rounded-xl bg-green-600 px-4 py-3 text-sm font-semibold text-white hover:bg-green-700">Modifier</a>
+            <div class="flex flex-wrap gap-3">
+                @if($reservation->statut === 'en_attente')
+                    <a href="{{ route('reservations.edit', $reservation) }}" class="inline-flex items-center rounded-xl bg-green-600 px-4 py-3 text-sm font-semibold text-white hover:bg-green-700">Modifier</a>
+                @endif
+                @if(in_array($reservation->statut, ['en_attente', 'confirmee']))
+                    <form action="{{ route('reservations.cancel', $reservation) }}" method="POST" style="display: inline;" onsubmit="return confirm('Êtes-vous sûr de vouloir annuler cette réservation ?');">
+                        @csrf @method('PATCH')
+                        <button type="submit" class="inline-flex items-center rounded-xl bg-red-600 px-4 py-3 text-sm font-semibold text-white hover:bg-red-700">Annuler</button>
+                    </form>
+                @endif
             </div>
         </div>
 
@@ -41,7 +49,73 @@
             <section class="rounded-2xl bg-green-900 p-6 text-white shadow-sm sm:p-8">
                 <p class="text-sm font-medium text-white">Prix total</p>
                 <p class="mt-3 text-4xl font-bold">{{ number_format($reservation->prix_total, 2) }} <span class="text-xl font-medium">DT</span></p>
-                <p class="mt-4 text-sm leading-6 text-white">Montant calculé selon la durée et le tarif journalier de l’équipement.</p>
+                <p class="mt-4 text-sm leading-6 text-white">Montant calculé selon la durée et le tarif journalier de l'équipement.</p>
+
+                {{-- Paiement Section --}}
+                @php
+                    $paiementExistant = $reservation->payments()
+                        ->where('status', '!=', 'failed')
+                        ->where('status', '!=', 'refunded')
+                        ->first();
+                @endphp
+
+                <div class="mt-6 pt-6 border-t border-green-800">
+                    @if($reservation->statut === 'confirmee')
+                        {{-- Réservation confirmée: paiement possible --}}
+                        @if(!$paiementExistant)
+                            <a href="{{ route('payments.create', ['reservation_id' => $reservation->id]) }}"
+                               class="inline-flex items-center rounded-lg bg-white px-5 py-2.5 text-sm font-semibold text-green-900 hover:bg-green-50 transition-colors">
+                                💳 Procéder au paiement
+                            </a>
+                        @else
+                            <p class="text-sm text-green-100">
+                                ✓ Paiement déjà effectué (Statut: <span class="font-semibold">{{ ucfirst($paiementExistant->status) }}</span>)
+                            </p>
+                        @endif
+                    @elseif($reservation->statut === 'en_attente')
+                        {{-- En attente d'acceptation --}}
+                        <div class="rounded-lg bg-amber-900/30 border border-amber-700 p-4">
+                            <p class="text-sm text-amber-100">
+                                ⏳ Votre demande est en attente de validation par l'administration. Vous pourrez procéder au paiement après son acceptation.
+                            </p>
+                        </div>
+                    @elseif($reservation->statut === 'refusee')
+                        {{-- Réservation refusée --}}
+                        <div class="rounded-lg bg-red-900/30 border border-red-700 p-4">
+                            <p class="text-sm text-red-100">
+                                ✗ Votre demande a été refusée. Le paiement n'est pas disponible pour cette réservation.
+                            </p>
+                        </div>
+                    @elseif($reservation->statut === 'annulee')
+                        {{-- Réservation annulée --}}
+                        <div class="rounded-lg bg-slate-600/30 border border-slate-500 p-4">
+                            <p class="text-sm text-slate-200">
+                                ✗ Cette réservation a été annulée. Le paiement n'est pas possible.
+                            </p>
+                        </div>
+                    @elseif($reservation->statut === 'terminee')
+                        {{-- Réservation terminée --}}
+                        <div class="rounded-lg bg-slate-600/30 border border-slate-500 p-4">
+                            <p class="text-sm text-slate-200">
+                                ✓ Cette réservation est terminée.
+                            </p>
+                        </div>
+                    @elseif($reservation->statut === 'en_cours')
+                        {{-- Réservation en cours --}}
+                        <div class="rounded-lg bg-blue-900/30 border border-blue-700 p-4">
+                            <p class="text-sm text-blue-100">
+                                ℹ Cette réservation est en cours.
+                            </p>
+                        </div>
+                    @elseif($reservation->statut === 'litige')
+                        {{-- Réservation en litige --}}
+                        <div class="rounded-lg bg-red-900/30 border border-red-700 p-4">
+                            <p class="text-sm text-red-100">
+                                ⚠ Cette réservation fait l'objet d'un litige. Le paiement n'est pas disponible.
+                            </p>
+                        </div>
+                    @endif
+                </div>
             </section>
         </div>
 
@@ -49,7 +123,7 @@
             <div class="flex items-center justify-between gap-4">
                 <div>
                     <h2 class="text-lg font-bold text-slate-900">Inspections</h2>
-                    <p class="mt-1 text-sm text-slate-500">Suivi de l’état de l’équipement.</p>
+                    <p class="mt-1 text-sm text-slate-500">Suivi de l'état de l'équipement.</p>
                 </div>
                 <a href="{{ route('inspections.create', ['reservation_id' => $reservation->id]) }}" class="inline-flex items-center rounded-xl bg-green-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-green-700">Ajouter une inspection</a>
             </div>

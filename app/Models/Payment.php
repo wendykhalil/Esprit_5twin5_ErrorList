@@ -17,6 +17,7 @@ class Payment extends Model
      */
     protected $fillable = [
         'user_id',
+        'reservation_id',
         'amount',
         'method',
         'status',
@@ -42,6 +43,14 @@ class Payment extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the reservation associated with this payment.
+     */
+    public function reservation()
+    {
+        return $this->belongsTo(Reservation::class);
     }
 
     /**

@@ -1,4 +1,4 @@
-<nav id="frontend-site-nav" class="sticky top-0 z-[1000] w-full bg-white border-b border-green-100 shadow-md overflow-visible">
+<nav id="frontend-site-nav" class="sticky top-0 z-1000 w-full bg-white border-b border-green-100 shadow-md overflow-visible">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 overflow-visible">
 
         <div class="flex items-center justify-between h-16">
@@ -162,7 +162,7 @@
                         <div
                             id="userMenu"
                             class="hidden w-52 bg-white border border-green-100
-                                rounded-lg shadow-xl z-[9999]"
+                                rounded-lg shadow-xl z-9999"
                             role="menu"
                         >
                             <a
@@ -195,6 +195,22 @@
                                        transition-colors border-t border-green-100"
                             >
                                 Mes inspections
+                            </a>
+
+                            <a
+                                href="{{ route('deliveries.index') }}"
+                                class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700
+                                       transition-colors border-t border-green-100"
+                            >
+                                Mes livraisons
+                            </a>
+
+                            <a
+                                href="{{ route('contracts.index') }}"
+                                class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700
+                                       transition-colors border-t border-green-100"
+                            >
+                                Mes contrats
                             </a>
 
                             <a
@@ -386,6 +402,28 @@
                                rounded-lg hover:bg-green-50"
                     >
                         Mes inspections
+                    </a>
+
+                    <a
+                        href="{{ route('deliveries.index') }}"
+                        onclick="document.getElementById('mobileMenu').classList.add('hidden')"
+                        class="block px-4 py-2.5 text-sm font-medium
+                               text-center text-green-700
+                               border border-green-200
+                               rounded-lg hover:bg-green-50"
+                    >
+                        Mes livraisons
+                    </a>
+
+                    <a
+                        href="{{ route('contracts.index') }}"
+                        onclick="document.getElementById('mobileMenu').classList.add('hidden')"
+                        class="block px-4 py-2.5 text-sm font-medium
+                               text-center text-green-700
+                               border border-green-200
+                               rounded-lg hover:bg-green-50"
+                    >
+                        Mes contrats
                     </a>
 
                     <a
