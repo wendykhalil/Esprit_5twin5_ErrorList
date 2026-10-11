@@ -22,3 +22,17 @@ yarn-error.log
 /.vscode
 /.zed
 *.md!README.md
+test_output.txt
+
+_all_tests.txt
+_git_original.txt
+_temp_fix.txt
+.gitignore
+CHANGELOG_DEV.md
+ervation-incident
+test_full_output.txt
+test_results.txt
+unauthenticated_details.txt
+ document reservation workflow changes
+unauthenticated_test.txt
+docs/CHANGELOG_DEV.md
