@@ -14,6 +14,7 @@
                 <h1 class="text-3xl font-bold text-slate-900 mb-2">
                     Ajouter un guide d'utilisation
                 </h1>
+
                 <p class="text-slate-500 text-sm">
                     Créez un guide pour accompagner les utilisateurs
                     dans l'installation et l'utilisation d'un équipement.
@@ -28,10 +29,13 @@
 
         {{-- Validation errors --}}
         @if($errors->any())
-            <div class="mb-6 bg-red-50 border border-red-200 rounded-xl p-5">
+            <div class="mb-6 bg-red-50 border border-red-200 rounded-xl p-5"
+                 role="alert">
+
                 <p class="font-semibold text-red-800 mb-2">
                     Veuillez corriger les erreurs suivantes :
                 </p>
+
                 <ul class="list-disc list-inside text-sm text-red-700 space-y-1">
                     @foreach($errors->all() as $error)
                         <li>{{ $error }}</li>
@@ -44,7 +48,8 @@
 
             <form method="POST"
                   action="{{ route('admin.equipment-guides.store') }}"
-                  class="space-y-6">
+                  class="space-y-6"
+                  novalidate>
 
                 @csrf
 
@@ -58,7 +63,9 @@
                     <select id="equipment_id"
                             name="equipment_id"
                             required
-                            class="w-full px-4 py-3 border border-slate-200 rounded-lg bg-white focus:ring-2 focus:ring-amber-400">
+                            aria-invalid="{{ $errors->has('equipment_id') ? 'true' : 'false' }}"
+                            class="w-full px-4 py-3 border rounded-lg bg-white focus:ring-2 focus:ring-amber-400 {{ $errors->has('equipment_id') ? 'border-red-500' : 'border-slate-200' }}">
+
                         <option value="">Sélectionner un équipement</option>
 
                         @foreach($equipments as $equipment)
@@ -68,8 +75,11 @@
                             </option>
                         @endforeach
                     </select>
+
                     @error('equipment_id')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                        <p class="text-red-500 text-sm mt-1" role="alert">
+                            {{ $message }}
+                        </p>
                     @enderror
                 </div>
 
@@ -85,12 +95,20 @@
                            name="title"
                            value="{{ old('title') }}"
                            required
-                           maxlength="255"
+                           minlength="5"
+                           maxlength="150"
                            placeholder="Ex : Comment installer un panneau solaire portable"
-                           class="w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-amber-400">
+                           aria-invalid="{{ $errors->has('title') ? 'true' : 'false' }}"
+                           class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-amber-400 {{ $errors->has('title') ? 'border-red-500' : 'border-slate-200' }}">
+
+                    <p class="text-xs text-slate-500 mt-1">
+                        Entre 5 et 150 caractères.
+                    </p>
 
                     @error('title')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                        <p class="text-red-500 text-sm mt-1" role="alert">
+                            {{ $message }}
+                        </p>
                     @enderror
                 </div>
 
@@ -106,12 +124,20 @@
                            name="usage_context"
                            value="{{ old('usage_context') }}"
                            required
+                           minlength="5"
                            maxlength="255"
                            placeholder="Ex : Camping, maison, agriculture..."
-                           class="w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-amber-400">
+                           aria-invalid="{{ $errors->has('usage_context') ? 'true' : 'false' }}"
+                           class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-amber-400 {{ $errors->has('usage_context') ? 'border-red-500' : 'border-slate-200' }}">
+
+                    <p class="text-xs text-slate-500 mt-1">
+                        Entre 5 et 255 caractères.
+                    </p>
 
                     @error('usage_context')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                        <p class="text-red-500 text-sm mt-1" role="alert">
+                            {{ $message }}
+                        </p>
                     @enderror
                 </div>
 
@@ -126,16 +152,21 @@
                               name="instructions"
                               rows="7"
                               required
-                              minlength="20"
+                              minlength="30"
+                              maxlength="5000"
                               placeholder="1. Préparer l'équipement&#10;2. Installer les composants&#10;3. Vérifier les connexions&#10;4. Mettre en marche..."
-                              class="w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-amber-400">{{ old('instructions') }}</textarea>
+                              aria-invalid="{{ $errors->has('instructions') ? 'true' : 'false' }}"
+                              class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-amber-400 {{ $errors->has('instructions') ? 'border-red-500' : 'border-slate-200' }}">{{ old('instructions') }}</textarea>
 
                     <p class="text-xs text-slate-500 mt-1">
-                        Décrivez les étapes d'utilisation de manière claire.
+                        Décrivez les étapes d'utilisation clairement
+                        (30 à 5000 caractères).
                     </p>
 
                     @error('instructions')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                        <p class="text-red-500 text-sm mt-1" role="alert">
+                            {{ $message }}
+                        </p>
                     @enderror
                 </div>
 
@@ -149,17 +180,26 @@
                     <textarea id="safety_precautions"
                               name="safety_precautions"
                               rows="4"
+                              maxlength="2000"
                               placeholder="Ex : Éviter l'humidité, vérifier les câbles, ne pas dépasser la puissance maximale..."
-                              class="w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-amber-400">{{ old('safety_precautions') }}</textarea>
+                              aria-invalid="{{ $errors->has('safety_precautions') ? 'true' : 'false' }}"
+                              class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-amber-400 {{ $errors->has('safety_precautions') ? 'border-red-500' : 'border-slate-200' }}">{{ old('safety_precautions') }}</textarea>
+
+                    <p class="text-xs text-slate-500 mt-1">
+                        Facultatif — maximum 2000 caractères.
+                    </p>
 
                     @error('safety_precautions')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                        <p class="text-red-500 text-sm mt-1" role="alert">
+                            {{ $message }}
+                        </p>
                     @enderror
                 </div>
 
                 {{-- Difficulty and status --}}
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
 
+                    {{-- Difficulty --}}
                     <div>
                         <label for="difficulty_level"
                                class="block text-sm font-semibold text-slate-700 mb-2">
@@ -169,23 +209,33 @@
                         <select id="difficulty_level"
                                 name="difficulty_level"
                                 required
-                                class="w-full px-4 py-3 border border-slate-200 rounded-lg bg-white focus:ring-2 focus:ring-amber-400">
-                            <option value="beginner" @selected(old('difficulty_level', 'beginner') === 'beginner')>
+                                aria-invalid="{{ $errors->has('difficulty_level') ? 'true' : 'false' }}"
+                                class="w-full px-4 py-3 border rounded-lg bg-white focus:ring-2 focus:ring-amber-400 {{ $errors->has('difficulty_level') ? 'border-red-500' : 'border-slate-200' }}">
+
+                            <option value="beginner"
+                                    @selected(old('difficulty_level', 'beginner') === 'beginner')>
                                 Débutant
                             </option>
-                            <option value="intermediate" @selected(old('difficulty_level') === 'intermediate')>
+
+                            <option value="intermediate"
+                                    @selected(old('difficulty_level') === 'intermediate')>
                                 Intermédiaire
                             </option>
-                            <option value="advanced" @selected(old('difficulty_level') === 'advanced')>
+
+                            <option value="advanced"
+                                    @selected(old('difficulty_level') === 'advanced')>
                                 Avancé
                             </option>
                         </select>
 
                         @error('difficulty_level')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                            <p class="text-red-500 text-sm mt-1" role="alert">
+                                {{ $message }}
+                            </p>
                         @enderror
                     </div>
 
+                    {{-- Status --}}
                     <div>
                         <label for="status"
                                class="block text-sm font-semibold text-slate-700 mb-2">
@@ -195,20 +245,29 @@
                         <select id="status"
                                 name="status"
                                 required
-                                class="w-full px-4 py-3 border border-slate-200 rounded-lg bg-white focus:ring-2 focus:ring-amber-400">
-                            <option value="draft" @selected(old('status', 'draft') === 'draft')>
+                                aria-invalid="{{ $errors->has('status') ? 'true' : 'false' }}"
+                                class="w-full px-4 py-3 border rounded-lg bg-white focus:ring-2 focus:ring-amber-400 {{ $errors->has('status') ? 'border-red-500' : 'border-slate-200' }}">
+
+                            <option value="draft"
+                                    @selected(old('status', 'draft') === 'draft')>
                                 Brouillon
                             </option>
-                            <option value="pending" @selected(old('status') === 'pending')>
+
+                            <option value="pending"
+                                    @selected(old('status') === 'pending')>
                                 En attente
                             </option>
-                            <option value="published" @selected(old('status') === 'published')>
+
+                            <option value="published"
+                                    @selected(old('status') === 'published')>
                                 Publié
                             </option>
                         </select>
 
                         @error('status')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                            <p class="text-red-500 text-sm mt-1" role="alert">
+                                {{ $message }}
+                            </p>
                         @enderror
                     </div>
                 </div>
@@ -226,10 +285,13 @@
                            value="{{ old('video_url') }}"
                            maxlength="255"
                            placeholder="https://www.youtube.com/watch?v=..."
-                           class="w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-amber-400">
+                           aria-invalid="{{ $errors->has('video_url') ? 'true' : 'false' }}"
+                           class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-amber-400 {{ $errors->has('video_url') ? 'border-red-500' : 'border-slate-200' }}">
 
                     @error('video_url')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                        <p class="text-red-500 text-sm mt-1" role="alert">
+                            {{ $message }}
+                        </p>
                     @enderror
                 </div>
 
