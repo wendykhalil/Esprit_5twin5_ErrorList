@@ -34,7 +34,7 @@ return new class extends Migration
     {
         Schema::table('payments', function (Blueprint $table) {
             $table->dropIndex('unique_pending_payment_per_reservation');
-            $table->dropForeignIdFor('reservations');
+            $table->dropForeignKey(['reservation_id']);
             $table->dropColumn('reservation_id');
         });
     }

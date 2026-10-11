@@ -105,6 +105,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Get all reclamations created by the user (client).
+     */
+    public function reclamations(): HasMany
+    {
+        return $this->hasMany(Reclamation::class);
+    }
+
+    /**
      * Get the profile photo URL.
      */
     public function getProfilePhotoUrl(): ?string

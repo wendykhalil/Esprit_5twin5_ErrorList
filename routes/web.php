@@ -163,6 +163,7 @@ Route::middleware('auth')->group(function () {
 // --------------------------------------------------
 
 use App\Http\Controllers\DeliveryController;
+use App\Http\Controllers\ReclamationController;
 
 Route::middleware('auth')->group(function () {
     Route::get('/livraisons', [DeliveryController::class, 'index'])
@@ -170,6 +171,18 @@ Route::middleware('auth')->group(function () {
     
     Route::get('/livraisons/{delivery}', [DeliveryController::class, 'show'])
         ->name('deliveries.show');
+});
+
+
+// --------------------------------------------------
+// RECLAMATIONS (CLIENT)
+// --------------------------------------------------
+
+Route::middleware('auth')->prefix('reclamations')->name('reclamations.')->group(function () {
+    Route::get('/', [ReclamationController::class, 'index'])->name('index');
+    Route::get('/create', [ReclamationController::class, 'create'])->name('create');
+    Route::post('/', [ReclamationController::class, 'store'])->name('store');
+    Route::get('/{reclamation}', [ReclamationController::class, 'show'])->name('show');
 });
 
 

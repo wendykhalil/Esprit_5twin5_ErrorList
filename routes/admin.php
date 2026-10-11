@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\ContractController;
 use App\Http\Controllers\Admin\TransactionController;
 use App\Http\Controllers\Admin\SupportTicketController as AdminSupportTicketController;
 use App\Http\Controllers\Admin\DeliveryController;
+use App\Http\Controllers\Admin\ReclamationController;
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
 
@@ -153,4 +154,18 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::get('/service-providers/{serviceProvider}', [\App\Http\Controllers\Admin\ServiceProviderController::class, 'show'])->name('service-providers.show');
     Route::patch('/service-providers/{serviceProvider}/approve', [\App\Http\Controllers\Admin\ServiceProviderController::class, 'approve'])->name('service-providers.approve');
     Route::patch('/service-providers/{serviceProvider}/reject', [\App\Http\Controllers\Admin\ServiceProviderController::class, 'reject'])->name('service-providers.reject');
+
+    // Reclamations (Admin)
+    Route::get('/reclamations', [ReclamationController::class, 'index'])
+        ->name('reclamations.index');
+    Route::get('/reclamations/{reclamation}', [ReclamationController::class, 'show'])
+        ->name('reclamations.show');
+    Route::get('/reclamations/{reclamation}/approve', [ReclamationController::class, 'approveForm'])
+        ->name('reclamations.approve.form');
+    Route::post('/reclamations/{reclamation}/approve', [ReclamationController::class, 'approve'])
+        ->name('reclamations.approve');
+    Route::get('/reclamations/{reclamation}/reject', [ReclamationController::class, 'rejectForm'])
+        ->name('reclamations.reject.form');
+    Route::post('/reclamations/{reclamation}/reject', [ReclamationController::class, 'reject'])
+        ->name('reclamations.reject');
 });
