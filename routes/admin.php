@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\ContractController;
 use App\Http\Controllers\Admin\DeliveryController;
 use App\Http\Controllers\Admin\ReclamationController;
+use App\Http\Controllers\Admin\CompensationCodeController;
 use App\Http\Controllers\Admin\TransactionController;
 use App\Http\Controllers\Admin\SupportTicketController as AdminSupportTicketController;
 
@@ -244,5 +245,34 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
 
     Route::post('/reclamations/{reclamation}/reject', [ReclamationController::class, 'reject'])
         ->name('reclamations.reject');
+
+
+    // --------------------------------------------------
+    // COMPENSATION CODES - ADMIN
+    // --------------------------------------------------
+
+    Route::get('/codes-compensation', [CompensationCodeController::class, 'index'])
+        ->name('compensation-codes.index');
+
+    Route::get('/codes-compensation/create', [CompensationCodeController::class, 'create'])
+        ->name('compensation-codes.create');
+
+    Route::post('/codes-compensation', [CompensationCodeController::class, 'store'])
+        ->name('compensation-codes.store');
+
+    Route::get('/codes-compensation/{compensationCode}', [CompensationCodeController::class, 'show'])
+        ->name('compensation-codes.show');
+
+    Route::get('/codes-compensation/{compensationCode}/edit', [CompensationCodeController::class, 'edit'])
+        ->name('compensation-codes.edit');
+
+    Route::put('/codes-compensation/{compensationCode}', [CompensationCodeController::class, 'update'])
+        ->name('compensation-codes.update');
+
+    Route::delete('/codes-compensation/{compensationCode}', [CompensationCodeController::class, 'destroy'])
+        ->name('compensation-codes.destroy');
+
+    Route::patch('/codes-compensation/{compensationCode}/toggle-active', [CompensationCodeController::class, 'toggleActive'])
+        ->name('compensation-codes.toggle-active');
 
 });

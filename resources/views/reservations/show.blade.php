@@ -48,7 +48,31 @@
 
             <section class="rounded-2xl bg-green-900 p-6 text-white shadow-sm sm:p-8">
                 <p class="text-sm font-medium text-white">Prix total</p>
-                <p class="mt-3 text-4xl font-bold">{{ number_format($reservation->prix_total, 2) }} <span class="text-xl font-medium">DT</span></p>
+
+                {{-- Display price breakdown if discount applied --}}
+                @if($reservation->compensation_code_id && $reservation->discount_amount > 0)
+                    <div class="mt-4 space-y-2 rounded-lg bg-green-800/50 p-3 text-sm">
+                        <div class="flex items-center justify-between">
+                            <span class="text-green-100">Prix initial:</span>
+                            <span class="font-semibold">{{ number_format($reservation->base_price, 2) }} DT</span>
+                        </div>
+                        <div class="flex items-center justify-between text-green-200">
+                            <span>Réduction appliquée:</span>
+                            <span class="font-semibold">-{{ number_format($reservation->discount_amount, 2) }} DT</span>
+                        </div>
+                        <div class="border-t border-green-700 pt-2 flex items-center justify-between">
+                            <span class="font-semibold">Prix final:</span>
+                            <span class="text-lg font-bold">{{ number_format($reservation->prix_total, 2) }} DT</span>
+                        </div>
+                    </div>
+                    <div class="mt-3 rounded-lg bg-green-700/50 p-3 text-sm">
+                        <p class="text-green-100">✓ Code de compensation appliqué</p>
+                        <p class="mt-1 font-semibold text-white">{{ $reservation->compensationCode->code }}</p>
+                    </div>
+                @else
+                    <p class="mt-3 text-4xl font-bold">{{ number_format($reservation->prix_total, 2) }} <span class="text-xl font-medium">DT</span></p>
+                @endif
+
                 <p class="mt-4 text-sm leading-6 text-white">Montant calculé selon la durée et le tarif journalier de l'équipement.</p>
 
                 {{-- Paiement Section --}}
@@ -68,9 +92,17 @@
                                 💳 Procéder au paiement
                             </a>
                         @else
-                            <p class="text-sm text-green-100">
-                                ✓ Paiement déjà effectué (Statut: <span class="font-semibold">{{ ucfirst($paiementExistant->status) }}</span>)
-                            </p>
+                            <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+                                <p class="text-sm text-green-100">
+                                    ✓ Paiement déjà effectué (Statut: <span class="font-semibold">{{ ucfirst($paiementExistant->status) }}</span>)
+                                </p>
+                                @if($reservation->contract && $reservation->contract->count() > 0)
+                                    <a href="{{ route('contracts.show', $reservation->contract->first()) }}"
+                                       class="inline-flex items-center rounded-lg bg-green-100 px-4 py-2 text-sm font-semibold text-green-900 hover:bg-green-200 transition-colors">
+                                        🧾 Voir mon contrat
+                                    </a>
+                                @endif
+                            </div>
                         @endif
                     @elseif($reservation->statut === 'en_attente')
                         {{-- En attente d'acceptation --}}

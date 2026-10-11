@@ -198,6 +198,30 @@
                             </a>
 
                             <a
+                                href="{{ route('reclamations.index') }}"
+                                class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700
+                                       transition-colors border-t border-green-100 {{ request()->routeIs('reclamations.*') ? 'bg-green-50 text-green-800 font-medium' : '' }}"
+                            >
+                                Mes réclamations
+                            </a>
+
+                            <a
+                                href="{{ route('compensation-codes.index') }}"
+                                class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700
+                                       transition-colors border-t border-green-100 {{ request()->routeIs('compensation-codes.*') ? 'bg-green-50 text-green-800 font-medium' : '' }}"
+                            >
+                                Mes codes de compensation
+                            </a>
+
+                            <a
+                                href="{{ route('reclamations.create') }}"
+                                class="block px-4 py-2.5 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50
+                                       transition-colors border-t border-green-100"
+                            >
+                                ➕ Créer une réclamation
+                            </a>
+
+                            <a
                                 href="{{ route('deliveries.index') }}"
                                 class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700
                                        transition-colors border-t border-green-100"
@@ -457,6 +481,17 @@
                                rounded-lg hover:bg-green-50"
                     >
                         Support
+                    </a>
+
+                    <a
+                        href="{{ route('compensation-codes.index') }}"
+                        onclick="document.getElementById('mobileMenu').classList.add('hidden')"
+                        class="block px-4 py-2.5 text-sm font-medium
+                               text-center text-green-700
+                               border border-green-200
+                               rounded-lg hover:bg-green-50"
+                    >
+                        Codes de compensation
                     </a>
 
                     <form

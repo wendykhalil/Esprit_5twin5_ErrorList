@@ -35,7 +35,7 @@
                 <select id="reservation_id" name="reservation_id" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 @error('reservation_id') border-red-500 @enderror" required onchange="updateEquipmentList()">
                     <option value="">-- Choisissez une réservation --</option>
                     @foreach ($reservations as $res)
-                        <option value="{{ $res->id }}" @selected(old('reservation_id') == $res->id)>
+                        <option value="{{ $res->id }}" data-equipment-id="{{ $res->equipment_id }}" @selected(old('reservation_id') == $res->id)>
                             #{{ $res->id }} - {{ $res->getEquipmentLabelAttribute() }} ({{ $res->date_debut->format('d/m/Y') }} au {{ $res->date_fin->format('d/m/Y') }})
                         </option>
                     @endforeach
@@ -124,7 +124,7 @@
                         Équipement <span class="text-red-600">*</span>
                     </label>
                     <input type="text" value="Équipement de la réservation" class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100" disabled>
-                    <input type="hidden" name="incidents[${incidentCount}][equipment_id]" value="0" required>
+                    <input type="hidden" name="incidents[${incidentCount}][equipment_id]" value="" required>
                     <p class="text-xs text-gray-600 mt-2">Sera automatiquement lié à la réservation sélectionnée</p>
                 </div>
 
@@ -160,6 +160,8 @@
             </div>
         `;
         container.insertAdjacentHTML('beforeend', html);
+        // Update equipment_id for new incident if reservation is already selected
+        updateEquipmentList();
     }
 
     function removeIncident(incidentNumber) {
@@ -170,13 +172,17 @@
     }
 
     function updateEquipmentList() {
-        const reservationId = document.getElementById('reservation_id').value;
-        if (reservationId) {
+        const reservationSelect = document.getElementById('reservation_id');
+        const selectedOption = reservationSelect.options[reservationSelect.selectedIndex];
+
+        // Get equipment_id from data-equipment-id attribute
+        const equipmentId = selectedOption.getAttribute('data-equipment-id');
+
+        if (equipmentId) {
             // Set equipment_id for all incidents to the reservation's equipment
-            // In a real scenario, we'd fetch the reservation data via AJAX
-            const incidents = document.querySelectorAll('[name*="[equipment_id]"]');
+            const incidents = document.querySelectorAll('input[name*="[equipment_id]"][type="hidden"]');
             incidents.forEach(input => {
-                input.value = reservationId; // This will be the equipment_id from reservation
+                input.value = equipmentId;  // ✓ FIXED: Now assigns equipment_id, not reservation_id
             });
         }
     }

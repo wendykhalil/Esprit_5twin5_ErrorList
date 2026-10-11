@@ -22,7 +22,11 @@
 
         ['url' => route('admin.transactions.index'), 'label' => 'Transactions', 'route' => 'admin.transactions.index'],
 
+        ['url' => route('admin.compensation-codes.index'), 'label' => 'Codes de Compensation', 'route' => 'admin.compensation-codes.*'],
+
         ['url' => route('admin.tickets.index'), 'label' => 'Support', 'route' => 'admin.tickets.index'],
+
+        ['url' => route('admin.reclamations.index'), 'label' => 'Réclamations', 'route' => 'admin.reclamations.*'],
 
         ['url' => route('admin.service-providers.index'), 'label' => 'Prestataires', 'route' => 'admin.service-providers.*'],
 
@@ -200,6 +204,18 @@
                         <path stroke-linecap="round" stroke-linejoin="round"
 
                               d="M7.5 6.75V3m0 3.75h9m0-3.75v3.75m0 0H21M3.75 6.75h4.5m0 0h-1.5m1.5 0v10.5a1.5 1.5 0 01-1.5 1.5H2.25a1.5 1.5 0 01-1.5-1.5v-10.5m15 0h4.5m0 0h-1.5m1.5 0v10.5a1.5 1.5 0 01-1.5 1.5H12.75a1.5 1.5 0 01-1.5-1.5v-10.5" />
+
+                    </svg>
+
+                @elseif($item['label'] === 'Codes de Compensation')
+
+                    <svg class="w-5 h-5 {{ request()->routeIs($item['route']) ? 'text-white' : 'text-slate-500' }}"
+
+                         fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+
+                        <path stroke-linecap="round" stroke-linejoin="round"
+
+                              d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
 
                     </svg>
 

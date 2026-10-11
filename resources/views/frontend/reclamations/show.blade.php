@@ -36,6 +36,76 @@
             </div>
         </div>
 
+        <!-- Animated Reward Card (if approved with compensation code) -->
+        @if ($reclamation->status === 'approuvee' && $reclamation->compensationCode)
+            <div class="mb-8 animate-fade-in" x-data="{ showConfetti: true }" x-init="setTimeout(() => showConfetti = false, 3000)">
+                <div class="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-lg shadow-lg p-8">
+                    <!-- Celebration Icon -->
+                    <div class="text-center mb-6">
+                        <div class="inline-block">
+                            <div x-show="showConfetti" class="text-4xl animate-bounce mb-4">
+                                🎉
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Title -->
+                    <h2 class="text-2xl font-bold text-green-900 text-center mb-2">Réclamation Approuvée !</h2>
+                    <p class="text-green-700 text-center mb-6">Vous avez reçu un code de compensation</p>
+
+                    <!-- Compensation Code Card -->
+                    <div class="bg-white rounded-lg shadow-md p-6 mb-6 border border-green-100">
+                        <p class="text-sm text-gray-600 text-center mb-2">Votre code de compensation</p>
+                        <div class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-6 mb-4 text-center">
+                            <code class="block font-mono font-bold text-2xl text-gray-900 mb-4 tracking-wider letter-spacing-lg">
+                                {{ $reclamation->compensationCode->code }}
+                            </code>
+                        </div>
+
+                        <!-- Discount Info -->
+                        <div class="text-center mb-6">
+                            @if ($reclamation->compensationCode->type === 'percentage')
+                                <p class="text-3xl font-bold text-green-600">{{ $reclamation->compensationCode->value }}%</p>
+                                <p class="text-sm text-gray-600 mt-1">de réduction sur votre prochaine location</p>
+                            @else
+                                <p class="text-3xl font-bold text-green-600">{{ number_format($reclamation->compensationCode->value, 2, ',', ' ') }} TND</p>
+                                <p class="text-sm text-gray-600 mt-1">de réduction forfaitaire</p>
+                            @endif
+                        </div>
+
+                        <!-- CTA Buttons -->
+                        <div class="flex gap-3 flex-col sm:flex-row" x-data="{ copied: false }">
+                            <button type="button"
+                                    @click="navigator.clipboard.writeText('{{ $reclamation->compensationCode->code }}'); copied = true; setTimeout(() => copied = false, 2000)"
+                                    class="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-4 rounded-lg transition flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                                    :class="copied ? 'bg-green-800' : ''"
+                                    :aria-label="copied ? 'Code copié' : 'Copier le code de compensation'"
+                                    :title="copied ? 'Code copié !' : 'Cliquez pour copier'">
+                                <span x-text="copied ? '✓ Copié !' : '📋 Copier le code'" class="sr-only"></span>
+                                <span aria-hidden="true" x-text="copied ? '✓' : '📋'"></span>
+                                <span aria-hidden="true" x-text="copied ? 'Copié !' : 'Copier'"></span>
+                            </button>
+                            <a href="{{ route('compensation-codes.show', $reclamation->compensationCode->id) }}"
+                               class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition text-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                               title="Voir les détails complets du code de compensation">
+                                Voir les détails
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Info -->
+                    <div class="bg-white rounded border border-green-100 p-4 text-sm text-gray-700">
+                        <p class="font-semibold text-gray-900 mb-2">💡 Conseils d'utilisation :</p>
+                        <ul class="space-y-1 text-xs md:text-sm">
+                            <li>✓ Valide du {{ $reclamation->compensationCode->valid_from->format('d/m/Y') }} au {{ $reclamation->compensationCode->valid_until->format('d/m/Y') }}</li>
+                            <li>✓ À utiliser lors de votre prochaine réservation</li>
+                            <li>✓ Peut être utilisé {{ $reclamation->compensationCode->max_uses }} fois</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         <!-- Main Content -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
             <!-- Left Column: Details -->
@@ -89,7 +159,7 @@
                                     @if ($incident->proposed_refund_amount > 0)
                                         <div class="text-right">
                                             <p class="text-sm text-gray-600">Remboursement proposé</p>
-                                            <p class="text-lg font-semibold text-green-600">{{ number_format($incident->proposed_refund_amount, 2, ',', ' ') }} €</p>
+                                            <p class="text-lg font-semibold text-green-600">{{ number_format($incident->proposed_refund_amount, 2, ',', ' ') }} TND</p>
                                             <p class="text-xs text-gray-500">({{ $incident->proposed_refund_percentage }}%)</p>
                                         </div>
                                     @endif
@@ -136,13 +206,13 @@
 
                         <div class="pb-4 border-b border-gray-200">
                             <p class="text-sm text-gray-600">Remboursement proposé</p>
-                            <p class="text-2xl font-bold text-green-600">{{ number_format($totalProposedRefund, 2, ',', ' ') }} €</p>
+                            <p class="text-2xl font-bold text-green-600">{{ number_format($totalProposedRefund, 2, ',', ' ') }} TND</p>
                         </div>
 
                         @if ($reclamation->status === 'approuvee')
                             <div class="pb-4 border-b border-gray-200">
                                 <p class="text-sm text-gray-600">Remboursement approuvé</p>
-                                <p class="text-2xl font-bold text-green-600">{{ number_format($reclamation->refund_amount ?? 0, 2, ',', ' ') }} €</p>
+                                <p class="text-2xl font-bold text-green-600">{{ number_format($reclamation->refund_amount ?? 0, 2, ',', ' ') }} TND</p>
                             </div>
 
                             @if ($reclamation->refund_approved_at)

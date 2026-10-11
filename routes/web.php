@@ -164,6 +164,7 @@ Route::middleware('auth')->group(function () {
 
 use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\ReclamationController;
+use App\Http\Controllers\CompensationCodeController;
 
 Route::middleware('auth')->group(function () {
     Route::get('/livraisons', [DeliveryController::class, 'index'])
@@ -183,6 +184,16 @@ Route::middleware('auth')->prefix('reclamations')->name('reclamations.')->group(
     Route::get('/create', [ReclamationController::class, 'create'])->name('create');
     Route::post('/', [ReclamationController::class, 'store'])->name('store');
     Route::get('/{reclamation}', [ReclamationController::class, 'show'])->name('show');
+});
+
+
+// --------------------------------------------------
+// COMPENSATION CODES (CLIENT)
+// --------------------------------------------------
+
+Route::middleware('auth')->prefix('codes-compensation')->name('compensation-codes.')->group(function () {
+    Route::get('/', [CompensationCodeController::class, 'index'])->name('index');
+    Route::get('/{compensationCode}', [CompensationCodeController::class, 'show'])->name('show');
 });
 
 

@@ -20,15 +20,17 @@ class ReclamationController extends Controller
     {
         $user = Auth::user();
 
-        // Récupérer les réservations complétées de l'utilisateur
+        // Récupérer les réservations éligibles pour une réclamation
+        // Une réservation est éligible si elle a eu lieu (statut: confirmee, en_cours, terminee)
+        // Cela exclut les statuts futurs (en_attente) et annulés (annulee, refusee, litige)
         $reservations = Reservation::where('user_id', $user->id)
-            ->whereIn('statut', ['terminee', 'en_cours'])
+            ->whereIn('statut', ['confirmee', 'en_cours', 'terminee'])
             ->with('equipment')
+            ->orderByDesc('updated_at')
             ->get();
 
         if ($reservations->isEmpty()) {
-            return redirect()->route('rentals.index')
-                ->with('error', 'Aucune réservation éligible pour une réclamation.');
+            return view('frontend.reclamations.no-reservations');
         }
 
         return view('frontend.reclamations.create', compact('reservations'));
@@ -50,8 +52,11 @@ class ReclamationController extends Controller
 
         // Vérifier que CHAQUE équipement d'incident appartient à la réservation
         // Note: Une réservation a exactement UN equipment_id
+        // Normalize to integer for comparison to prevent type mismatches
+        $reservationEquipmentId = (int) $reservation->equipment_id;
         foreach ($validated['incidents'] as $incidentData) {
-            if ($incidentData['equipment_id'] !== $reservation->equipment_id) {
+            $incidentEquipmentId = (int) $incidentData['equipment_id'];
+            if ($incidentEquipmentId !== $reservationEquipmentId) {
                 abort(403, 'L\'équipement de l\'incident n\'appartient pas à la réservation.');
             }
         }
@@ -113,7 +118,7 @@ class ReclamationController extends Controller
     {
         $this->authorize('view', $reclamation);
 
-        $reclamation->load(['incidents.equipment', 'reservation.equipment', 'user']);
+        $reclamation->load(['incidents.equipment', 'reservation.equipment', 'user', 'compensationCode']);
 
         $totalProposedRefund = $reclamation->calculateTotalRefund();
 

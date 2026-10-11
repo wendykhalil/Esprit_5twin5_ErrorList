@@ -19,6 +19,7 @@ class ReservationRequest extends FormRequest
             'equipment_id' => ['required', 'exists:equipment,id'],
             'date_debut' => ['required', 'date', 'after_or_equal:today'],
             'date_fin' => ['required', 'date', 'after:date_debut'],
+            'compensation_code' => ['nullable', 'string', 'max:20'],
         ];
     }
 
@@ -83,7 +84,75 @@ class ReservationRequest extends FormRequest
                         'Vous ne pouvez pas modifier une réservation ' . str_replace('_', ' ', $reservation->statut) . '.'
                     );
                 }
+
+                // Règle 4: Vérifier la validité du code de compensation s'il est fourni
+                if ($this->compensation_code) {
+                    $this->validateCompensationCode($validator);
+                }
             },
         ];
+    }
+
+    /**
+     * Validate compensation code if provided.
+     * Checks: existence, ownership, validity, expiration, usage limits.
+     */
+    private function validateCompensationCode($validator): void
+    {
+        $code = \App\Models\CompensationCode::where('code', trim($this->compensation_code))
+            ->first();
+
+        if (!$code) {
+            $validator->errors()->add(
+                'compensation_code',
+                'Ce code de compensation n\'existe pas.'
+            );
+            return;
+        }
+
+        // Check ownership: code must belong to current user
+        if ($code->user_id !== auth()->id()) {
+            $validator->errors()->add(
+                'compensation_code',
+                'Ce code de compensation ne vous appartient pas.'
+            );
+            return;
+        }
+
+        // Check if code is active
+        if (!$code->is_active) {
+            $validator->errors()->add(
+                'compensation_code',
+                'Ce code de compensation a été désactivé.'
+            );
+            return;
+        }
+
+        // Check if code has started (valid_from <= now)
+        if (!$code->hasStarted()) {
+            $validator->errors()->add(
+                'compensation_code',
+                'Ce code de compensation n\'est pas encore valide.'
+            );
+            return;
+        }
+
+        // Check if code is expired (valid_until > now)
+        if ($code->isExpired()) {
+            $validator->errors()->add(
+                'compensation_code',
+                'Ce code de compensation a expiré.'
+            );
+            return;
+        }
+
+        // Check if code has remaining uses
+        if (!$code->hasUsesRemaining()) {
+            $validator->errors()->add(
+                'compensation_code',
+                'Ce code de compensation a déjà été utilisé.'
+            );
+            return;
+        }
     }
 }

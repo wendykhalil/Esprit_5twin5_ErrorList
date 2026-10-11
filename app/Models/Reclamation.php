@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Reclamation extends Model
 {
@@ -65,6 +66,14 @@ class Reclamation extends Model
     }
 
     /**
+     * Get the compensation code assigned to this reclamation (if approved).
+     */
+    public function compensationCode(): HasOne
+    {
+        return $this->hasOne(CompensationCode::class);
+    }
+
+    /**
      * Get the associated payment (convenience method).
      */
     public function payment()
@@ -76,6 +85,9 @@ class Reclamation extends Model
 
     /**
      * Calculate total refund from all incidents.
+     *
+     * @deprecated This method is kept for backward compatibility with existing tests/code.
+     * New code should use compensation codes instead.
      */
     public function calculateTotalRefund(): float
     {
@@ -84,6 +96,9 @@ class Reclamation extends Model
 
     /**
      * Check if reclamation can be approved (has payment and within limits).
+     *
+     * @deprecated This method is kept for backward compatibility with existing tests/code.
+     * New code should use canReceiveCompensation() instead.
      */
     public function canBeApproved(): bool
     {
@@ -99,5 +114,22 @@ class Reclamation extends Model
 
         $remainingRefundable = $payment->amount - $totalRefunded;
         return $this->calculateTotalRefund() <= $remainingRefundable;
+    }
+
+    /**
+     * Check if reclamation can receive a compensation code.
+     * A reclamation can receive compensation if:
+     * - It's in a state that can be approved (en_attente or en_cours)
+     * - It doesn't already have a compensation code assigned
+     */
+    public function canReceiveCompensation(): bool
+    {
+        // Only en_attente or en_cours can be approved
+        if (!in_array($this->status, ['en_attente', 'en_cours'])) {
+            return false;
+        }
+
+        // Must not already have a compensation code
+        return $this->compensationCode === null;
     }
 }

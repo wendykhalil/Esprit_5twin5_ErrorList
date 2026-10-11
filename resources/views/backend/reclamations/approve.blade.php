@@ -104,12 +104,71 @@
                         <p class="text-3xl font-bold text-green-600">{{ number_format($totalProposedRefund, 2, ',', ' ') }} €</p>
                     </div>
 
+                    <!-- Compensation Code Configuration -->
+                    <div class="border-t border-gray-200 pt-6 mb-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Configuration du Code de Compensation</h3>
+
+                        <!-- Type of Discount -->
+                        <div class="mb-4">
+                            <label for="type" class="block text-sm font-semibold text-gray-900 mb-2">
+                                Type de Réduction <span class="text-red-600">*</span>
+                            </label>
+                            <select name="type" id="type" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 @error('type') border-red-500 @enderror">
+                                <option value="">-- Sélectionner un type --</option>
+                                <option value="percentage" {{ old('type') === 'percentage' ? 'selected' : '' }}>Pourcentage (%)</option>
+                                <option value="fixed" {{ old('type') === 'fixed' ? 'selected' : '' }}>Montant Fixe (TND)</option>
+                            </select>
+                            @error('type')
+                                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                            @enderror
+                            <p class="text-xs text-gray-500 mt-1">Choisir entre un pourcentage de remise ou un montant fixe en dinars</p>
+                        </div>
+
+                        <!-- Value -->
+                        <div class="mb-4">
+                            <label for="value" class="block text-sm font-semibold text-gray-900 mb-2">
+                                Valeur <span class="text-red-600">*</span>
+                            </label>
+                            <input type="number" name="value" id="value" step="0.01" min="0.01" placeholder="Ex: 20.50 ou 15" value="{{ old('value') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 @error('value') border-red-500 @enderror">
+                            @error('value')
+                                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                            @enderror
+                            <p class="text-xs text-gray-500 mt-1">Minimum: 0.01 (%). Si pourcentage, maximum 100%</p>
+                        </div>
+
+                        <!-- Days Valid -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="days_valid" class="block text-sm font-semibold text-gray-900 mb-2">
+                                    Jours de Validité <span class="text-red-600">*</span>
+                                </label>
+                                <input type="number" name="days_valid" id="days_valid" min="1" max="365" placeholder="30" value="{{ old('days_valid') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 @error('days_valid') border-red-500 @enderror">
+                                @error('days_valid')
+                                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                                @enderror
+                                <p class="text-xs text-gray-500 mt-1">1-365 jours à partir de maintenant</p>
+                            </div>
+
+                            <!-- Max Uses -->
+                            <div>
+                                <label for="max_uses" class="block text-sm font-semibold text-gray-900 mb-2">
+                                    Max. Utilisations <span class="text-red-600">*</span>
+                                </label>
+                                <input type="number" name="max_uses" id="max_uses" min="1" placeholder="1" value="{{ old('max_uses') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 @error('max_uses') border-red-500 @enderror">
+                                @error('max_uses')
+                                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                                @enderror
+                                <p class="text-xs text-gray-500 mt-1">Minimum: 1 utilisation</p>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Admin Notes -->
                     <div class="mb-6">
                         <label for="admin_notes" class="block text-sm font-semibold text-gray-900 mb-2">
                             Notes (optionnel)
                         </label>
-                        <textarea name="admin_notes" id="admin_notes" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 @error('admin_notes') border-red-500 @enderror" placeholder="Ajoutez des notes administratives...">{{ old('admin_notes') }}</textarea>
+                        <textarea name="admin_notes" id="admin_notes" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 @error('admin_notes') border-red-500 @enderror" placeholder="Ajoutez des notes administratives...">{{ old('admin_notes') }}</textarea>
                         @error('admin_notes')
                             <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
                         @enderror
@@ -136,7 +195,7 @@
                     <div class="pb-4 border-b border-gray-200">
                         <p class="text-sm text-gray-600">Paiement Original</p>
                         @php
-                            $payment = $reclamation->payment;
+                            $payment = $reclamation->payment();
                         @endphp
                         @if ($payment)
                             <p class="text-lg font-bold text-gray-900">{{ number_format($payment->amount, 2, ',', ' ') }} €</p>
