@@ -388,66 +388,6 @@
 
                     </div>
 
-                    <div id="bookingForm" class="space-y-4 mb-5">
-
-                        <div>
-
-                            <label for="startDate" class="block text-sm font-semibold text-slate-700 mb-2">Date de début</label>
-
-                            <input type="date" id="startDate" min="{{ now()->format('Y-m-d') }}"
-
-                                   class="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-400">
-
-                        </div>
-
-                        <div>
-
-                            <p class="block text-sm font-semibold text-slate-700 mb-2">Durée de location</p>
-
-                            <div class="grid grid-cols-2 gap-2">
-
-                                @foreach([1 => '1 jour', 3 => '3 jours', 7 => '1 semaine', 14 => '2 semaines'] as $days => $label)
-
-                                    <button type="button" data-days="{{ $days }}"
-
-                                            class="durationBtn py-2.5 px-3 text-sm rounded-xl border border-gray-200 text-gray-600 hover:border-green-300 hover:bg-green-50 transition-colors">
-
-                                        {{ $label }}
-
-                                    </button>
-
-                                @endforeach
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                    <div id="priceBreakdown" class="border-t border-slate-100 pt-4 mb-5 space-y-3">
-
-                        <div class="flex justify-between gap-3 text-sm text-slate-600">
-
-                            <span id="priceCalc">{{ number_format((float) $equipment->price_per_day, 2) }} TND × 1 jour</span>
-
-                            <span id="priceTotal">{{ number_format((float) $equipment->price_per_day, 2) }} TND</span>
-
-                        </div>
-
-                        <div class="flex justify-between gap-3 text-sm text-slate-600">
-
-                            <span>Frais de service</span><span id="serviceFee">1.00 TND</span>
-
-                        </div>
-
-                        <div class="flex justify-between gap-3 border-t border-slate-100 pt-3 font-bold text-green-950">
-
-                            <span>Total</span><span id="grandTotal">{{ number_format((float) $equipment->price_per_day + 1, 2) }} TND</span>
-
-                        </div>
-
-                    </div>
-
                     @if($equipment->availability)
 
                         @auth
@@ -462,23 +402,195 @@
 
                             @else
 
-                                <a
+                                {{-- Consolidated Reservation Form --}}
 
-                                    id="reservationLink" href="{{ route('reservations.create', ['equipment_id' => $equipment->id]) }}"
+                                <form id="reservationForm" method="POST" action="{{ route('reservations.store') }}" class="space-y-4">
 
-                                    class="block text-center w-full py-4
+                                    @csrf
 
-                                           font-bold rounded-xl bg-green-600
+                                    <input type="hidden" name="equipment_id" value="{{ $equipment->id }}">
 
-                                           hover:bg-green-700 text-white
+                                    {{-- Validation Error Alert --}}
 
-                                           transition-colors"
+                                    <div id="formErrors" class="hidden bg-red-50 border border-red-200 rounded-xl p-4"></div>
 
-                                >
+                                    {{-- Start Date --}}
 
-                                    Réserver maintenant
+                                    <div>
 
-                                </a>
+                                        <label for="date_debut" class="block text-sm font-semibold text-slate-700 mb-2">
+
+                                            Date de début <span class="text-red-600">*</span>
+
+                                        </label>
+
+                                        <div class="relative">
+
+                                            <input type="text" 
+
+                                                   id="date_debut" 
+
+                                                   name="date_debut"
+
+                                                   placeholder="YYYY-MM-DD"
+
+                                                   class="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+
+                                                   required
+
+                                                   readonly>
+
+                                            <div id="datePickerCalendar" class="hidden absolute top-full left-0 mt-2 bg-white border border-slate-300 rounded-xl shadow-lg z-50 p-4 w-96">
+
+                                                <div class="mb-4 flex items-center justify-between">
+
+                                                    <button type="button" id="prevMonth" class="px-2 py-1 text-slate-600 hover:bg-slate-100 rounded">←</button>
+
+                                                    <div id="monthYearDisplay" class="font-semibold text-slate-800"></div>
+
+                                                    <button type="button" id="nextMonth" class="px-2 py-1 text-slate-600 hover:bg-slate-100 rounded">→</button>
+
+                                                </div>
+
+                                                <div id="calendarGrid" class="grid grid-cols-7 gap-1 text-xs">
+
+                                                    <!-- Calendar will be generated by JavaScript -->
+
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+                                        <p class="text-xs text-slate-500 mt-1">Dates grisées et barrées sont réservées. Cliquez sur une date disponible pour la sélectionner.</p>
+
+                                    </div>
+
+                                    {{-- Duration Selection --}}
+
+                                    <div>
+
+                                        <label class="block text-sm font-semibold text-slate-700 mb-2">
+
+                                            Durée de location <span class="text-red-600">*</span>
+
+                                        </label>
+
+                                        <div class="grid grid-cols-2 gap-2">
+
+                                            @foreach([1 => '1 jour', 3 => '3 jours', 7 => '1 semaine', 14 => '2 semaines'] as $days => $label)
+
+                                                <button type="button" 
+
+                                                        class="durationBtn py-2.5 px-3 text-sm rounded-xl border border-gray-200 text-gray-600 hover:border-green-300 hover:bg-green-50 transition-colors"
+
+                                                        data-days="{{ $days }}"
+
+                                                        data-end-date="">
+
+                                                    {{ $label }}
+
+                                                </button>
+
+                                            @endforeach
+
+                                        </div>
+
+                                        <input type="hidden" id="date_fin" name="date_fin">
+
+                                    </div>
+
+                                    {{-- Price Breakdown --}}
+
+                                    <div id="priceBreakdown" class="border-t border-slate-100 pt-4 space-y-3">
+
+                                        <div class="flex justify-between gap-3 text-sm text-slate-600">
+
+                                            <span id="priceCalc">{{ number_format((float) $equipment->price_per_day, 2) }} TND × 1 jour</span>
+
+                                            <span id="priceTotal">{{ number_format((float) $equipment->price_per_day, 2) }} TND</span>
+
+                                        </div>
+
+                                        <div class="flex justify-between gap-3 text-sm text-slate-600">
+
+                                            <span>Frais de service</span>
+
+                                            <span id="serviceFee">1.00 TND</span>
+
+                                        </div>
+
+                                        <div class="flex justify-between gap-3 border-t border-slate-100 pt-3 font-bold text-green-950">
+
+                                            <span>Total</span>
+
+                                            <span id="grandTotal">{{ number_format((float) $equipment->price_per_day + 1, 2) }} TND</span>
+
+                                        </div>
+
+                                    </div>
+
+                                    {{-- Compensation Code (Collapsible) --}}
+
+                                    <details class="group border-t border-slate-100 pt-4">
+
+                                        <summary class="cursor-pointer text-sm font-semibold text-slate-700 flex justify-between items-center list-none hover:text-green-700">
+
+                                            Code de compensation (optionnel)
+
+                                            <span class="text-lg group-open:rotate-180 transition-transform">⌄</span>
+
+                                        </summary>
+
+                                        <div class="mt-3 space-y-2">
+
+                                            <input type="text" 
+
+                                                   id="compensation_code" 
+
+                                                   name="compensation_code"
+
+                                                   placeholder="Entrez votre code"
+
+                                                   maxlength="20"
+
+                                                   class="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-400">
+
+                                            <p class="text-xs text-slate-500">Si vous avez un code de réduction, entrez-le ici pour voir la remise appliquée.</p>
+
+                                            <div id="codeDiscount" class="hidden bg-green-50 border border-green-200 rounded-lg p-3">
+
+                                                <p class="text-sm text-green-800 font-semibold">
+
+                                                    <span id="discountText"></span>
+
+                                                </p>
+
+                                            </div>
+
+                                        </div>
+
+                                    </details>
+
+                                    {{-- Submit Button --}}
+
+                                    <button type="submit" 
+
+                                            id="submitBtn"
+
+                                            class="w-full py-4 mt-6 font-bold rounded-xl bg-green-600 hover:bg-green-700 text-white transition-colors disabled:bg-slate-300 disabled:cursor-not-allowed">
+
+                                        Réserver maintenant
+
+                                    </button>
+
+                                    <p class="text-xs text-center text-gray-400">
+
+                                        Le paiement est sécurisé via SolarShare.
+
+                                    </p>
+
+                                </form>
 
                             @endif
 
@@ -499,12 +611,6 @@
                         <button type="button" disabled class="w-full py-3.5 font-bold rounded-xl bg-slate-200 text-slate-400 cursor-not-allowed">Non disponible</button>
 
                     @endif
-
-                    <p class="text-xs text-center text-gray-400 mt-3">
-
-                        Le paiement est sécurisé via SolarShare.
-
-                    </p>
 
                 </div>
 
@@ -569,43 +675,494 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', async function () {
     const price = @json((float) $equipment->price_per_day);
-    const buttons = document.querySelectorAll('.durationBtn');
-    const startDate = document.getElementById('startDate');
-    const reservationLink = document.getElementById('reservationLink');
-    let days = 1;
+    const equipmentId = @json((int) $equipment->id);
+    
+    // Form elements
+    const form = document.getElementById('reservationForm');
+    const dateDebut = document.getElementById('date_debut');
+    const dateFin = document.getElementById('date_fin');
+    const durationBtns = document.querySelectorAll('.durationBtn');
+    const compensationCode = document.getElementById('compensation_code');
+    const submitBtn = document.getElementById('submitBtn');
+    const formErrors = document.getElementById('formErrors');
+    const priceCalc = document.getElementById('priceCalc');
+    const priceTotal = document.getElementById('priceTotal');
+    const grandTotal = document.getElementById('grandTotal');
+    const codeDiscount = document.getElementById('codeDiscount');
+    
+    // Calendar elements
+    const datePickerCalendar = document.getElementById('datePickerCalendar');
+    const monthYearDisplay = document.getElementById('monthYearDisplay');
+    const calendarGrid = document.getElementById('calendarGrid');
+    const prevMonthBtn = document.getElementById('prevMonth');
+    const nextMonthBtn = document.getElementById('nextMonth');
+    
+    let selectedDays = 1;
+    let durationSelected = false;
+    let blockedPeriods = [];
+    let currentCalendarDate = new Date();
 
-    function updatePreview() {
-        const subtotal = price * days;
-        const fee = 1;
-        document.getElementById('priceCalc').textContent = `${price.toFixed(2)} TND × ${days} jour${days > 1 ? 's' : ''}`;
-        document.getElementById('priceTotal').textContent = `${subtotal.toFixed(2)} TND`;
-        document.getElementById('serviceFee').textContent = `${fee.toFixed(2)} TND`;
-        document.getElementById('grandTotal').textContent = `${(subtotal + fee).toFixed(2)} TND`;
-        buttons.forEach(button => {
-            const selected = Number(button.dataset.days) === days;
-            button.classList.toggle('bg-green-600', selected);
-            button.classList.toggle('text-white', selected);
-            button.classList.toggle('border-green-600', selected);
-            button.classList.toggle('border-gray-200', !selected);
-            button.classList.toggle('text-gray-600', !selected);
-        });
-        if (reservationLink) {
-            const url = new URL(reservationLink.getAttribute('href'), window.location.href);
-            url.searchParams.set('days', String(days));
-            if (startDate && startDate.value) url.searchParams.set('start_date', startDate.value);
-            else url.searchParams.delete('start_date');
-            reservationLink.href = url.toString();
+    // Supported duration values
+    const supportedDurations = [1, 3, 7, 14];
+
+    /**
+     * Load blocked periods from the availability endpoint
+     */
+    async function loadBlockedPeriods() {
+        try {
+            const response = await fetch(`/equipements/${equipmentId}/availability`);
+            if (response.ok) {
+                const data = await response.json();
+                blockedPeriods = data.blocked_periods || [];
+                console.log('Loaded blocked periods:', blockedPeriods);
+            } else {
+                console.warn('Failed to load availability data');
+            }
+        } catch (err) {
+            console.error('Error loading blocked periods:', err);
         }
     }
 
-    buttons.forEach(button => button.addEventListener('click', () => {
-        days = Number(button.dataset.days);
-        updatePreview();
-    }));
-    if (startDate) startDate.addEventListener('change', updatePreview);
-    updatePreview();
+    /**
+     * Check if a single date is blocked
+     */
+    function isDateBlocked(dateStr) {
+        const date = new Date(dateStr);
+        
+        for (const period of blockedPeriods) {
+            const blockStart = new Date(period.start_date);
+            const blockEnd = new Date(period.end_date);
+            
+            // Half-open interval: blockStart <= date < blockEnd
+            if (blockStart <= date && date < blockEnd) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
+    /**
+     * Check if a date range overlaps with blocked periods
+     * Uses half-open interval: [start, end)
+     */
+    function hasOverlapWithBlocked(startStr, endStr) {
+        const start = new Date(startStr);
+        const end = new Date(endStr);
+
+        for (const period of blockedPeriods) {
+            const blockStart = new Date(period.start_date);
+            const blockEnd = new Date(period.end_date);
+
+            // Half-open interval overlap: blockStart < end AND blockEnd > start
+            if (blockStart < end && blockEnd > start) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Format date to YYYY-MM-DD string
+     */
+    function formatDate(date) {
+        return date.toISOString().split('T')[0];
+    }
+
+    /**
+     * Validate that start date is not in the past
+     */
+    function isValidStartDate(dateStr) {
+        if (!dateStr) return false;
+        
+        // Validate YYYY-MM-DD format
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return false;
+        
+        const selected = new Date(dateStr);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return selected >= today;
+    }
+
+    /**
+     * Calculate end date from start date and duration
+     */
+    function calculateEndDate(startDateStr, days) {
+        if (!startDateStr || !days) return '';
+        const start = new Date(startDateStr);
+        const end = new Date(start);
+        end.setDate(end.getDate() + parseInt(days));
+        return end.toISOString().split('T')[0];
+    }
+
+    /**
+     * Render calendar for current month
+     */
+    function renderCalendar() {
+        const year = currentCalendarDate.getFullYear();
+        const month = currentCalendarDate.getMonth();
+        
+        monthYearDisplay.textContent = currentCalendarDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+        
+        // Clear grid
+        calendarGrid.innerHTML = '';
+        
+        // Add day headers (Mon-Sun)
+        const dayHeaders = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
+        dayHeaders.forEach(day => {
+            const header = document.createElement('div');
+            header.className = 'text-center font-bold text-slate-600 py-2';
+            header.textContent = day;
+            calendarGrid.appendChild(header);
+        });
+        
+        // Get first day of month (0 = Sunday, so add 1 and mod 7)
+        const firstDay = new Date(year, month, 1).getDay();
+        const firstMonday = (firstDay + 6) % 7; // Convert to Monday = 0
+        
+        // Get number of days in month
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        
+        // Add empty cells for days before month starts
+        for (let i = 0; i < firstMonday; i++) {
+            const empty = document.createElement('div');
+            calendarGrid.appendChild(empty);
+        }
+        
+        // Add days of month
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dateObj = new Date(year, month, day);
+            const dateStr = formatDate(dateObj);
+            const isBlocked = isDateBlocked(dateStr);
+            const isPast = dateObj < today;
+            
+            const dayCell = document.createElement('button');
+            dayCell.type = 'button';
+            dayCell.className = 'py-2 text-center text-xs font-semibold rounded transition-colors';
+            dayCell.textContent = day;
+            
+            if (isPast) {
+                dayCell.className += ' bg-slate-50 text-slate-400 cursor-not-allowed';
+                dayCell.disabled = true;
+            } else if (isBlocked) {
+                dayCell.className += ' bg-slate-300 text-slate-500 line-through cursor-not-allowed';
+                dayCell.disabled = true;
+                dayCell.title = 'Date réservée';
+            } else if (dateStr === dateDebut.value) {
+                dayCell.className += ' bg-green-600 text-white';
+            } else {
+                dayCell.className += ' bg-white text-slate-700 hover:bg-green-100 cursor-pointer';
+                dayCell.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    selectDate(dateStr);
+                });
+            }
+            
+            calendarGrid.appendChild(dayCell);
+        }
+    }
+
+    /**
+     * Select a date from calendar
+     */
+    function selectDate(dateStr) {
+        dateDebut.value = dateStr;
+        datePickerCalendar.classList.add('hidden');
+        
+        // Trigger change event
+        dateDebut.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    /**
+     * Update price display and end date
+     */
+    function updateDisplay() {
+        if (!dateDebut.value || !durationSelected) {
+            priceCalc.textContent = `${price.toFixed(2)} TND × 1 jour`;
+            priceTotal.textContent = `${price.toFixed(2)} TND`;
+            grandTotal.textContent = `${(price + 1).toFixed(2)} TND`;
+            dateFin.value = '';
+            clearErrors();
+            return;
+        }
+
+        // Calculate end date
+        const endDate = calculateEndDate(dateDebut.value, selectedDays);
+        dateFin.value = endDate;
+
+        // Check for overlaps with blocked periods
+        if (hasOverlapWithBlocked(dateDebut.value, endDate)) {
+            showError('Cet équipement est déjà réservé sur cette période. Veuillez choisir d\'autres dates.');
+            submitBtn.disabled = true;
+            return;
+        }
+
+        clearErrors();
+        submitBtn.disabled = false;
+
+        // Update price display
+        const subtotal = price * selectedDays;
+        const fee = 1.00;
+        const total = subtotal + fee;
+
+        priceCalc.textContent = `${price.toFixed(2)} TND × ${selectedDays} jour${selectedDays > 1 ? 's' : ''}`;
+        priceTotal.textContent = `${subtotal.toFixed(2)} TND`;
+        grandTotal.textContent = `${total.toFixed(2)} TND`;
+    }
+
+    /**
+     * Calendar navigation
+     */
+    prevMonthBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1);
+        renderCalendar();
+    });
+
+    nextMonthBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1);
+        renderCalendar();
+    });
+
+    /**
+     * Show/hide calendar on date input click
+     */
+    dateDebut.addEventListener('click', function (e) {
+        e.stopPropagation();
+        datePickerCalendar.classList.toggle('hidden');
+        if (!datePickerCalendar.classList.contains('hidden')) {
+            renderCalendar();
+        }
+    });
+
+    /**
+     * Hide calendar when clicking outside
+     */
+    document.addEventListener('click', function (e) {
+        if (!datePickerCalendar.contains(e.target) && e.target !== dateDebut) {
+            datePickerCalendar.classList.add('hidden');
+        }
+    });
+
+    /**
+     * Validate start date on change
+     */
+    dateDebut.addEventListener('change', function () {
+        clearErrors();
+        
+        // Validate start date
+        if (this.value && !isValidStartDate(this.value)) {
+            showError('La date de début ne peut pas être dans le passé.');
+            this.value = '';
+            dateFin.value = '';
+            return;
+        }
+
+        // If both date and duration selected, update display
+        if (durationSelected) {
+            updateDisplay();
+        }
+    });
+
+    /**
+     * Duration button click handlers
+     */
+    durationBtns.forEach(btn => {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            const days = parseInt(this.dataset.days);
+
+            // Validate supported duration
+            if (!supportedDurations.includes(days)) {
+                showError('Durée de location non supportée.');
+                return;
+            }
+
+            clearErrors();
+            selectedDays = days;
+            durationSelected = true;
+
+            // Update button states
+            durationBtns.forEach(b => {
+                const isSelected = parseInt(b.dataset.days) === days;
+                b.classList.toggle('bg-green-600', isSelected);
+                b.classList.toggle('text-white', isSelected);
+                b.classList.toggle('border-green-600', isSelected);
+                b.classList.toggle('border-gray-200', !isSelected);
+                b.classList.toggle('text-gray-600', !isSelected);
+            });
+
+            // If start date is set, update display
+            if (dateDebut.value) {
+                updateDisplay();
+            }
+        });
+    });
+
+    /**
+     * Validate compensation code (real-time)
+     */
+    compensationCode.addEventListener('change', async function () {
+        const code = this.value.trim();
+        
+        if (!code) {
+            codeDiscount.classList.add('hidden');
+            return;
+        }
+
+        // Note: Full validation happens server-side
+        // Client-side just shows a placeholder
+        // In a real app, you might make an AJAX call to check code validity
+        // For now, we'll let the backend handle all validation
+    });
+
+    /**
+     * Show error message
+     */
+    function showError(message) {
+        formErrors.innerHTML = `<p class="text-sm text-red-700 font-semibold">${message}</p>`;
+        formErrors.classList.remove('hidden');
+        window.scrollTo({ top: formErrors.offsetTop - 100, behavior: 'smooth' });
+    }
+
+    /**
+     * Clear error messages
+     */
+    function clearErrors() {
+        formErrors.classList.add('hidden');
+        formErrors.innerHTML = '';
+    }
+
+    /**
+     * Validate form before submission
+     */
+    function validateFormFrontend() {
+        clearErrors();
+
+        // Check start date
+        if (!dateDebut.value) {
+            showError('Veuillez sélectionner une date de début.');
+            return false;
+        }
+
+        // Check date format is valid YYYY-MM-DD
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(dateDebut.value)) {
+            showError('Format de date invalide. Utilisez YYYY-MM-DD.');
+            return false;
+        }
+
+        // Check start date is valid (not in past)
+        if (!isValidStartDate(dateDebut.value)) {
+            showError('La date de début ne peut pas être dans le passé.');
+            return false;
+        }
+
+        // Check duration selected
+        if (!durationSelected) {
+            showError('Veuillez sélectionner une durée de location.');
+            return false;
+        }
+
+        // Check for overlap with blocked periods
+        const endDate = calculateEndDate(dateDebut.value, selectedDays);
+        if (hasOverlapWithBlocked(dateDebut.value, endDate)) {
+            showError('Cet équipement est déjà réservé sur cette période. Veuillez choisir d\'autres dates.');
+            return false;
+        }
+
+        // Check equipment is still available (will be validated server-side too)
+        // This is informational only
+        if (!@json((bool) $equipment->availability)) {
+            showError('Cet équipement n\'est plus disponible.');
+            return false;
+        }
+
+        // Compensation code (if provided, will be validated server-side)
+        const code = compensationCode.value.trim();
+        if (code && code.length > 20) {
+            showError('Le code de compensation est trop long.');
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Handle form submission
+     */
+    form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        // Frontend validation
+        if (!validateFormFrontend()) {
+            return;
+        }
+
+        // Disable submit button
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Réservation en cours...';
+
+        // Submit form via POST
+        const formData = new FormData(form);
+
+        try {
+            const response = await fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            // If successful (201 or 200), redirect to reservation show page
+            if (response.ok) {
+                const data = await response.json();
+                if (data.redirect) {
+                    window.location.href = data.redirect;
+                } else {
+                    // Fallback: redirect to reservations index
+                    window.location.href = '/reservations';
+                }
+            } else {
+                // Parse error response
+                const errorData = await response.json();
+                const errorMessages = [];
+
+                if (errorData.errors) {
+                    Object.entries(errorData.errors).forEach(([field, messages]) => {
+                        if (Array.isArray(messages)) {
+                            errorMessages.push(...messages);
+                        } else {
+                            errorMessages.push(messages);
+                        }
+                    });
+                } else if (errorData.message) {
+                    errorMessages.push(errorData.message);
+                }
+
+                showError(errorMessages.join('<br>'));
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Réserver maintenant';
+            }
+        } catch (err) {
+            console.error('Form submission error:', err);
+            showError('Une erreur est survenue. Veuillez réessayer.');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Réserver maintenant';
+        }
+    });
+
+    // Initialize: load blocked periods then render calendar
+    loadBlockedPeriods().then(() => {
+        updateDisplay();
+    });
 });
 </script>
 

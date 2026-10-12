@@ -17,6 +17,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'provider' => \App\Http\Middleware\EnsureUserIsProvider::class,
         ]);
     })
+    ->withProviders([
+        App\Providers\EventServiceProvider::class,
+        Illuminate\Broadcasting\BroadcastServiceProvider::class,
+    ])
     ->withExceptions(function (Exceptions $exceptions) {
         //
     })->create();

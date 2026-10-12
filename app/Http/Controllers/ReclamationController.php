@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\ReclamationCreated;
 use App\Http\Requests\StoreReclamationRequest;
 use App\Models\Reclamation;
 use App\Models\Reservation;
@@ -100,6 +101,9 @@ class ReclamationController extends Controller
             }
 
             DB::commit();
+
+            // Dispatch event after successful DB commit
+            ReclamationCreated::dispatch($reclamation);
 
             return redirect()->route('reclamations.show', $reclamation->id)
                 ->with('success', 'Réclamation créée avec succès.');

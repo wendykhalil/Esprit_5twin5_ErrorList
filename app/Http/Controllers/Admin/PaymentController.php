@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Events\PaymentProcessed;
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use Illuminate\Http\Request;
@@ -80,6 +81,9 @@ class PaymentController extends Controller
         ]);
 
         $payment = Payment::create($validated);
+
+        // Dispatch event after successful creation
+        PaymentProcessed::dispatch($payment);
 
         return redirect()
             ->route('admin.payments.show', $payment)

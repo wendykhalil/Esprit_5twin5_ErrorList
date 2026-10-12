@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\UpdateEquipmentRequest;
 use App\Models\Category;
 use App\Models\Equipment;
+use App\Services\EquipmentAvailabilityService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -123,6 +124,42 @@ class EquipmentController extends Controller
                 'related'
             )
         );
+    }
+
+    /**
+     * Get blocked periods for an equipment (availability endpoint).
+     *
+     * Returns JSON with all blocked periods for a given equipment.
+     * Blocked periods are determined by reservations with statuses:
+     * en_attente, confirmee, en_cours, litige
+     *
+     * Response format:
+     * {
+     *   "equipment_id": 1,
+     *   "blocked_periods": [
+     *     { "start_date": "2027-02-01", "end_date": "2027-02-11" }
+     *   ]
+     * }
+     *
+     * @param Equipment $equipment
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function availability(Equipment $equipment)
+    {
+        // Validate that equipment exists and is active
+        if ($equipment->status !== 'active') {
+            return response()->json([
+                'error' => 'Cet équipement n\'est pas disponible.',
+            ], 404);
+        }
+
+        $service = new EquipmentAvailabilityService();
+        $blockedPeriods = $service->getBlockedPeriods($equipment);
+
+        return response()->json([
+            'equipment_id' => $equipment->id,
+            'blocked_periods' => $blockedPeriods->values()->all(),
+        ]);
     }
 
     /**

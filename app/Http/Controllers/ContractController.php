@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\ContractCreated;
 use App\Models\Contract;
 use App\Models\Reservation;
 use Illuminate\Http\Request;
@@ -90,7 +91,7 @@ class ContractController extends Controller
 
         // Create or get delivery for this contract's reservation
         try {
-            $delivery = $this->createOrUpdateDelivery($contract->reservation);
+            $delivery = $this->createOrUpdateDelivery($contract->reservation, $contract);
 
             return redirect()->route('deliveries.show', $delivery)
                 ->with('success', 'Contrat accepté avec succès! Votre livraison est maintenant disponible dans "Mes livraisons".');
@@ -107,9 +108,10 @@ class ContractController extends Controller
      * Idempotent: If delivery already exists, returns it instead of creating a duplicate.
      * 
      * @param Reservation $reservation
+     * @param Contract $contract The contract being accepted (passed to event dispatcher)
      * @return \App\Models\Delivery
      */
-    private function createOrUpdateDelivery(Reservation $reservation)
+    private function createOrUpdateDelivery(Reservation $reservation, Contract $contract)
     {
         // Check if delivery already exists (idempotent operation)
         if ($reservation->delivery) {
@@ -118,7 +120,7 @@ class ContractController extends Controller
 
         // Create new delivery with status='prete' (Ready)
         // Delivery is now marked as ready because equipment has been prepared after payment
-        return \App\Models\Delivery::create([
+        $delivery = \App\Models\Delivery::create([
             'reservation_id' => $reservation->id,
             'user_id' => $reservation->user_id,
             'equipment_id' => $reservation->equipment_id,
@@ -126,5 +128,10 @@ class ContractController extends Controller
             'planned_return_date' => $reservation->date_fin,
             'status' => 'prete', // Ready for delivery (new workflow)
         ]);
+
+        // Dispatch contract creation event with the individual contract model
+        ContractCreated::dispatch($contract);
+
+        return $delivery;
     }
 }

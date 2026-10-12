@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Events\CompensationCodeCreated;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreCompensationCodeRequest;
 use App\Http\Requests\UpdateCompensationCodeRequest;
@@ -72,6 +73,9 @@ class CompensationCodeController extends Controller
         $validated['code'] = CompensationCode::generateCode();
 
         $compensationCode = CompensationCode::create($validated);
+
+        // Dispatch event after successful creation
+        CompensationCodeCreated::dispatch($compensationCode);
 
         return redirect()->route('admin.compensation-codes.show', $compensationCode->id)
             ->with('success', 'Code de compensation créé avec succès.');

@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\ReservationCreated;
 use App\Http\Requests\ReservationRequest;
 use App\Models\Equipment;
 use App\Models\Reservation;
 use App\Services\ApplyReservationCompensationService;
+use App\Services\EquipmentAvailabilityService;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class ReservationController extends Controller
 {
@@ -40,24 +43,43 @@ class ReservationController extends Controller
         $data['statut'] = 'en_attente';
         $data['prix_total'] = $this->calculerPrix($data);
 
-        $reservation = Reservation::create($data);
+        // Wrap reservation creation and compensation code application in a transaction
+        // This ensures that if anything fails, the entire operation is rolled back
+        $reservation = DB::transaction(function () use ($data) {
+            // Create the reservation
+            $res = Reservation::create($data);
 
-        // Apply compensation code if provided
-        if (!empty($data['compensation_code'])) {
-            $service = new ApplyReservationCompensationService();
-            try {
-                $reservation = $service->apply($reservation, $data['compensation_code']);
-                $reservation->refresh(); // Ensure all fields are up-to-date from database
-                $message = 'Réservation créée avec succès. Code de compensation appliqué. En attente de confirmation de l\'administrateur.';
-            } catch (\Exception $e) {
-                // Code application failed, but reservation was created
-                // This should not happen because FormRequest validates the code, but handle gracefully
-                $message = 'Réservation créée, mais le code de compensation n\'a pas pu être appliqué: ' . $e->getMessage();
+            // Apply compensation code if provided
+            if (!empty($data['compensation_code'])) {
+                $service = new ApplyReservationCompensationService();
+                $res = $service->apply($res, $data['compensation_code']);
+                $res->refresh();
             }
+
+            return $res;
+        });
+
+        // Dispatch event AFTER transaction commits
+        // Events are dispatched after the transaction is committed, so the data is persisted
+        ReservationCreated::dispatch($reservation);
+
+        // Determine message based on whether compensation code was applied
+        if ($reservation->compensation_code_id) {
+            $message = 'Réservation créée avec succès. Code de compensation appliqué. En attente de confirmation de l\'administrateur.';
         } else {
             $message = 'Réservation créée avec succès. En attente de confirmation de l\'administrateur.';
         }
 
+        // Handle AJAX requests (from equipment detail page embedded form)
+        if ($request->expectsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'redirect' => route('reservations.show', $reservation)
+            ], 200);
+        }
+
+        // Handle traditional form submissions
         return redirect()->route('reservations.show', $reservation)->with('success', $message);
     }
 
@@ -92,33 +114,32 @@ class ReservationController extends Controller
         // Calculate new price based on date changes
         $newPrix = $this->calculerPrix($data);
 
-        // Store the base price before applying compensation code
-        // If code is being removed, use the current base_price; otherwise use new calculated price
-        if ($reservation->compensation_code_id && empty($data['compensation_code'])) {
-            // Remove old compensation code first
-            $service = new ApplyReservationCompensationService();
-            $reservation = $service->remove($reservation);
-            $reservation->refresh();
-            // Update with new price and no code
-            $data['prix_total'] = $newPrix;
-            $reservation->update($data);
-        } elseif (!empty($data['compensation_code']) && $reservation->compensation_code_id === null) {
-            // Applying a new code: use calculated price as base
-            $data['prix_total'] = $newPrix;
-            $reservation->update($data);
-            $service = new ApplyReservationCompensationService();
-            try {
+        // Wrap all modifications in a transaction to ensure atomicity
+        DB::transaction(function () use ($data, $newPrix, $reservation, &$message) {
+            // Store the base price before applying compensation code
+            // If code is being removed, use the current base_price; otherwise use new calculated price
+            if ($reservation->compensation_code_id && empty($data['compensation_code'])) {
+                // Remove old compensation code first
+                $service = new ApplyReservationCompensationService();
+                $reservation = $service->remove($reservation);
+                $reservation->refresh();
+                // Update with new price and no code
+                $data['prix_total'] = $newPrix;
+                $reservation->update($data);
+            } elseif (!empty($data['compensation_code']) && $reservation->compensation_code_id === null) {
+                // Applying a new code: use calculated price as base
+                $data['prix_total'] = $newPrix;
+                $reservation->update($data);
+                $service = new ApplyReservationCompensationService();
                 $reservation = $service->apply($reservation, $data['compensation_code']);
                 $reservation->refresh();
                 $message = 'Réservation modifiée. Code de compensation appliqué.';
-            } catch (\Exception $e) {
-                $message = 'Réservation modifiée, mais le code de compensation n\'a pas pu être appliqué: ' . $e->getMessage();
+            } else {
+                // No code changes, just update price
+                $data['prix_total'] = $newPrix;
+                $reservation->update($data);
             }
-        } else {
-            // No code changes, just update price
-            $data['prix_total'] = $newPrix;
-            $reservation->update($data);
-        }
+        });
 
         return redirect()->route('reservations.show', $reservation)->with('success', $message);
     }
@@ -126,6 +147,8 @@ class ReservationController extends Controller
     /**
      * Annuler une réservation (changement de statut vers 'annulee')
      * Disponible uniquement pour les réservations en attente ou confirmées
+     * Uses transaction to ensure atomicity of status change.
+     * This immediately releases the blocked dates.
      */
     public function cancel(Reservation $reservation)
     {
@@ -138,7 +161,10 @@ class ReservationController extends Controller
             'Cette réservation ne peut pas être annulée.'
         );
 
-        $reservation->update(['statut' => 'annulee']);
+        // Cancel within transaction (releases availability immediately)
+        DB::transaction(function () use ($reservation) {
+            $reservation->update(['statut' => 'annulee']);
+        });
 
         return redirect()->route('reservations.index')->with('success', 'Réservation annulée.');
     }
@@ -154,7 +180,11 @@ class ReservationController extends Controller
             'Vous ne pouvez supprimer que les réservations en attente. Utilisez l\'annulation pour les autres statuts.'
         );
 
-        $reservation->delete();
+        // Delete within transaction
+        DB::transaction(function () use ($reservation) {
+            $reservation->delete();
+        });
+
         return redirect()->route('reservations.index')->with('success', 'Réservation supprimée.');
     }
 

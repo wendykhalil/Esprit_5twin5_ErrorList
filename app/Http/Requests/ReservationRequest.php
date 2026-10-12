@@ -4,7 +4,9 @@ namespace App\Http\Requests;
 
 use App\Models\Equipment;
 use App\Models\Reservation;
+use App\Services\EquipmentAvailabilityService;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Carbon;
 
 class ReservationRequest extends FormRequest
 {
@@ -33,17 +35,49 @@ class ReservationRequest extends FormRequest
     }
 
     /**
+     * Handle failed validation for AJAX requests
+     */
+    protected function failedValidation(\Illuminate\Contracts\Validation\Validator $validator)
+    {
+        if ($this->expectsJson() || $this->header('X-Requested-With') === 'XMLHttpRequest') {
+            throw new \Illuminate\Validation\ValidationException($validator);
+        }
+
+        parent::failedValidation($validator);
+    }
+
+    /**
      * Validations personnalisées après la validation standard.
      * Empêche:
      * - L'auto-réservation (utilisateur réservant son propre équipement)
      * - Les chevauchements de dates
      * - Les transitions de statut invalides lors de modifications
+     * - Les durées de location non supportées
+     * - Validates compensation codes
      */
     public function after(): array
     {
         return [
             function ($validator) {
                 if ($validator->errors()->isNotEmpty()) {
+                    return;
+                }
+
+                // Rule 0: Validate supported rental duration
+                $supported_durations = [1, 3, 7, 14];
+                $start = Carbon::parse($this->date_debut);
+                $end = Carbon::parse($this->date_fin);
+                $days = $start->diffInDays($end);
+
+                // The actual days calculated from dates must be one of the supported values
+                // Allow for 1-day variations due to timezone/rounding
+                $isValidDuration = collect($supported_durations)->contains(fn($d) => abs($d - $days) <= 1);
+
+                if (!$isValidDuration) {
+                    $validator->errors()->add(
+                        'date_fin',
+                        'La durée de location doit être 1 jour, 3 jours, 1 semaine ou 2 semaines.'
+                    );
                     return;
                 }
 
@@ -59,20 +93,15 @@ class ReservationRequest extends FormRequest
                     return;
                 }
 
-                // Règle 2: Vérifier les chevauchements de dates
-                // Exclut: annulee, terminee, refusee
-                // Inclut: en_attente, confirmee, en_cours, litige
-                $conflit = Reservation::where('equipment_id', $this->equipment_id)
-                    ->whereNotIn('statut', ['annulee', 'terminee', 'refusee'])
-                    ->when($this->route('reservation'), fn ($q, $r) => $q->where('id', '!=', $r->id))
-                    ->where('date_debut', '<', $this->date_fin)
-                    ->where('date_fin', '>', $this->date_debut)
-                    ->exists();
+                // Règle 2: Vérifier les chevauchements de dates usando EquipmentAvailabilityService
+                // This replaces the inline query and uses the centralized availability logic
+                $service = new EquipmentAvailabilityService();
+                $excludeReservation = $this->route('reservation');
 
-                if ($conflit) {
+                if ($service->hasOverlap($equipment, $this->date_debut, $this->date_fin, $excludeReservation)) {
                     $validator->errors()->add(
                         'date_debut',
-                        'Cet équipement est déjà réservé sur cette période.'
+                        'Cet équipement est déjà réservé sur cette période. Veuillez choisir d\'autres dates.'
                     );
                 }
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Events\DeliveryStatusChanged;
 use App\Models\Delivery;
 use App\Models\Reservation;
 use App\Http\Requests\Admin\UpdateDeliveryStatusRequest;
@@ -79,7 +80,11 @@ class DeliveryController
             }
         }
 
+        $oldStatus = $delivery->status;
         $delivery->update($updates);
+
+        // Dispatch event after successful update
+        DeliveryStatusChanged::dispatch($delivery, $oldStatus);
 
         return redirect()
             ->route('admin.deliveries.show', $delivery)

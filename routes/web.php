@@ -62,6 +62,10 @@ Route::get('/equipements/{equipment}', [EquipmentController::class, 'show'])
     ->whereNumber('equipment')
     ->name('equipments.show');
 
+Route::get('/equipements/{equipment}/availability', [EquipmentController::class, 'availability'])
+    ->whereNumber('equipment')
+    ->name('equipments.availability');
+
 
 // --------------------------------------------------
 // SOLARSHARE STATIC PAGES

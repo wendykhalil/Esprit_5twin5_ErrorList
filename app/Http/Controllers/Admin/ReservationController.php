@@ -7,7 +7,9 @@ use App\Http\Requests\Admin\ReservationAdminRequest;
 use App\Models\Equipment;
 use App\Models\Reservation;
 use App\Models\User;
+use App\Services\EquipmentAvailabilityService;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
 class ReservationController extends Controller
@@ -89,6 +91,7 @@ class ReservationController extends Controller
      * Accepter une réservation en attente (transition en_attente → confirmee)
      * L'admin doit vérifier que les dates sont toujours disponibles.
      * 
+     * Uses transaction to ensure atomicity of status change.
      * IMPORTANT: La livraison n'est plus créée ici.
      * Elle sera créée automatiquement quand le client accepte le contrat.
      */
@@ -100,21 +103,19 @@ class ReservationController extends Controller
                 ->with('error', 'Seules les réservations en attente peuvent être acceptées.');
         }
 
-        // Vérification 2: Vérifier que les dates sont toujours disponibles
-        $conflict = Reservation::where('equipment_id', $reservation->equipment_id)
-            ->whereNotIn('statut', ['annulee', 'terminee', 'refusee'])
-            ->where('id', '!=', $reservation->id)
-            ->where('date_debut', '<', $reservation->date_fin)
-            ->where('date_fin', '>', $reservation->date_debut)
-            ->exists();
+        // Vérification 2: Vérifier que les dates sont toujours disponibles using EquipmentAvailabilityService
+        $service = new EquipmentAvailabilityService();
+        $equipment = $reservation->equipment;
 
-        if ($conflict) {
+        if ($service->hasOverlap($equipment, $reservation->date_debut, $reservation->date_fin, $reservation)) {
             return redirect()->route('admin.reservations.show', $reservation)
                 ->with('error', 'Les dates de cette réservation ne sont plus disponibles. Une autre réservation a été confirmée sur cette période.');
         }
 
-        // Transition: en_attente → confirmee
-        $reservation->update(['statut' => 'confirmee']);
+        // Transition: en_attente → confirmee (within transaction)
+        DB::transaction(function () use ($reservation) {
+            $reservation->update(['statut' => 'confirmee']);
+        });
 
         return redirect()->route('admin.reservations.show', $reservation)
             ->with('success', 'Réservation acceptée et confirmée. Le client pourra créer la livraison après acceptation du contrat et paiement.');
@@ -122,6 +123,7 @@ class ReservationController extends Controller
 
     /**
      * Refuser une réservation en attente (transition en_attente → refusee)
+     * Uses transaction to ensure atomicity of status change.
      */
     public function reject(Reservation $reservation)
     {
@@ -131,8 +133,11 @@ class ReservationController extends Controller
                 ->with('error', 'Seules les réservations en attente peuvent être refusées.');
         }
 
-        // Transition: en_attente → refusee
-        $reservation->update(['statut' => 'refusee']);
+        // Transition: en_attente → refusee (within transaction)
+        // This releases the blocked dates immediately
+        DB::transaction(function () use ($reservation) {
+            $reservation->update(['statut' => 'refusee']);
+        });
 
         return redirect()->route('admin.reservations.show', $reservation)
             ->with('success', 'Réservation refusée.');
@@ -151,7 +156,10 @@ class ReservationController extends Controller
                 ->with('error', 'Impossible de supprimer une réservation liée à un paiement actif.');
         }
 
-        $reservation->delete();
+        // Delete within transaction
+        DB::transaction(function () use ($reservation) {
+            $reservation->delete();
+        });
 
         return redirect()->route('admin.reservations.index')->with('success', 'Réservation supprimée.');
     }

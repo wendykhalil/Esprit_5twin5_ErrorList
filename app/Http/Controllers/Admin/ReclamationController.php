@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Events\ReclamationApproved;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ApproveReclamationRequest;
 use App\Http\Requests\RejectReclamationRequest;
@@ -96,6 +97,9 @@ class ReclamationController extends Controller
                 validated: $validated,
                 createdBy: Auth::id()
             );
+
+            // Dispatch event after successful approval
+            ReclamationApproved::dispatch($reclamation->refresh());
 
             return redirect()->route('admin.reclamations.show', $reclamation->id)
                 ->with('success', 'Réclamation approuvée. Code de compensation attribué : ' . $compensationCode->code);
