@@ -80,6 +80,29 @@
         </div>
     </div>
 
+    <div class="rounded-xl border border-green-200 bg-green-50 p-5">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+                <p class="text-xs font-semibold uppercase tracking-wider text-green-700">Impact de la plateforme</p>
+                <div class="mt-2 flex flex-wrap gap-5 text-sm text-green-900">
+                    <span><strong>{{ number_format($impactKwh, 2) }}</strong> kWh</span>
+                    <span><strong>{{ number_format($impactCo2, 2) }}</strong> kg CO2 évités</span>
+                    <span><strong>{{ $impactBadges }}</strong> badges</span>
+                </div>
+            </div>
+            <div class="text-sm text-green-900">
+                <p class="mb-1 font-semibold">Top 3 utilisateurs</p>
+                <ol class="flex flex-wrap gap-3">
+                    @forelse($topImpactUsers as $topUser)
+                        <li>{{ $loop->iteration }}. {{ $topUser->name }} ({{ number_format($topUser->releves_energie_sum_kwh_estimes, 2) }} kWh)</li>
+                    @empty
+                        <li>Aucun relevé</li>
+                    @endforelse
+                </ol>
+            </div>
+        </div>
+    </div>
+
     {{-- Quick Actions --}}
     <div class="bg-white rounded-xl border border-slate-200 p-5">
         <h3 class="font-bold text-slate-800 text-base mb-4" style="font-family: Outfit, sans-serif">Actions rapides</h3>

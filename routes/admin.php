@@ -18,6 +18,8 @@ use App\Http\Controllers\Admin\ReclamationController;
 use App\Http\Controllers\Admin\CompensationCodeController;
 use App\Http\Controllers\Admin\TransactionController;
 use App\Http\Controllers\Admin\SupportTicketController as AdminSupportTicketController;
+use App\Http\Controllers\Admin\ReleveEnergieController;
+use App\Http\Controllers\Admin\BadgeController;
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
 
@@ -147,6 +149,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     // --------------------------------------------------
 
     Route::resource('payments', PaymentController::class);
+    Route::resource('impact', ReleveEnergieController::class)->parameters(['impact' => 'releveEnergie']);
+    Route::resource('badges', BadgeController::class)->except(['show']);
 
     Route::get('/payments/{payment}/refund', [PaymentController::class, 'refundCreate'])
         ->name('payments.refund.create');

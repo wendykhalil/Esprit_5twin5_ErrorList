@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Data\AdminMockData;
 use App\Models\Payment;
 use App\Models\Transaction;
+use App\Models\ReleveEnergie;
+use App\Models\Badge;
+use App\Models\User;
 
 class DashboardController extends Controller
 {
@@ -23,6 +26,11 @@ class DashboardController extends Controller
         // Transaction Statistics
         $totalTransactions = Transaction::count();
         $completedTransactions = Transaction::where('status', 'completed')->count();
+        $impactKwh = ReleveEnergie::sum('kwh_estimes');
+        $impactCo2 = ReleveEnergie::sum('co2_evite_kg');
+        $impactBadges = Badge::count();
+        $topImpactUsers = User::withSum('relevesEnergie', 'kwh_estimes')
+            ->orderByDesc('releves_energie_sum_kwh_estimes')->limit(3)->get();
 
         return view('backend.dashboard', [
             'rentals' => array_slice($rentals, 0, 5),
@@ -33,6 +41,10 @@ class DashboardController extends Controller
             'totalPaidAmount' => $totalPaidAmount,
             'totalTransactions' => $totalTransactions,
             'completedTransactions' => $completedTransactions,
+            'impactKwh' => $impactKwh,
+            'impactCo2' => $impactCo2,
+            'impactBadges' => $impactBadges,
+            'topImpactUsers' => $topImpactUsers,
         ]);
     }
 

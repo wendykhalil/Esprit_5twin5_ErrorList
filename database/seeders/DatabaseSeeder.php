@@ -23,6 +23,8 @@ class DatabaseSeeder extends Seeder
             CategorySeeder::class,
             EquipmentSeeder::class,
             ReservationSeeder::class,
+            ReleveEnergieSeeder::class,
+            BadgeSeeder::class,
             InspectionSeeder::class,
             SupportTicketSeeder::class,
         ]);

@@ -9,6 +9,7 @@ use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\SupportTicketController;
 use App\Http\Controllers\ServiceProviderController;
 use App\Http\Controllers\ServiceRequestController;
+use App\Http\Controllers\ReleveEnergieController;
 use App\Models\Category;
 use Illuminate\Support\Facades\Route;
 
@@ -111,6 +112,9 @@ Route::middleware('auth')->group(function () {
     Route::patch('/reservations/{reservation}/cancel', [ReservationController::class, 'cancel'])
         ->name('reservations.cancel');
     Route::resource('inspections', InspectionController::class);
+    Route::resource('impact', ReleveEnergieController::class)
+        ->parameters(['impact' => 'releveEnergie'])
+        ->names('impact');
 });
 
 

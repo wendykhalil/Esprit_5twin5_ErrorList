@@ -112,6 +112,16 @@ class User extends Authenticatable
         return $this->hasMany(Reclamation::class);
     }
 
+    public function badges(): HasMany
+    {
+        return $this->hasMany(Badge::class);
+    }
+
+    public function relevesEnergie(): HasMany
+    {
+        return $this->hasManyThrough(ReleveEnergie::class, Reservation::class);
+    }
+
     /**
      * Get the profile photo URL.
      */

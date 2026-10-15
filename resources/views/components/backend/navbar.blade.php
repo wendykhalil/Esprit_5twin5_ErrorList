@@ -5,6 +5,13 @@
         'admin.users' => 'Utilisateurs',
         'admin.rentals' => 'Locations',
         'admin.settings' => 'Paramètres',
+        'admin.impact.index' => 'Impact écologique',
+        'admin.impact.create' => 'Ajouter un relevé',
+        'admin.impact.show' => 'Détail du relevé',
+        'admin.impact.edit' => 'Modifier un relevé',
+        'admin.badges.index' => 'Badges',
+        'admin.badges.create' => 'Ajouter un badge',
+        'admin.badges.edit' => 'Modifier un badge',
     ];
     
     $title = $pageTitles[request()->route()?->getName()] ?? 'Administration';

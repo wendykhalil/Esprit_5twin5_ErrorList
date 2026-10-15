@@ -27,6 +27,8 @@
         ['url' => route('admin.tickets.index'), 'label' => 'Support', 'route' => 'admin.tickets.index'],
 
         ['url' => route('admin.reclamations.index'), 'label' => 'Réclamations', 'route' => 'admin.reclamations.*'],
+        ['url' => route('admin.impact.index'), 'label' => 'Impact écologique', 'route' => 'admin.impact.*'],
+        ['url' => route('admin.badges.index'), 'label' => 'Badges', 'route' => 'admin.badges.*'],
 
         ['url' => route('admin.service-providers.index'), 'label' => 'Prestataires', 'route' => 'admin.service-providers.*'],
 
