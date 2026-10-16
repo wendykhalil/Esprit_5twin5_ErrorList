@@ -18,6 +18,7 @@ class Incident extends Model
         'damage_percentage',
         'proposed_refund_percentage',
         'proposed_refund_amount',
+        'attachment',
     ];
 
     protected $casts = [
@@ -64,5 +65,44 @@ class Incident extends Model
             'manquant' => $basePrice * 0.20,
             default => 0,
         };
+    }
+
+    /**
+     * Check if this incident has an attached image.
+     */
+    public function hasAttachment(): bool
+    {
+        return !empty($this->attachment);
+    }
+
+    /**
+     * Get the full URL to the attached image.
+     */
+    public function getAttachmentUrl(): ?string
+    {
+        if (!$this->hasAttachment()) {
+            return null;
+        }
+
+        return asset('storage/' . $this->attachment);
+    }
+
+    /**
+     * Delete the attached image file if it exists.
+     */
+    public function deleteAttachment(): bool
+    {
+        if (!$this->hasAttachment()) {
+            return true;
+        }
+
+        try {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($this->attachment);
+            $this->update(['attachment' => null]);
+            return true;
+        } catch (\Exception $e) {
+            \Log::error('Failed to delete incident attachment: ' . $e->getMessage());
+            return false;
+        }
     }
 }
