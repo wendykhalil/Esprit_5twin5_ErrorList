@@ -29,6 +29,9 @@
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
-        <env name="BROADCAST_DRIVER" value="log"/>
+        <env name="BROADCAST_DRIVER" value="reverb"/>
+        <env name="REVERB_PORT" value="8081"/>
+        <env name="VITE_REVERB_PORT" value="8081"/>
+        <env name="REVERB_SERVER_PORT" value="8081"/>
     </php>
 </phpunit>
