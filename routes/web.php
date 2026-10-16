@@ -188,6 +188,9 @@ Route::middleware('auth')->prefix('reclamations')->name('reclamations.')->group(
     Route::get('/create', [ReclamationController::class, 'create'])->name('create');
     Route::post('/', [ReclamationController::class, 'store'])->name('store');
     Route::get('/{reclamation}', [ReclamationController::class, 'show'])->name('show');
+    Route::get('/{reclamation}/edit', [ReclamationController::class, 'edit'])->name('edit');
+    Route::put('/{reclamation}', [ReclamationController::class, 'update'])->name('update');
+    Route::delete('/{reclamation}', [ReclamationController::class, 'destroy'])->name('destroy');
 });
 
 
@@ -198,6 +201,7 @@ Route::middleware('auth')->prefix('reclamations')->name('reclamations.')->group(
 Route::middleware('auth')->prefix('codes-compensation')->name('compensation-codes.')->group(function () {
     Route::get('/', [CompensationCodeController::class, 'index'])->name('index');
     Route::get('/{compensationCode}', [CompensationCodeController::class, 'show'])->name('show');
+    Route::post('/validate', [CompensationCodeController::class, 'validate'])->name('validate');
 });
 
 
