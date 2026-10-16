@@ -9,6 +9,7 @@ use App\Models\Transaction;
 use App\Models\ReleveEnergie;
 use App\Models\Badge;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -28,7 +29,7 @@ class DashboardController extends Controller
         $completedTransactions = Transaction::where('status', 'completed')->count();
         $impactKwh = ReleveEnergie::sum('kwh_estimes');
         $impactCo2 = ReleveEnergie::sum('co2_evite_kg');
-        $impactBadges = Badge::count();
+        $impactBadges = DB::table('badge_user')->count();
         $topImpactUsers = User::withSum('relevesEnergie', 'kwh_estimes')
             ->orderByDesc('releves_energie_sum_kwh_estimes')->limit(3)->get();
 

@@ -309,6 +309,13 @@
         </div>
     </section>
 
+    <section class="bg-green-50 py-12">
+        <div class="mx-auto flex max-w-5xl flex-col items-center justify-between gap-5 rounded-3xl border border-green-100 bg-white px-6 py-8 shadow-sm sm:flex-row sm:px-10">
+            <div><p class="text-sm font-semibold uppercase tracking-wider text-green-600">Notre engagement écologique</p><h2 class="mt-2 text-2xl font-bold text-green-950" style="font-family: Fraunces, Georgia, serif">Chaque location peut faire la différence.</h2></div>
+            <a href="{{ route('ecology') }}" class="rounded-xl bg-green-600 px-6 py-3 font-semibold text-white transition hover:bg-green-700">Découvrir notre impact</a>
+        </div>
+    </section>
+
     {{-- Final CTA --}}
     <section class="py-20 bg-green-50">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">

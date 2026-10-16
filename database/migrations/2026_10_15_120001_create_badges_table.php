@@ -9,13 +9,21 @@ return new class extends Migration {
     {
         Schema::create('badges', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->string('nom');
+            $table->string('slug')->unique();
+            $table->text('description');
+            $table->string('image')->nullable();
+            $table->enum('critere', [
+                'kwh_total',
+                'co2_total',
+                'reservations_terminees',
+                'retours_sans_dommage',
+                'releves_declares',
+            ]);
+            $table->unsignedInteger('seuil');
             $table->enum('niveau', ['bronze', 'argent', 'or']);
-            $table->unsignedInteger('seuil_kwh');
-            $table->date('date_obtention');
+            $table->boolean('actif')->default(true);
             $table->timestamps();
-            $table->unique(['user_id', 'nom']);
         });
     }
 

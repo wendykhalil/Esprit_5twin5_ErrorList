@@ -47,7 +47,6 @@ class ReleveEnergieController extends Controller
                 'date_releve' => $data['date_releve'],
                 'observations' => $data['observations'] ?? null,
             ]);
-            $service->syncBadgesFor($releve);
             return $releve;
         });
         return redirect()->route('admin.impact.show', $releve)->with('success', 'Relevé créé avec succès.');
@@ -78,16 +77,12 @@ class ReleveEnergieController extends Controller
             'date_releve' => $data['date_releve'],
             'observations' => $data['observations'] ?? null,
         ]);
-        $service->syncBadgesFor($releveEnergie);
         return redirect()->route('admin.impact.show', $releveEnergie)->with('success', 'Relevé modifié avec succès.');
     }
 
     public function destroy(ReleveEnergie $releveEnergie, ImpactEcologiqueService $service)
     {
-        $releveEnergie->load('reservation.user');
-        $user = $releveEnergie->reservation->user;
         $releveEnergie->delete();
-        $service->syncBadges($user);
         return redirect()->route('admin.impact.index')->with('success', 'Relevé supprimé avec succès.');
     }
 

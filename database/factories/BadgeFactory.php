@@ -3,7 +3,6 @@
 namespace Database\Factories;
 
 use App\Models\Badge;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class BadgeFactory extends Factory
@@ -12,14 +11,14 @@ class BadgeFactory extends Factory
 
     public function definition(): array
     {
-        $definition = fake()->randomElement(config('solarshare.badges'));
-
         return [
-            'user_id' => User::factory(),
-            'nom' => $definition['nom'],
-            'niveau' => $definition['niveau'],
-            'seuil_kwh' => $definition['seuil_kwh'],
-            'date_obtention' => fake()->dateTimeBetween('-30 days', 'today'),
+            'nom' => fake()->unique()->words(2, true),
+            'slug' => fake()->unique()->slug(2),
+            'description' => fake()->sentence(),
+            'critere' => fake()->randomElement(['kwh_total', 'co2_total', 'reservations_terminees', 'retours_sans_dommage', 'releves_declares']),
+            'seuil' => fake()->numberBetween(1, 100),
+            'niveau' => fake()->randomElement(['bronze', 'argent', 'or']),
+            'actif' => true,
         ];
     }
 }

@@ -58,7 +58,6 @@ class ReleveEnergieController extends Controller
                 'date_releve' => $data['date_releve'],
                 'observations' => $data['observations'] ?? null,
             ]);
-            $service->syncBadgesFor($releve);
             return $releve;
         });
 
@@ -95,19 +94,13 @@ class ReleveEnergieController extends Controller
             'date_releve' => $data['date_releve'],
             'observations' => $data['observations'] ?? null,
         ]);
-        $service->syncBadgesFor($releveEnergie);
-
         return redirect()->route('impact.show', $releveEnergie)->with('success', 'Relevé modifié avec succès.');
     }
 
     public function destroy(ReleveEnergie $releveEnergie, ImpactEcologiqueService $service): RedirectResponse
     {
         $this->authorizeOwner($releveEnergie);
-        $releveEnergie->load('reservation.user');
-        $user = $releveEnergie->reservation->user;
         $releveEnergie->delete();
-        $service->syncBadges($user);
-
         return redirect()->route('impact.index')->with('success', 'Relevé supprimé avec succès.');
     }
 

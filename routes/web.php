@@ -10,6 +10,7 @@ use App\Http\Controllers\SupportTicketController;
 use App\Http\Controllers\ServiceProviderController;
 use App\Http\Controllers\ServiceRequestController;
 use App\Http\Controllers\ReleveEnergieController;
+use App\Http\Controllers\EcologyController;
 use App\Models\Category;
 use Illuminate\Support\Facades\Route;
 
@@ -22,6 +23,8 @@ Route::get('/', function () {
 
     return view('frontend.home', compact('categories'));
 })->name('home');
+
+Route::get('/ecologie', [EcologyController::class, 'index'])->name('ecology');
 
 
 // --------------------------------------------------

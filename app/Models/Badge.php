@@ -4,18 +4,22 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Badge extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'nom', 'niveau', 'seuil_kwh', 'date_obtention'];
+    protected $fillable = [
+        'nom', 'slug', 'description', 'image', 'critere', 'seuil', 'niveau', 'actif',
+    ];
 
-    protected $casts = ['date_obtention' => 'date'];
+    protected $casts = ['actif' => 'boolean'];
 
-    public function user(): BelongsTo
+    public function users(): BelongsToMany
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsToMany(User::class)
+            ->withPivot(['reservation_id', 'date_obtention'])
+            ->withTimestamps();
     }
 }

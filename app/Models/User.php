@@ -7,7 +7,9 @@ namespace App\Models;
 use App\Enums\UserRole;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -68,6 +70,16 @@ class User extends Authenticatable
         return $this->hasMany(SupportTicket::class);
     }
 
+    public function reservations(): HasMany
+    {
+        return $this->hasMany(Reservation::class);
+    }
+
+    public function inspections(): HasManyThrough
+    {
+        return $this->hasManyThrough(Inspection::class, Reservation::class);
+    }
+
     public function isAdmin(): bool
     {
         return $this->role === UserRole::Admin->value;
@@ -112,12 +124,14 @@ class User extends Authenticatable
         return $this->hasMany(Reclamation::class);
     }
 
-    public function badges(): HasMany
+    public function badges(): BelongsToMany
     {
-        return $this->hasMany(Badge::class);
+        return $this->belongsToMany(Badge::class)
+            ->withPivot(['reservation_id', 'date_obtention'])
+            ->withTimestamps();
     }
 
-    public function relevesEnergie(): HasMany
+    public function relevesEnergie(): HasManyThrough
     {
         return $this->hasManyThrough(ReleveEnergie::class, Reservation::class);
     }
