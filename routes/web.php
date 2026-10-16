@@ -258,6 +258,24 @@ Route::middleware('auth')->group(function () {
 
 
 // --------------------------------------------------
+// NOTIFICATIONS
+// --------------------------------------------------
+
+use App\Http\Controllers\NotificationController;
+
+Route::middleware('auth')->prefix('notifications')->name('notifications.')->group(function () {
+    Route::get('/', [NotificationController::class, 'index'])->name('index');
+    Route::get('/{notification}', [NotificationController::class, 'show'])->name('show');
+    Route::post('/{notification}/read', [NotificationController::class, 'markAsRead'])->name('read');
+    Route::post('/read-all', [NotificationController::class, 'markAllAsRead'])->name('read-all');
+    
+    // API endpoints for AJAX/real-time updates
+    Route::get('/api/unread', [NotificationController::class, 'unread'])->name('api.unread');
+    Route::get('/api/count', [NotificationController::class, 'count'])->name('api.count');
+});
+
+
+// --------------------------------------------------
 // TECHNICAL SERVICES: SERVICE PROVIDERS
 // --------------------------------------------------
 

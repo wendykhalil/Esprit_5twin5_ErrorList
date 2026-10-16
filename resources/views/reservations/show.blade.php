@@ -27,6 +27,9 @@
             </div>
         </div>
 
+        <!-- Reservation Timeline -->
+        <x-reservation-timeline :reservation="$reservation" />
+
         <div class="mt-8 grid gap-6 lg:grid-cols-[1.4fr_0.8fr]">
             <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
                 <h2 class="text-lg font-bold text-slate-900">Informations générales</h2>

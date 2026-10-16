@@ -726,14 +726,45 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
 
     /**
+     * Parse a YYYY-MM-DD string as a local date without UTC conversion.
+     * This avoids the timezone offset issue when using new Date("YYYY-MM-DD").
+     * 
+     * @param {string} dateStr - Date string in YYYY-MM-DD format
+     * @returns {Date} A Date object set to midnight local time on that date
+     */
+    function parseLocalDate(dateStr) {
+        if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+            return null;
+        }
+        
+        const [year, month, day] = dateStr.split('-').map(Number);
+        return new Date(year, month - 1, day); // month is 0-indexed in Date constructor
+    }
+
+    /**
+     * Format a Date object as YYYY-MM-DD string using local date components.
+     * This ensures the displayed date matches the selected calendar date exactly.
+     * 
+     * @param {Date} date - A Date object
+     * @returns {string} Date string in YYYY-MM-DD format
+     */
+    function formatLocalDate(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    /**
      * Check if a single date is blocked
      */
     function isDateBlocked(dateStr) {
-        const date = new Date(dateStr);
+        const date = parseLocalDate(dateStr);
+        if (!date) return false;
         
         for (const period of blockedPeriods) {
-            const blockStart = new Date(period.start_date);
-            const blockEnd = new Date(period.end_date);
+            const blockStart = parseLocalDate(period.start_date);
+            const blockEnd = parseLocalDate(period.end_date);
             
             // Half-open interval: blockStart <= date < blockEnd
             if (blockStart <= date && date < blockEnd) {
@@ -749,12 +780,12 @@ document.addEventListener('DOMContentLoaded', async function () {
      * Uses half-open interval: [start, end)
      */
     function hasOverlapWithBlocked(startStr, endStr) {
-        const start = new Date(startStr);
-        const end = new Date(endStr);
+        const start = parseLocalDate(startStr);
+        const end = parseLocalDate(endStr);
 
         for (const period of blockedPeriods) {
-            const blockStart = new Date(period.start_date);
-            const blockEnd = new Date(period.end_date);
+            const blockStart = parseLocalDate(period.start_date);
+            const blockEnd = parseLocalDate(period.end_date);
 
             // Half-open interval overlap: blockStart < end AND blockEnd > start
             if (blockStart < end && blockEnd > start) {
@@ -766,10 +797,10 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
 
     /**
-     * Format date to YYYY-MM-DD string
+     * Format date to YYYY-MM-DD string (using local date components)
      */
     function formatDate(date) {
-        return date.toISOString().split('T')[0];
+        return formatLocalDate(date);
     }
 
     /**
@@ -781,9 +812,12 @@ document.addEventListener('DOMContentLoaded', async function () {
         // Validate YYYY-MM-DD format
         if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return false;
         
-        const selected = new Date(dateStr);
+        const selected = parseLocalDate(dateStr);
+        if (!selected) return false;
+        
         const today = new Date();
         today.setHours(0, 0, 0, 0);
+        
         return selected >= today;
     }
 
@@ -792,10 +826,12 @@ document.addEventListener('DOMContentLoaded', async function () {
      */
     function calculateEndDate(startDateStr, days) {
         if (!startDateStr || !days) return '';
-        const start = new Date(startDateStr);
+        const start = parseLocalDate(startDateStr);
+        if (!start) return '';
+        
         const end = new Date(start);
         end.setDate(end.getDate() + parseInt(days));
-        return end.toISOString().split('T')[0];
+        return formatLocalDate(end);
     }
 
     /**
@@ -838,7 +874,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         
         for (let day = 1; day <= daysInMonth; day++) {
             const dateObj = new Date(year, month, day);
-            const dateStr = formatDate(dateObj);
+            const dateStr = formatLocalDate(dateObj);
             const isBlocked = isDateBlocked(dateStr);
             const isPast = dateObj < today;
             

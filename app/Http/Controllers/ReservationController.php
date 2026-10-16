@@ -63,6 +63,12 @@ class ReservationController extends Controller
         // Events are dispatched after the transaction is committed, so the data is persisted
         ReservationCreated::dispatch($reservation);
 
+        // Send notification to all admins
+        $admins = \App\Models\User::where('role', 'admin')->get();
+        foreach ($admins as $admin) {
+            $admin->notify(new \App\Notifications\ReservationCreatedNotification($reservation));
+        }
+
         // Determine message based on whether compensation code was applied
         if ($reservation->compensation_code_id) {
             $message = 'Réservation créée avec succès. Code de compensation appliqué. En attente de confirmation de l\'administrateur.';
