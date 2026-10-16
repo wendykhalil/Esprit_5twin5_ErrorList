@@ -17,7 +17,7 @@
 
                 <p class="text-slate-500 text-sm">
                     Créez un guide pour accompagner les utilisateurs
-                    dans l'installation et l'utilisation d'un équipement.
+                    dans l'utilisation d'un équipement.
                 </p>
             </div>
 
@@ -83,6 +83,52 @@
                     @enderror
                 </div>
 
+                {{-- AI Usage Guide Generator --}}
+                <div class="rounded-xl border border-amber-200 bg-amber-50 p-5 space-y-4">
+
+                    <div class="flex items-center gap-3">
+                        <div class="w-11 h-11 rounded-xl bg-amber-100 flex items-center justify-center text-2xl">
+                            ✨
+                        </div>
+
+                        <div>
+                            <h3 class="font-bold text-slate-900 text-lg">
+                                Générateur de guide avec IA
+                            </h3>
+
+                            <p class="text-xs text-slate-500">
+                                Assistant SolarShare — Ollama / Mistral
+                            </p>
+                        </div>
+                    </div>
+
+                    <p class="text-sm text-slate-600">
+                        Sélectionnez un équipement puis générez automatiquement
+                        un brouillon contenant le titre, le contexte d'utilisation,
+                        les instructions et les précautions de sécurité.
+                    </p>
+
+                    <button type="button"
+                            id="generateGuideAI"
+                            class="inline-flex items-center justify-center gap-2 px-5 py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                        <span>✨</span>
+                        <span id="generateGuideAIText">
+                            Générer avec l'IA
+                        </span>
+                    </button>
+
+                    <p id="guideAIStatus"
+                       class="text-sm text-slate-600"
+                       role="status"
+                       aria-live="polite"></p>
+
+                    <p class="text-xs text-amber-800">
+                        Le contenu généré est un brouillon.
+                        Vérifiez les informations techniques et les consignes
+                        de sécurité avant toute publication.
+                    </p>
+                </div>
+
                 {{-- Title --}}
                 <div>
                     <label for="title"
@@ -97,7 +143,7 @@
                            required
                            minlength="5"
                            maxlength="150"
-                           placeholder="Ex : Comment installer un panneau solaire portable"
+                           placeholder="Ex : Guide d'utilisation d'un panneau solaire portable"
                            aria-invalid="{{ $errors->has('title') ? 'true' : 'false' }}"
                            class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-amber-400 {{ $errors->has('title') ? 'border-red-500' : 'border-slate-200' }}">
 
@@ -154,7 +200,7 @@
                               required
                               minlength="30"
                               maxlength="5000"
-                              placeholder="1. Préparer l'équipement&#10;2. Installer les composants&#10;3. Vérifier les connexions&#10;4. Mettre en marche..."
+                              placeholder="1. Consulter la documentation du fabricant&#10;2. Vérifier l'état de l'équipement&#10;3. Suivre les recommandations d'utilisation&#10;4. Contacter un professionnel si nécessaire..."
                               aria-invalid="{{ $errors->has('instructions') ? 'true' : 'false' }}"
                               class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-amber-400 {{ $errors->has('instructions') ? 'border-red-500' : 'border-slate-200' }}">{{ old('instructions') }}</textarea>
 
@@ -181,7 +227,7 @@
                               name="safety_precautions"
                               rows="4"
                               maxlength="2000"
-                              placeholder="Ex : Éviter l'humidité, vérifier les câbles, ne pas dépasser la puissance maximale..."
+                              placeholder="Ex : Consulter la documentation du fabricant, vérifier l'état de l'équipement..."
                               aria-invalid="{{ $errors->has('safety_precautions') ? 'true' : 'false' }}"
                               class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-amber-400 {{ $errors->has('safety_precautions') ? 'border-red-500' : 'border-slate-200' }}">{{ old('safety_precautions') }}</textarea>
 
@@ -313,5 +359,147 @@
         </div>
     </div>
 </div>
+
+{{-- AI Guide Generator JavaScript --}}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const button = document.getElementById('generateGuideAI');
+    const buttonText = document.getElementById('generateGuideAIText');
+    const statusMessage = document.getElementById('guideAIStatus');
+    const equipmentSelect = document.getElementById('equipment_id');
+
+    if (!button || !buttonText || !statusMessage || !equipmentSelect) {
+        return;
+    }
+
+    const fields = [
+        'title',
+        'usage_context',
+        'instructions',
+        'safety_precautions',
+        'difficulty_level'
+    ];
+
+    button.addEventListener('click', async function () {
+        const equipmentId = equipmentSelect.value;
+
+        if (!equipmentId) {
+            statusMessage.textContent =
+                'Veuillez sélectionner un équipement avant de générer le guide.';
+            statusMessage.className = 'text-sm text-red-600';
+            equipmentSelect.focus();
+            return;
+        }
+
+        const hasExistingContent = fields.some(function (fieldName) {
+            if (fieldName === 'difficulty_level') {
+                return false;
+            }
+
+            const field = document.getElementById(fieldName);
+
+            return field && field.value.trim() !== '';
+        });
+
+        if (
+            hasExistingContent &&
+            !window.confirm(
+                'La génération IA remplacera le contenu des champs existants. Continuer ?'
+            )
+        ) {
+            return;
+        }
+
+        button.disabled = true;
+        buttonText.textContent = 'Génération en cours...';
+        statusMessage.textContent =
+            'Mistral prépare votre guide. Cela peut prendre quelques instants.';
+        statusMessage.className = 'text-sm text-slate-600';
+
+        try {
+            const response = await fetch(
+                @json(route('admin.equipment-guides.ai.generate')),
+                {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': @json(csrf_token())
+                    },
+                    body: JSON.stringify({
+                        equipment_id: equipmentId
+                    })
+                }
+            );
+
+            const result = await response.json();
+
+            if (!response.ok || !result.success || !result.guide) {
+                const validationError = result.errors
+                    ? Object.values(result.errors).flat().join(' ')
+                    : null;
+
+                throw new Error(
+                    validationError ||
+                    result.message ||
+                    'Une erreur est survenue pendant la génération.'
+                );
+            }
+
+            if (equipmentSelect.value !== equipmentId) {
+                throw new Error(
+                    'L’équipement sélectionné a changé. Relancez la génération.'
+                );
+            }
+
+            fields.forEach(function (fieldName) {
+                const field = document.getElementById(fieldName);
+
+                if (
+                    field &&
+                    Object.prototype.hasOwnProperty.call(
+                        result.guide,
+                        fieldName
+                    )
+                ) {
+                    field.value = result.guide[fieldName] ?? '';
+
+                    field.dispatchEvent(
+                        new Event('input', { bubbles: true })
+                    );
+
+                    field.dispatchEvent(
+                        new Event('change', { bubbles: true })
+                    );
+                }
+            });
+
+            // AI-generated guides must remain drafts until reviewed.
+            const guideStatus = document.getElementById('status');
+
+            if (guideStatus) {
+                guideStatus.value = 'draft';
+                guideStatus.dispatchEvent(
+                    new Event('change', { bubbles: true })
+                );
+            }
+
+            statusMessage.textContent =
+                'Guide généré avec succès ! Vérifiez les informations techniques et les consignes de sécurité avant de l’enregistrer.';
+            statusMessage.className = 'text-sm text-green-700';
+
+        } catch (error) {
+            statusMessage.textContent =
+                error.message || 'Impossible de générer le guide.';
+            statusMessage.className = 'text-sm text-red-600';
+
+        } finally {
+            button.disabled = false;
+            buttonText.textContent = "Générer avec l'IA";
+        }
+    });
+});
+</script>
 
 @endsection

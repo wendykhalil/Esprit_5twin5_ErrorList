@@ -1,4 +1,3 @@
-
 <?php
 
 use Illuminate\Support\Facades\Route;
@@ -18,6 +17,7 @@ use App\Http\Controllers\Admin\ReclamationController;
 use App\Http\Controllers\Admin\CompensationCodeController;
 use App\Http\Controllers\Admin\TransactionController;
 use App\Http\Controllers\Admin\SupportTicketController as AdminSupportTicketController;
+use App\Http\Controllers\Admin\EquipmentGuideAIController;
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
 
@@ -65,6 +65,11 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     // --------------------------------------------------
     // EQUIPMENT USAGE GUIDES - ADMIN ONLY
     // --------------------------------------------------
+
+Route::post(
+    '/equipment-guides/ai/generate',
+    [EquipmentGuideAIController::class, 'generate']
+)->name('equipment-guides.ai.generate');
 
     Route::resource(
         'equipment-guides',
