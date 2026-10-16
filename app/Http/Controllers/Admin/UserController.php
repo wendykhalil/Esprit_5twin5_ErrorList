@@ -8,6 +8,7 @@ use App\Http\Requests\Admin\UpdateAdminUserRequest;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class UserController extends Controller
@@ -82,7 +83,12 @@ class UserController extends Controller
         $validated = $request->validated();
         $newRole = $validated['role'];
 
-        if ($user->isAdmin() && $newRole !== UserRole::Admin->value && $this->isLastAdmin($user)) {
+        // Prevent demoting the last administrator.
+        if (
+            $user->isAdmin()
+            && $newRole !== UserRole::Admin->value
+            && $this->isLastAdmin($user)
+        ) {
             return back()
                 ->withInput()
                 ->withErrors([
@@ -90,7 +96,12 @@ class UserController extends Controller
                 ]);
         }
 
-        $user->update($validated);
+        // Update the user and synchronize Spatie roles atomically.
+        DB::transaction(function () use ($user, $validated, $newRole) {
+            $user->update($validated);
+
+            $user->syncRoles([$newRole]);
+        });
 
         return redirect()
             ->route('admin.users.show', $user)
@@ -99,10 +110,12 @@ class UserController extends Controller
 
     public function destroy(User $user): RedirectResponse
     {
+        // Prevent deleting your own account.
         if ($user->id === auth()->id()) {
             return back()->with('error', 'Vous ne pouvez pas supprimer votre propre compte.');
         }
 
+        // Prevent deleting the last administrator.
         if ($user->isAdmin() && $this->isLastAdmin($user)) {
             return back()->with('error', 'Impossible de supprimer le dernier administrateur.');
         }
@@ -127,6 +140,8 @@ class UserController extends Controller
             return false;
         }
 
-        return User::query()->where('role', UserRole::Admin->value)->count() <= 1;
+        return User::query()
+            ->where('role', UserRole::Admin->value)
+            ->count() <= 1;
     }
 }

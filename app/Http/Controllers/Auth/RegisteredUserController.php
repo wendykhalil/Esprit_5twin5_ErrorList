@@ -8,6 +8,7 @@ use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
 
@@ -28,14 +29,21 @@ class RegisteredUserController extends Controller
     {
         $validated = $request->validated();
 
-        $user = User::create([
-            'name' => $validated['name'],
-            'username' => $validated['username'],
-            'phone' => $validated['phone'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-            'role' => UserRole::Client->value,
-        ]);
+        $user = DB::transaction(function () use ($validated) {
+            $user = User::create([
+                'name' => $validated['name'],
+                'username' => $validated['username'],
+                'phone' => $validated['phone'],
+                'email' => $validated['email'],
+                'password' => Hash::make($validated['password']),
+                'role' => UserRole::Client->value,
+            ]);
+
+            // Assign the corresponding Spatie role.
+            $user->assignRole(UserRole::Client->value);
+
+            return $user;
+        });
 
         event(new Registered($user));
 

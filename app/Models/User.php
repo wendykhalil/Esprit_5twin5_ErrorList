@@ -2,38 +2,38 @@
 
 namespace App\Models;
 
-use Illuminate\Contracts\Auth\MustVerifyEmail;
-
 use App\Enums\UserRole;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasRoles;
 
     /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
      */
-   protected $fillable = [
-    'name',
-    'username',
-    'email',
-    'password',
-    'phone',
-    'address',
-    'city',
-    'country',
-    'bio',
-    'profile_photo',
-    'role',
-];
+    protected $fillable = [
+        'name',
+        'username',
+        'email',
+        'password',
+        'phone',
+        'address',
+        'city',
+        'country',
+        'bio',
+        'profile_photo',
+        'role',
+    ];
 
     /**
      * The attributes that should be hidden for serialization.
@@ -69,21 +69,33 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(SupportTicket::class);
     }
 
+    /**
+     * Check whether the user is an administrator.
+     */
     public function isAdmin(): bool
     {
         return $this->role === UserRole::Admin->value;
     }
 
+    /**
+     * Check whether the user is a client.
+     */
     public function isClient(): bool
     {
         return $this->role === UserRole::Client->value;
     }
 
+    /**
+     * Check whether the user is a provider.
+     */
     public function isProvider(): bool
     {
         return $this->role === UserRole::Provider->value;
     }
 
+    /**
+     * Get the user's role label.
+     */
     public function roleLabel(): string
     {
         return UserRole::tryFrom($this->role)?->label() ?? 'Client';
@@ -106,7 +118,7 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
-     * Get all reclamations created by the user (client).
+     * Get all reclamations created by the user.
      */
     public function reclamations(): HasMany
     {
@@ -139,7 +151,9 @@ class User extends Authenticatable implements MustVerifyEmail
             }
         }
 
-        return strlen($initials) >= 2 ? substr($initials, 0, 2) : $this->name[0];
+        return strlen($initials) >= 2
+            ? substr($initials, 0, 2)
+            : $this->name[0];
     }
 
     /**
