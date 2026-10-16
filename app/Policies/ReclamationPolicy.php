@@ -88,12 +88,12 @@ class ReclamationPolicy
      */
     public function update(User $user, Reclamation $reclamation): bool
     {
-        // Un client ne peut mettre à jour que ses propres réclamations et seulement en attente
+        // A client can update their own reclamations only if they are in en_attente status
         if ($user->isClient()) {
             return $reclamation->user_id === $user->id && $reclamation->status === 'en_attente';
         }
 
-        // L'admin peut mettre à jour les réclamations en cours
+        // Admin can update reclamations in en_attente or en_cours
         return $user->isAdmin() && in_array($reclamation->status, ['en_attente', 'en_cours']);
     }
 
@@ -102,7 +102,12 @@ class ReclamationPolicy
      */
     public function delete(User $user, Reclamation $reclamation): bool
     {
-        // Seul l'admin peut supprimer une réclamation et seulement si elle est fermée ou en attente
+        // A client can delete their own reclamations only if they are in en_attente status
+        if ($user->isClient()) {
+            return $reclamation->user_id === $user->id && $reclamation->status === 'en_attente';
+        }
+
+        // Admin can delete reclamations that are in en_attente or fermee
         if (!$user->isAdmin()) {
             return false;
         }
