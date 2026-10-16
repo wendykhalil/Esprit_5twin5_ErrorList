@@ -109,7 +109,7 @@
                                 <div class="text-right">
                                     <p class="text-sm text-gray-600">Remboursement proposé</p>
                                     <p class="text-lg font-semibold {{ $incident->proposed_refund_amount > 0 ? 'text-green-600' : 'text-gray-600' }}">
-                                        {{ number_format($incident->proposed_refund_amount, 2, ',', ' ') }} €
+                                        {{ number_format($incident->proposed_refund_amount, 2, ',', ' ') }} TND
                                     </p>
                                     @if ($incident->proposed_refund_percentage > 0)
                                         <p class="text-xs text-gray-500">({{ $incident->proposed_refund_percentage }}%)</p>
@@ -118,7 +118,20 @@
                             </div>
                             <p class="text-gray-700 mb-2">{{ $incident->description }}</p>
                             @if ($incident->damage_percentage)
-                                <p class="text-xs text-gray-600">Dommages : {{ $incident->damage_percentage }}%</p>
+                                <p class="text-xs text-gray-600 mb-3">Dommages : {{ $incident->damage_percentage }}%</p>
+                            @endif
+                            
+                            <!-- Image Evidence Display -->
+                            @if ($incident->hasAttachment())
+                                <div class="mt-3 pt-3 border-t border-gray-200">
+                                    <p class="text-sm font-semibold text-gray-700 mb-2">📸 Preuve Jointe</p>
+                                    <div class="bg-gray-50 rounded-lg p-2 inline-block">
+                                        <a href="{{ $incident->getAttachmentUrl() }}" target="_blank" rel="noopener noreferrer" class="block">
+                                            <img src="{{ $incident->getAttachmentUrl() }}" alt="Evidence photo" class="max-w-md h-auto rounded-lg shadow-sm hover:shadow-md transition">
+                                        </a>
+                                    </div>
+                                    <p class="text-xs text-gray-600 mt-2">Cliquez pour voir en pleine résolution</p>
+                                </div>
                             @endif
                         </div>
                     @empty

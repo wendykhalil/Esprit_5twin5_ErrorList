@@ -81,11 +81,24 @@
                                             </span>
                                         </p>
                                         <p class="text-gray-700 mt-2">{{ $incident->description }}</p>
+                                        
+                                        <!-- Image Evidence Display -->
+                                        @if ($incident->hasAttachment())
+                                            <div class="mt-3 pt-3 border-t border-gray-200">
+                                                <p class="text-sm font-semibold text-gray-700 mb-2">📸 Preuve Jointe</p>
+                                                <div class="bg-gray-50 rounded-lg p-2 inline-block">
+                                                    <a href="{{ $incident->getAttachmentUrl() }}" target="_blank" rel="noopener noreferrer" class="block">
+                                                        <img src="{{ $incident->getAttachmentUrl() }}" alt="Evidence photo" class="max-w-sm h-auto rounded-lg shadow-sm hover:shadow-md transition">
+                                                    </a>
+                                                </div>
+                                                <p class="text-xs text-gray-600 mt-2">Cliquez pour voir en pleine résolution</p>
+                                            </div>
+                                        @endif
                                     </div>
                                     <div class="text-right whitespace-nowrap">
                                         <p class="text-sm text-gray-600">Remboursement</p>
                                         <p class="text-xl font-bold text-green-600">
-                                            {{ number_format($incident->proposed_refund_amount, 2, ',', ' ') }} €
+                                            {{ number_format($incident->proposed_refund_amount, 2, ',', ' ') }} TND
                                         </p>
                                         @if ($incident->proposed_refund_percentage > 0)
                                             <p class="text-xs text-gray-500">({{ $incident->proposed_refund_percentage }}%)</p>
@@ -101,7 +114,7 @@
                     <!-- Total -->
                     <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
                         <p class="text-sm text-gray-600 mb-2">Montant Total à Rembourser</p>
-                        <p class="text-3xl font-bold text-green-600">{{ number_format($totalProposedRefund, 2, ',', ' ') }} €</p>
+                        <p class="text-3xl font-bold text-green-600">{{ number_format($totalProposedRefund, 2, ',', ' ') }} TND</p>
                     </div>
 
                     <!-- Compensation Code Configuration -->
@@ -113,7 +126,7 @@
                             <label for="type" class="block text-sm font-semibold text-gray-900 mb-2">
                                 Type de Réduction <span class="text-red-600">*</span>
                             </label>
-                            <select name="type" id="type" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 @error('type') border-red-500 @enderror">
+                            <select name="type" id="type" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 @error('type') border-red-500] @enderror">
                                 <option value="">-- Sélectionner un type --</option>
                                 <option value="percentage" {{ old('type') === 'percentage' ? 'selected' : '' }}>Pourcentage (%)</option>
                                 <option value="fixed" {{ old('type') === 'fixed' ? 'selected' : '' }}>Montant Fixe (TND)</option>
@@ -129,7 +142,7 @@
                             <label for="value" class="block text-sm font-semibold text-gray-900 mb-2">
                                 Valeur <span class="text-red-600">*</span>
                             </label>
-                            <input type="number" name="value" id="value" step="0.01" min="0.01" placeholder="Ex: 20.50 ou 15" value="{{ old('value') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 @error('value') border-red-500 @enderror">
+                            <input type="number" name="value" id="value" step="0.01" min="0.01" placeholder="Ex: 20.50 ou 15" value="{{ old('value') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 @error('value') border-red-500] @enderror">
                             @error('value')
                                 <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
                             @enderror
@@ -142,7 +155,7 @@
                                 <label for="days_valid" class="block text-sm font-semibold text-gray-900 mb-2">
                                     Jours de Validité <span class="text-red-600">*</span>
                                 </label>
-                                <input type="number" name="days_valid" id="days_valid" min="1" max="365" placeholder="30" value="{{ old('days_valid') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 @error('days_valid') border-red-500 @enderror">
+                                <input type="number" name="days_valid" id="days_valid" min="1" max="365" placeholder="30" value="{{ old('days_valid') }}" class="w-full px-4 py-2 border ] rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500] @error('days_valid') border-red-500 @enderror">
                                 @error('days_valid')
                                     <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
                                 @enderror
@@ -154,7 +167,7 @@
                                 <label for="max_uses" class="block text-sm font-semibold text-gray-900 mb-2">
                                     Max. Utilisations <span class="text-red-600">*</span>
                                 </label>
-                                <input type="number" name="max_uses" id="max_uses" min="1" placeholder="1" value="{{ old('max_uses') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 @error('max_uses') border-red-500 @enderror">
+                                <input type="number" name="max_uses" id="max_uses" min="1" placeholder="1" value="{{ old('max_uses') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 @error('max_uses') border-red-500] @enderror">
                                 @error('max_uses')
                                     <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
                                 @enderror
@@ -168,7 +181,7 @@
                         <label for="admin_notes" class="block text-sm font-semibold text-gray-900 mb-2">
                             Notes (optionnel)
                         </label>
-                        <textarea name="admin_notes" id="admin_notes" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 @error('admin_notes') border-red-500 @enderror" placeholder="Ajoutez des notes administratives...">{{ old('admin_notes') }}</textarea>
+                        <textarea name="admin_notes" id="admin_notes" rows="3" class="w-full px-4 py-2 border border-gray-300] rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 @error('admin_notes') border-red-500 @enderror" placeholder="Ajoutez des notes administratives...">{{ old('admin_notes') }}</textarea>
                         @error('admin_notes')
                             <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
                         @enderror
@@ -198,7 +211,7 @@
                             $payment = $reclamation->payment();
                         @endphp
                         @if ($payment)
-                            <p class="text-lg font-bold text-gray-900">{{ number_format($payment->amount, 2, ',', ' ') }} €</p>
+                            <p class="text-lg font-bold text-gray-900">{{ number_format($payment->amount, 2, ',', ' ') }} TND</p>
                         @else
                             <p class="text-red-600 font-semibold">Aucun paiement trouvé</p>
                         @endif
@@ -213,7 +226,7 @@
                                     ->where('status', 'completed')
                                     ->sum('amount');
                             @endphp
-                            <p class="text-lg font-bold text-gray-900">{{ number_format($totalRefunded, 2, ',', ' ') }} €</p>
+                            <p class="text-lg font-bold text-gray-900">{{ number_format($totalRefunded, 2, ',', ' ') }} TND</p>
                         </div>
 
                         <div class="pb-4 border-b border-gray-200">
@@ -222,7 +235,7 @@
                                 $remainingRefundable = $payment->amount - $totalRefunded;
                             @endphp
                             <p class="text-lg font-bold {{ $remainingRefundable >= $totalProposedRefund ? 'text-green-600' : 'text-red-600' }}">
-                                {{ number_format($remainingRefundable, 2, ',', ' ') }} €
+                                {{ number_format($remainingRefundable, 2, ',', ' ') }} TND
                             </p>
                         </div>
 
