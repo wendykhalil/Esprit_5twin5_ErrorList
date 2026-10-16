@@ -202,15 +202,24 @@ Route::middleware('auth')->prefix('codes-compensation')->name('compensation-code
 
 
 // --------------------------------------------------
-// BREEZE DASHBOARD
+// SOLARSHARE DASHBOARD REDIRECT
 // --------------------------------------------------
 
 Route::get('/dashboard', function () {
-    return view('dashboard');
+
+    $user = auth()->user();
+
+    // Admin -> Existing administration dashboard
+    if ($user->isAdmin()) {
+        return redirect()->route('admin.dashboard');
+    }
+
+    // Client and Provider -> SolarShare homepage
+    return redirect()->route('home');
+
 })
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
-
 
 // --------------------------------------------------
 // SUPPORT TICKETS (CLIENT)

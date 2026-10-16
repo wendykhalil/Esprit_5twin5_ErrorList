@@ -16,9 +16,6 @@ class LoginRequest extends FormRequest
 {
     use RejectsUnexpectedFields;
 
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
         return true;
@@ -26,25 +23,33 @@ class LoginRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        if (! is_string($this->input('email'))) {
+        if (! is_string($this->input('login'))) {
             return;
         }
 
         $this->merge([
-            'email' => Str::lower(trim($this->input('email'))),
+            'login' => Str::lower(trim($this->input('login'))),
         ]);
     }
 
     /**
-     * Get the validation rules that apply to the request.
-     *
      * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         return [
-            'email' => ['bail', 'required', 'string', 'email:rfc', 'max:255'],
-            'password' => ['bail', 'required', 'string', new PasswordWithinHashLimit],
+            'login' => [
+                'bail',
+                'required',
+                'string',
+                'max:255',
+            ],
+            'password' => [
+                'bail',
+                'required',
+                'string',
+                new PasswordWithinHashLimit,
+            ],
         ];
     }
 
@@ -54,10 +59,9 @@ class LoginRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'email.required' => 'L\'adresse e-mail est obligatoire.',
-            'email.string' => 'L\'adresse e-mail doit être une chaîne de caractères.',
-            'email.email' => 'L\'adresse e-mail n\'est pas valide.',
-            'email.max' => 'L\'adresse e-mail ne doit pas dépasser :max caractères.',
+            'login.required' => 'Le nom d\'utilisateur ou l\'email est obligatoire.',
+            'login.string' => 'L\'identifiant doit être une chaîne de caractères.',
+            'login.max' => 'L\'identifiant ne doit pas dépasser :max caractères.',
             'password.required' => 'Le mot de passe est obligatoire.',
             'password.string' => 'Le mot de passe doit être une chaîne de caractères.',
         ];
@@ -66,21 +70,27 @@ class LoginRequest extends FormRequest
     public function withValidator($validator): void
     {
         $this->rejectUnexpectedFields($validator, [
-            'email',
+            'login',
             'password',
             'remember',
             '_token',
         ]);
 
         $validator->after(function ($validator) {
-            if ($this->exists('remember') && ! is_scalar($this->input('remember'))) {
-                $validator->errors()->add('remember', 'La valeur « se souvenir de moi » n\'est pas valide.');
+            if (
+                $this->exists('remember') &&
+                ! is_scalar($this->input('remember'))
+            ) {
+                $validator->errors()->add(
+                    'remember',
+                    'La valeur « se souvenir de moi » n\'est pas valide.'
+                );
             }
         });
     }
 
     /**
-     * Attempt to authenticate the request's credentials.
+     * Attempt to authenticate using username or email.
      *
      * @throws ValidationException
      */
@@ -88,11 +98,22 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        $login = $this->input('login');
+
+        $field = filter_var($login, FILTER_VALIDATE_EMAIL)
+            ? 'email'
+            : 'username';
+
+        $credentials = [
+            $field => $login,
+            'password' => $this->input('password'),
+        ];
+
+        if (! Auth::attempt($credentials, $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'email' => 'Ces identifiants ne correspondent pas.',
+                'login' => 'Ces identifiants ne correspondent pas.',
             ]);
         }
 
@@ -100,8 +121,6 @@ class LoginRequest extends FormRequest
     }
 
     /**
-     * Ensure the login request is not rate limited.
-     *
      * @throws ValidationException
      */
     public function ensureIsNotRateLimited(): void
@@ -115,15 +134,17 @@ class LoginRequest extends FormRequest
         $seconds = RateLimiter::availableIn($this->throttleKey());
 
         throw ValidationException::withMessages([
-            'email' => 'Trop de tentatives. Réessayez dans '.$seconds.' secondes.',
+            'login' => 'Trop de tentatives. Réessayez dans '.$seconds.' secondes.',
         ]);
     }
 
     /**
-     * Get the rate limiting throttle key for the request.
+     * Generate the login throttle key.
      */
     public function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());
+        return Str::transliterate(
+            Str::lower($this->string('login')).'|'.$this->ip()
+        );
     }
 }

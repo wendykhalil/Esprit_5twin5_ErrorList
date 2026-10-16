@@ -30,6 +30,8 @@ class RegisteredUserController extends Controller
 
         $user = User::create([
             'name' => $validated['name'],
+            'username' => $validated['username'],
+            'phone' => $validated['phone'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
             'role' => UserRole::Client->value,
