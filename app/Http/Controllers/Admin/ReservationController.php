@@ -94,6 +94,9 @@ class ReservationController extends Controller
      * Uses transaction to ensure atomicity of status change.
      * IMPORTANT: La livraison n'est plus créée ici.
      * Elle sera créée automatiquement quand le client accepte le contrat.
+     * 
+     * Broadcasts status change to client via private channel.
+     * Sends persistent notification to client.
      */
     public function approve(Reservation $reservation)
     {
@@ -112,10 +115,16 @@ class ReservationController extends Controller
                 ->with('error', 'Les dates de cette réservation ne sont plus disponibles. Une autre réservation a été confirmée sur cette période.');
         }
 
+        $oldStatus = $reservation->statut;
+
         // Transition: en_attente → confirmee (within transaction)
         DB::transaction(function () use ($reservation) {
             $reservation->update(['statut' => 'confirmee']);
         });
+
+        // After transaction commits, dispatch broadcast and notification
+        \App\Events\ReservationStatusChanged::dispatch($reservation, $oldStatus, 'confirmee');
+        $reservation->user->notify(new \App\Notifications\ReservationApprovedNotification($reservation));
 
         return redirect()->route('admin.reservations.show', $reservation)
             ->with('success', 'Réservation acceptée et confirmée. Le client pourra créer la livraison après acceptation du contrat et paiement.');
@@ -124,6 +133,9 @@ class ReservationController extends Controller
     /**
      * Refuser une réservation en attente (transition en_attente → refusee)
      * Uses transaction to ensure atomicity of status change.
+     * 
+     * Broadcasts status change to client via private channel.
+     * Sends persistent notification to client.
      */
     public function reject(Reservation $reservation)
     {
@@ -133,11 +145,17 @@ class ReservationController extends Controller
                 ->with('error', 'Seules les réservations en attente peuvent être refusées.');
         }
 
+        $oldStatus = $reservation->statut;
+
         // Transition: en_attente → refusee (within transaction)
         // This releases the blocked dates immediately
         DB::transaction(function () use ($reservation) {
             $reservation->update(['statut' => 'refusee']);
         });
+
+        // After transaction commits, dispatch broadcast and notification
+        \App\Events\ReservationStatusChanged::dispatch($reservation, $oldStatus, 'refusee');
+        $reservation->user->notify(new \App\Notifications\ReservationRejectedNotification($reservation));
 
         return redirect()->route('admin.reservations.show', $reservation)
             ->with('success', 'Réservation refusée.');
