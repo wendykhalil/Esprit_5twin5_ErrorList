@@ -19,7 +19,7 @@ class ReservationRequest extends FormRequest
     {
         return [
             'equipment_id' => ['required', 'exists:equipment,id'],
-            'date_debut' => ['required', 'date', 'after_or_equal:today'],
+            'date_debut' => ['required', 'date'],
             'date_fin' => ['required', 'date', 'after:date_debut'],
             'compensation_code' => ['nullable', 'string', 'max:20'],
         ];
@@ -60,6 +60,18 @@ class ReservationRequest extends FormRequest
         return [
             function ($validator) {
                 if ($validator->errors()->isNotEmpty()) {
+                    return;
+                }
+
+                // Validate that start date is not before today (calendar date comparison)
+                $startDate = Carbon::parse($this->date_debut)->startOfDay();
+                $today = Carbon::now()->startOfDay();
+                
+                if ($startDate < $today) {
+                    $validator->errors()->add(
+                        'date_debut',
+                        'La date de début ne peut pas être dans le passé.'
+                    );
                     return;
                 }
 
