@@ -68,6 +68,12 @@ class StoreReclamationRequest extends FormRequest
                 'min:0',
                 'max:100',
             ],
+            'incidents.*.image' => [
+                'nullable',
+                'image',
+                'mimes:jpeg,jpg,png,webp',
+                'max:5120', // 5 MB in kilobytes
+            ],
         ];
     }
 
@@ -94,6 +100,9 @@ class StoreReclamationRequest extends FormRequest
             'incidents.*.damage_percentage.numeric' => 'Le pourcentage de dommages doit être un nombre.',
             'incidents.*.damage_percentage.min' => 'Le pourcentage de dommages ne peut pas être négatif.',
             'incidents.*.damage_percentage.max' => 'Le pourcentage de dommages ne peut pas dépasser 100.',
+            'incidents.*.image.image' => 'Le fichier doit être une image valide.',
+            'incidents.*.image.mimes' => 'Le format d\'image n\'est pas accepté. Utilisez JPG, PNG ou WebP.',
+            'incidents.*.image.max' => 'L\'image ne peut pas dépasser 5 MB.',
         ];
     }
 
