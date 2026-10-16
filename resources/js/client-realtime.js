@@ -40,6 +40,7 @@ export function initClientRealtimeListeners() {
     listenToUserContracts(userId);
     listenToUserReclamations(userId);
     listenToUserCompensationCodes(userId);
+    listenToUserReservationStatusChanges(userId);
 }
 
 /**
@@ -103,10 +104,10 @@ function handleUserPaymentProcessed(event) {
         event.status === 'paid' ? 'success' : 'info'
     );
 
-    // Refresh payments page if visible
+    // Update payment status on client page if visible
     if (window.location.pathname.includes('/mes-paiements') ||
         window.location.pathname.includes('/paiement')) {
-        refreshUserPage();
+        updateClientPaymentStatus(event);
     }
 
     // Update any payment status badges
@@ -149,9 +150,9 @@ function handleUserDeliveryStatusChanged(event) {
         'info'
     );
 
-    // Refresh deliveries page if visible
+    // Update delivery status on client page if visible
     if (window.location.pathname.includes('/livraisons')) {
-        refreshUserPage();
+        updateClientDeliveryStatus(event);
     }
 
     // Update delivery status displays
@@ -185,12 +186,8 @@ function handleUserContractCreated(event) {
         '/contracts'
     );
 
-    // Refresh contracts page if visible
-    if (window.location.pathname.includes('/contracts')) {
-        refreshUserPage();
-    }
-
-    // Update contract badge/counter
+    // No page refresh needed for contracts page
+    // Just update the badge/counter
     updateContractBadges(event);
 }
 
@@ -226,12 +223,7 @@ function handleUserReclamationApproved(event) {
         '/reclamations'
     );
 
-    // Refresh reclamations page if visible
-    if (window.location.pathname.includes('/reclamations')) {
-        refreshUserPage();
-    }
-
-    // Update reclamation status
+    // Update reclamation status badge without page reload
     updateReclamationBadges(event);
 }
 
@@ -263,12 +255,7 @@ function handleUserCompensationCodeCreated(event) {
         '/codes-compensation'
     );
 
-    // Refresh compensation codes page if visible
-    if (window.location.pathname.includes('/codes-compensation')) {
-        refreshUserPage();
-    }
-
-    // Update code counter/badge
+    // Update code counter badge without page reload
     updateCompensationCodeBadges(event);
 }
 
@@ -427,11 +414,145 @@ function updateCompensationCodeBadges(event) {
 }
 
 /**
- * Refresh user page (soft reload)
+ * Update client reservation status on page
  */
-function refreshUserPage() {
-    // Dispatch custom event for pages to listen to
-    window.dispatchEvent(new CustomEvent('client-realtime-refresh'));
+function updateClientReservationStatus(event) {
+    // Find reservation element by ID
+    const reservationElement = document.querySelector(`[data-reservation-id="${event.id}"]`);
+    if (!reservationElement) return;
+    
+    // Update status badge/text
+    const statusBadge = reservationElement.querySelector('.reservation-status');
+    if (statusBadge) {
+        const statusLabels = {
+            'confirmee': 'Confirmée',
+            'en_attente': 'En attente',
+            'en_cours': 'En cours',
+            'terminee': 'Terminée',
+            'annulee': 'Annulée',
+            'refusee': 'Refusée',
+            'litige': 'Litige',
+        };
+        
+        const newStatus = statusLabels[event.new_status] || event.new_status;
+        statusBadge.textContent = newStatus;
+        
+        // Update CSS classes based on status
+        const oldClasses = statusBadge.className.split(' ');
+        const newClasses = oldClasses.filter(cls => !cls.startsWith('bg-') && !cls.startsWith('text-') && !cls.startsWith('border-'));
+        
+        if (event.new_status === 'confirmee' || event.new_status === 'terminee') {
+            newClasses.push('bg-green-50', 'text-green-700', 'border-green-200');
+        } else if (event.new_status === 'en_cours') {
+            newClasses.push('bg-blue-50', 'text-blue-700', 'border-blue-200');
+        } else if (event.new_status === 'refusee' || event.new_status === 'litige' || event.new_status === 'annulee') {
+            newClasses.push('bg-red-50', 'text-red-600', 'border-red-200');
+        } else {
+            newClasses.push('bg-amber-50', 'text-amber-700', 'border-amber-200');
+        }
+        
+        statusBadge.className = newClasses.join(' ');
+    }
+}
+
+/**
+ * Update client delivery status on page
+ */
+function updateClientDeliveryStatus(event) {
+    // Find delivery element by ID
+    const deliveryElement = document.querySelector(`[data-delivery-id="${event.id}"]`);
+    if (!deliveryElement) return;
+    
+    // Update status badge/text
+    const statusBadge = deliveryElement.querySelector('.delivery-status');
+    if (statusBadge) {
+        const statusLabels = {
+            'prete': 'Prête pour la livraison',
+            'en_preparation': 'En préparation',
+            'remise_au_client': 'Remise au client',
+            'retour_recu': 'Retour reçu',
+            'terminee': 'Terminée',
+            'annulee': 'Annulée',
+        };
+        
+        const newStatus = statusLabels[event.status] || event.status;
+        statusBadge.textContent = newStatus;
+    }
+}
+
+/**
+ * Update client payment status on page
+ */
+function updateClientPaymentStatus(event) {
+    // Find payment element by ID
+    const paymentElement = document.querySelector(`[data-payment-id="${event.id}"]`);
+    if (!paymentElement) return;
+    
+    // Update status
+    const statusElement = paymentElement.querySelector('.payment-status');
+    if (statusElement) {
+        statusElement.textContent = event.status;
+        
+        // Update CSS class based on status
+        statusElement.className = event.status === 'paid' ? 'payment-status-paid' :
+                                 event.status === 'failed' ? 'payment-status-failed' :
+                                 'payment-status-pending';
+    }
+}
+
+/**
+ * Listen to user reservation status changes
+ */
+function listenToUserReservationStatusChanges(userId) {
+    try {
+        window.Echo.private(`user.${userId}.reservations`)
+            .listen('reservation-status-changed', (event) => {
+                handleUserReservationStatusChanged(event);
+            });
+    } catch (error) {
+        console.error('Error setting up user reservation status listener:', error);
+    }
+}
+
+/**
+ * Handle user reservation status change
+ */
+function handleUserReservationStatusChanged(event) {
+    console.log('Your reservation status changed:', event);
+
+    const statusLabels = {
+        'confirmee': 'Confirmée',
+        'en_attente': 'En attente',
+        'en_cours': 'En cours',
+        'terminee': 'Terminée',
+        'annulee': 'Annulée',
+        'refusee': 'Refusée',
+        'litige': 'Litige',
+    };
+
+    const newStatus = statusLabels[event.new_status] || event.new_status;
+    const notificationType = event.new_status === 'confirmee' ? 'success' : 
+                           event.new_status === 'refusee' ? 'error' : 'info';
+
+    showClientNotification(
+        'Statut de réservation mis à jour',
+        `Votre réservation pour ${event.equipment_name} est maintenant: ${newStatus}`,
+        notificationType,
+        '/reservations'
+    );
+
+    // Update reservation status on client page if visible
+    if (window.location.pathname.includes('/reservations')) {
+        updateClientReservationStatus(event);
+    }
+}
+
+/**
+ * Update client UI without page reload
+ */
+function updateClientUI(event, pageType) {
+    // No-op - page-specific handlers will handle updates
+    console.log('Client event received for page type:', pageType, event);
 }
 
 // Add CSS animations
