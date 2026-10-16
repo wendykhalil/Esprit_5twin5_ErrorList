@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Events\ReclamationCreated;
 use App\Http\Requests\StoreReclamationRequest;
+use App\Http\Requests\UpdateReclamationRequest;
 use App\Models\Reclamation;
 use App\Models\Reservation;
 use App\Models\Equipment;
@@ -89,6 +90,12 @@ class ReclamationController extends Controller
                     default => 0.0,
                 };
 
+                // Handle image upload if provided
+                $attachmentPath = null;
+                if (!empty($incidentData['image'])) {
+                    $attachmentPath = $incidentData['image']->store('incidents', 'public');
+                }
+
                 Incident::create([
                     'reclamation_id' => $reclamation->id,
                     'equipment_id' => $incidentData['equipment_id'],
@@ -97,6 +104,7 @@ class ReclamationController extends Controller
                     'damage_percentage' => $incidentData['damage_percentage'] ?? null,
                     'proposed_refund_percentage' => $proposedRefundPercentage,
                     'proposed_refund_amount' => $proposedRefundAmount,
+                    'attachment' => $attachmentPath,
                 ]);
             }
 
@@ -127,6 +135,156 @@ class ReclamationController extends Controller
         $totalProposedRefund = $reclamation->calculateTotalRefund();
 
         return view('frontend.reclamations.show', compact('reclamation', 'totalProposedRefund'));
+    }
+
+    /**
+     * Show the form for editing the specified reclamation.
+     */
+    public function edit(Reclamation $reclamation)
+    {
+        $this->authorize('update', $reclamation);
+
+        $reclamation->load('incidents.equipment', 'reservation.equipment');
+
+        // Only allow editing if status is en_attente
+        abort_unless($reclamation->status === 'en_attente', 403, 'Vous ne pouvez modifier que les réclamations en attente.');
+
+        // Get equipment for incident addition
+        $equipments = Equipment::where('id', $reclamation->reservation->equipment_id)->get();
+
+        return view('frontend.reclamations.edit', compact('reclamation', 'equipments'));
+    }
+
+    /**
+     * Update the specified reclamation in storage.
+     */
+    public function update(UpdateReclamationRequest $request, Reclamation $reclamation)
+    {
+        $this->authorize('update', $reclamation);
+
+        // Double-check status is still en_attente (race condition check)
+        abort_unless($reclamation->status === 'en_attente', 403, 'Cette réclamation ne peut plus être modifiée.');
+
+        $user = Auth::user();
+        $validated = $request->validated();
+
+        // Verify ownership
+        abort_unless($reclamation->user_id === $user->id, 403, 'Vous ne pouvez modifier que vos propres réclamations.');
+
+        try {
+            DB::beginTransaction();
+
+            // Update reclamation details
+            $reclamation->update([
+                'title' => $validated['title'],
+                'description' => $validated['description'],
+            ]);
+
+            // Remove incidents marked for deletion
+            if (!empty($validated['incidents_to_remove'])) {
+                foreach ($validated['incidents_to_remove'] as $incidentId) {
+                    $incident = Incident::findOrFail($incidentId);
+                    
+                    // Verify incident belongs to this reclamation
+                    abort_unless($incident->reclamation_id === $reclamation->id, 403, 'Cet incident n\'appartient pas à cette réclamation.');
+                    
+                    // Delete attachment if exists
+                    $incident->deleteAttachment();
+                    $incident->delete();
+                }
+            }
+
+            // Add new incidents
+            if (!empty($validated['new_incidents'])) {
+                foreach ($validated['new_incidents'] as $incidentData) {
+                    // Verify equipment belongs to the reservation
+                    $equipmentId = (int) $incidentData['equipment_id'];
+                    $reservationEquipmentId = (int) $reclamation->reservation->equipment_id;
+                    
+                    abort_unless($equipmentId === $reservationEquipmentId, 403, 'L\'équipement de l\'incident n\'appartient pas à la réservation.');
+
+                    $equipment = Equipment::findOrFail($incidentData['equipment_id']);
+                    
+                    $proposedRefundAmount = $this->calculateProposedRefund(
+                        $incidentData['type_probleme'],
+                        $equipment->price_per_day
+                    );
+
+                    $proposedRefundPercentage = match ($incidentData['type_probleme']) {
+                        'endommage' => 30.0,
+                        'manquant' => 20.0,
+                        default => 0.0,
+                    };
+
+                    // Handle image upload if provided
+                    $attachmentPath = null;
+                    if (!empty($incidentData['image'])) {
+                        $attachmentPath = $incidentData['image']->store('incidents', 'public');
+                    }
+
+                    Incident::create([
+                        'reclamation_id' => $reclamation->id,
+                        'equipment_id' => $incidentData['equipment_id'],
+                        'type_probleme' => $incidentData['type_probleme'],
+                        'description' => $incidentData['description'],
+                        'damage_percentage' => $incidentData['damage_percentage'] ?? null,
+                        'proposed_refund_percentage' => $proposedRefundPercentage,
+                        'proposed_refund_amount' => $proposedRefundAmount,
+                        'attachment' => $attachmentPath,
+                    ]);
+                }
+            }
+
+            DB::commit();
+
+            return redirect()->route('reclamations.show', $reclamation->id)
+                ->with('success', 'Réclamation mise à jour avec succès.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Erreur lors de la mise à jour de la réclamation: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Remove the specified reclamation from storage.
+     */
+    public function destroy(Reclamation $reclamation)
+    {
+        $this->authorize('delete', $reclamation);
+
+        // Only allow deletion if status is en_attente
+        abort_unless($reclamation->status === 'en_attente', 403, 'Vous ne pouvez supprimer que les réclamations en attente.');
+
+        $user = Auth::user();
+
+        // Verify ownership
+        abort_unless($reclamation->user_id === $user->id, 403, 'Vous ne pouvez supprimer que vos propres réclamations.');
+
+        try {
+            DB::beginTransaction();
+
+            // Delete all incident attachments
+            foreach ($reclamation->incidents as $incident) {
+                $incident->deleteAttachment();
+            }
+
+            // Delete all incidents (cascade delete via DB)
+            $reclamation->incidents()->delete();
+
+            // Delete the reclamation
+            $reclamation->delete();
+
+            DB::commit();
+
+            return redirect()->route('reclamations.index')
+                ->with('success', 'Réclamation supprimée avec succès.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()
+                ->with('error', 'Erreur lors de la suppression de la réclamation.');
+        }
     }
 
     /**
