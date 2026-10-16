@@ -95,6 +95,23 @@
                     <a href="{{ route('reclamations.show', $reclamation->id) }}" class="text-blue-600 hover:text-blue-800 font-semibold">
                         Voir les détails →
                     </a>
+                    @if ($reclamation->status === 'en_attente')
+                        <a href="{{ route('reclamations.edit', $reclamation->id) }}" class="ml-4 text-blue-600 hover:text-blue-800 font-semibold">
+                            ✎ Modifier
+                        </a>
+                        <form action="{{ route('reclamations.destroy', $reclamation->id) }}" method="POST" class="inline" 
+                            onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette réclamation ?');">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="ml-4 text-red-600 hover:text-red-800 font-semibold">
+                                🗑 Supprimer
+                            </button>
+                        </form>
+                    @else
+                        <span class="ml-4 text-gray-500 text-sm">
+                            ℹ️ Vous pouvez uniquement modifier les réclamations en attente
+                        </span>
+                    @endif
                 </div>
             </div>
         @empty

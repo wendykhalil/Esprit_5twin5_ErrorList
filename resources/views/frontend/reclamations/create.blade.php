@@ -24,7 +24,7 @@
         @endif
 
         <!-- Form -->
-        <form action="{{ route('reclamations.store') }}" method="POST" class="bg-white rounded-lg shadow p-8">
+        <form action="{{ route('reclamations.store') }}" method="POST" enctype="multipart/form-data" class="bg-white rounded-lg shadow p-8">
             @csrf
 
             <!-- Reservation Selection -->
@@ -32,7 +32,7 @@
                 <label for="reservation_id" class="block text-sm font-semibold text-gray-900 mb-2">
                     Sélectionnez une réservation <span class="text-red-600">*</span>
                 </label>
-                <select id="reservation_id" name="reservation_id" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 @error('reservation_id') border-red-500 @enderror" required onchange="updateEquipmentList()">
+                <select id="reservation_id" name="reservation_id" class="w-full px-4 py-2 border border-gray-300] rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 @error('reservation_id') border-red-500 @enderror" required onchange="updateEquipmentList()">
                     <option value="">-- Choisissez une réservation --</option>
                     @foreach ($reservations as $res)
                         <option value="{{ $res->id }}" data-equipment-id="{{ $res->equipment_id }}" @selected(old('reservation_id') == $res->id)>
@@ -50,7 +50,7 @@
                 <label for="title" class="block text-sm font-semibold text-gray-900 mb-2">
                     Titre <span class="text-red-600">*</span>
                 </label>
-                <input type="text" id="title" name="title" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 @error('title') border-red-500 @enderror" placeholder="Décrivez brièvement votre problème" value="{{ old('title') }}" required>
+                <input type="text" id="title" name="title" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 @error('title') border-red-500] @enderror" placeholder="Décrivez brièvement votre problème" value="{{ old('title') }}" required>
                 @error('title')
                     <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
                 @enderror
@@ -61,7 +61,7 @@
                 <label for="description" class="block text-sm font-semibold text-gray-900 mb-2">
                     Description <span class="text-red-600">*</span>
                 </label>
-                <textarea id="description" name="description" rows="5" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 @error('description') border-red-500 @enderror" placeholder="Décrivez les détails du problème..." required>{{ old('description') }}</textarea>
+                <textarea id="description" name="description" rows="5" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 @error('description') border-red-500] @enderror" placeholder="Décrivez les détails du problème..." required>{{ old('description') }}</textarea>
                 @error('description')
                     <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
                 @enderror
@@ -128,19 +128,8 @@
                     <p class="text-xs text-gray-600 mt-2">Sera automatiquement lié à la réservation sélectionnée</p>
                 </div>
 
-                <!-- Type de problème -->
-                <div class="mb-4">
-                    <label for="incidents_${incidentCount}_type_probleme" class="block text-sm font-semibold text-gray-900 mb-2">
-                        Type de problème <span class="text-red-600">*</span>
-                    </label>
-                    <select name="incidents[${incidentCount}][type_probleme]" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-                        <option value="">-- Choisissez un type --</option>
-                        <option value="endommage">Endommagé (30% de remboursement)</option>
-                        <option value="manquant">Manquant (20% de remboursement)</option>
-                        <option value="malfonctionnant">Malfoncti onnant</option>
-                        <option value="autre">Autre</option>
-                    </select>
-                </div>
+                <!-- Type de problème (hidden, default to 'endommage') -->
+                <input type="hidden" name="incidents[${incidentCount}][type_probleme]" value="endommage">
 
                 <!-- Description -->
                 <div class="mb-4">
@@ -150,12 +139,20 @@
                     <textarea name="incidents[${incidentCount}][description]" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Décrivez précisément le problème..." required></textarea>
                 </div>
 
-                <!-- Damage percentage (optional) -->
+                <!-- Damage percentage (hidden, set to null) -->
+                <input type="hidden" name="incidents[${incidentCount}][damage_percentage]" value="">
+
+                <!-- Image Evidence Upload -->
                 <div class="mb-4">
-                    <label for="incidents_${incidentCount}_damage_percentage" class="block text-sm font-semibold text-gray-900 mb-2">
-                        Pourcentage de dommages (optionnel)
+                    <label for="incidents_${incidentCount}_image" class="block text-sm font-semibold text-gray-900 mb-2">
+                        Photo/Preuve (optionnel)
                     </label>
-                    <input type="number" name="incidents[${incidentCount}][damage_percentage]" min="0" max="100" step="0.01" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ex: 50">
+                    <input type="file" name="incidents[${incidentCount}][image]" id="incidents_${incidentCount}_image" accept="image/jpeg,image/png,image/webp" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" onchange="previewImage(this, ${incidentCount})">
+                    <p class="text-xs text-gray-600 mt-2">Formats acceptés: JPG, PNG, WebP. Taille maximale: 5 MB</p>
+                    <div id="preview_${incidentCount}" class="mt-3 hidden">
+                        <p class="text-xs text-gray-600 mb-2">Aperçu :</p>
+                        <img id="preview_img_${incidentCount}" src="" alt="Preview" class="max-w-xs h-auto rounded-lg border border-gray-300">
+                    </div>
                 </div>
             </div>
         `;
@@ -184,6 +181,41 @@
             incidents.forEach(input => {
                 input.value = equipmentId;  // ✓ FIXED: Now assigns equipment_id, not reservation_id
             });
+        }
+    }
+
+    function previewImage(input, incidentCount) {
+        const preview = document.getElementById(`preview_${incidentCount}`);
+        const previewImg = document.getElementById(`preview_img_${incidentCount}`);
+
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+
+            // Validate file type
+            if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+                alert('Format non supporté. Utilisez JPG, PNG ou WebP.');
+                input.value = '';
+                preview.classList.add('hidden');
+                return;
+            }
+
+            // Validate file size (5 MB max)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('Le fichier est trop volumineux. Taille maximale: 5 MB');
+                input.value = '';
+                preview.classList.add('hidden');
+                return;
+            }
+
+            // Show preview
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                previewImg.src = e.target.result;
+                preview.classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        } else {
+            preview.classList.add('hidden');
         }
     }
 

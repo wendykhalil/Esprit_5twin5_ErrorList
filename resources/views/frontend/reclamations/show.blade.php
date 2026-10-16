@@ -39,7 +39,7 @@
         <!-- Animated Reward Card (if approved with compensation code) -->
         @if ($reclamation->status === 'approuvee' && $reclamation->compensationCode)
             <div class="mb-8 animate-fade-in" x-data="{ showConfetti: true }" x-init="setTimeout(() => showConfetti = false, 3000)">
-                <div class="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-lg shadow-lg p-8">
+                <div class="bg-gradient-to-r] from-green-50 to-emerald-50 border-2 border-green-200 rounded-lg shadow-lg p-8">
                     <!-- Celebration Icon -->
                     <div class="text-center mb-6">
                         <div class="inline-block">
@@ -166,7 +166,20 @@
                                 </div>
                                 <p class="text-gray-700 mb-3">{{ $incident->description }}</p>
                                 @if ($incident->damage_percentage)
-                                    <p class="text-sm text-gray-600">Pourcentage de dommages : {{ $incident->damage_percentage }}%</p>
+                                    <p class="text-sm text-gray-600 mb-3">Pourcentage de dommages : {{ $incident->damage_percentage }}%</p>
+                                @endif
+                                
+                                <!-- Image Evidence Display -->
+                                @if ($incident->hasAttachment())
+                                    <div class="mt-4 pt-4 border-t border-gray-200">
+                                        <p class="text-sm font-semibold text-gray-700 mb-3">📸 Preuve Jointe</p>
+                                        <div class="bg-gray-50 rounded-lg p-3 inline-block">
+                                            <a href="{{ $incident->getAttachmentUrl() }}" target="_blank" rel="noopener noreferrer" class="block">
+                                                <img src="{{ $incident->getAttachmentUrl() }}" alt="Evidence photo" class="max-w-sm h-auto rounded-lg shadow-sm hover:shadow-md transition">
+                                            </a>
+                                        </div>
+                                        <p class="text-xs text-gray-600 mt-2">Cliquez pour voir en pleine résolution</p>
+                                    </div>
                                 @endif
                             </div>
                         @empty
@@ -233,9 +246,29 @@
 
                     <!-- Back Button -->
                     <div class="mt-6 pt-6 border-t border-gray-200">
-                        <a href="{{ route('reclamations.index') }}" class="block text-center bg-gray-300 hover:bg-gray-400 text-gray-900 font-semibold py-2 px-4 rounded-lg">
+                        <a href="{{ route('reclamations.index') }}" class="block text-center bg-gray-300 hover:bg-gray-400 text-gray-900 font-semibold py-2 px-4 rounded-lg mb-4">
                             Retour aux réclamations
                         </a>
+
+                        @if ($reclamation->status === 'en_attente')
+                            <a href="{{ route('reclamations.edit', $reclamation->id) }}" class="block text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg mb-2">
+                                ✎ Modifier
+                            </a>
+                            <form action="{{ route('reclamations.destroy', $reclamation->id) }}" method="POST" class="block"
+                                onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette réclamation ? Cette action est irréversible.');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg">
+                                    🗑 Supprimer
+                                </button>
+                            </form>
+                        @else
+                            <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                <p class="text-sm text-blue-800">
+                                    ℹ️ Vous ne pouvez modifier que les réclamations en attente. Une fois approuvée ou rejetée, aucune modification n'est possible.
+                                </p>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>
