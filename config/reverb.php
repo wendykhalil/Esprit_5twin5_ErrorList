@@ -1,30 +1,59 @@
+
 <?php
 
 return [
 
-    /*
-    |--------------------------------------------------------------------------
-    | Reverb Configuration
-    |--------------------------------------------------------------------------
-    |
-    | Here you may configure your Reverb server. This configuration is used
-    | when you run the `reverb:start` command to start the WebSocket server.
-    |
-    */
+    'servers' => [
+        'reverb' => [
+            'host' => env('REVERB_SERVER_HOST', '0.0.0.0'),
+            'port' => env('REVERB_SERVER_PORT', 8081),
+            'hostname' => env('REVERB_HOST'),
+            'options' => [
+                'tls' => [],
+            ],
+            'max_request_size' => env('REVERB_MAX_REQUEST_SIZE', 10_000),
+            'scaling' => [
+                'enabled' => env('REVERB_SCALING_ENABLED', false),
+                'channel' => env('REVERB_SCALING_CHANNEL', 'reverb'),
+                'server' => [
+                    'url' => env('REDIS_URL'),
+                    'host' => env('REDIS_HOST', '127.0.0.1'),
+                    'port' => env('REDIS_PORT', '6379'),
+                    'username' => env('REDIS_USERNAME'),
+                    'password' => env('REDIS_PASSWORD'),
+                    'database' => env('REDIS_DB', '0'),
+                    'timeout' => env('REDIS_TIMEOUT', 60),
+                ],
+            ],
+            'pulse_ingest_interval' => env('REVERB_PULSE_INGEST_INTERVAL', 15),
+            'telescope_ingest_interval' => env('REVERB_TELESCOPE_INGEST_INTERVAL', 15),
+        ],
+    ],
 
     'apps' => [
-        [
-            'key' => env('REVERB_APP_KEY', 'your-app-key'),
-            'secret' => env('REVERB_APP_SECRET', 'your-app-secret'),
-            'app_id' => env('REVERB_APP_ID', 'app-id'),
-            'options' => [
-                'host' => env('REVERB_HOST', 'localhost'),
-                'port' => env('REVERB_PORT', 8080),
-                'scheme' => env('REVERB_SCHEME', 'http'),
+
+        'provider' => 'config',
+
+        'apps' => [
+            [
+                'key' => env('REVERB_APP_KEY'),
+                'secret' => env('REVERB_APP_SECRET'),
+                'app_id' => env('REVERB_APP_ID'),
+                'options' => [
+                    'host' => env('REVERB_HOST', 'localhost'),
+                    'port' => env('REVERB_PORT', 8081),
+                    'scheme' => env('REVERB_SCHEME', 'http'),
+                ],
+                'allowed_origins' => ['*'],
+                'ping_interval' => 30,
+                'activity_timeout' => 30,
+                'max_connections' => null,
+                'max_message_size' => 10000,
+                'accept_client_events_from' => 'all',
+                'rate_limiting' => null,
             ],
-            'capacity' => null,
-            'encryption' => true,
         ],
+
     ],
 
     'ssl' => [

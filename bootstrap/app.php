@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withProviders([
         App\Providers\EventServiceProvider::class,
         Illuminate\Broadcasting\BroadcastServiceProvider::class,
+        App\Providers\ReverbBroadcasterServiceProvider::class,
     ])
     ->withExceptions(function (Exceptions $exceptions) {
         //
