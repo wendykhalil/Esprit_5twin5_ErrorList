@@ -23,6 +23,11 @@ Broadcast::channel('admin.reservations', function ($user) {
     return $user->role === 'admin';
 });
 
+Broadcast::channel('user.{userId}.reservations', function ($user, $userId) {
+    // Only the owner or an admin can listen to this channel
+    return (int) $userId === $user->id || $user->role === 'admin';
+});
+
 Broadcast::channel('admin.payments', function ($user) {
     return $user->role === 'admin';
 });
