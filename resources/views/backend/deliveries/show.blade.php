@@ -186,6 +186,7 @@
                 <h4 class="text-sm font-semibold text-gray-900 mb-4">Timeline</h4>
                 
                 <div class="space-y-3 text-xs">
+                    <!-- À préparer (created_at) -->
                     <div class="flex items-start">
                         <span class="inline-block w-2 h-2 rounded-full bg-slate-400 mt-2 mr-3 shrink-0"></span>
                         <div>
@@ -194,40 +195,54 @@
                         </div>
                     </div>
 
-                    @if($delivery->status === 'prete' || in_array($delivery->status, ['remise_au_client', 'retour_recu', 'terminee']))
+                    <!-- Prête (ready_at) -->
+                    @if(in_array($delivery->status, ['prete', 'remise_au_client', 'retour_recu', 'terminee']) || $delivery->ready_at)
                         <div class="flex items-start">
                             <span class="inline-block w-2 h-2 rounded-full bg-blue-400 mt-2 mr-3 shrink-0"></span>
                             <div>
                                 <p class="font-medium text-gray-900">Prête</p>
+                                @if($delivery->ready_at)
+                                    <p class="text-gray-600">{{ $delivery->ready_at->format('d/m/Y H:i') }}</p>
+                                @endif
                             </div>
                         </div>
                     @endif
 
-                    @if($delivery->actual_delivery_date)
+                    <!-- Remise au client (client_received_at) -->
+                    @if(in_array($delivery->status, ['remise_au_client', 'retour_recu', 'terminee']) || $delivery->client_received_at)
                         <div class="flex items-start">
                             <span class="inline-block w-2 h-2 rounded-full bg-green-400 mt-2 mr-3 shrink-0"></span>
                             <div>
                                 <p class="font-medium text-gray-900">Remise au client</p>
-                                <p class="text-gray-600">{{ $delivery->actual_delivery_date->format('d/m/Y H:i') }}</p>
+                                @if($delivery->client_received_at)
+                                    <p class="text-gray-600">{{ $delivery->client_received_at->format('d/m/Y H:i') }}</p>
+                                @elseif($delivery->actual_delivery_date)
+                                    <p class="text-gray-600">{{ $delivery->actual_delivery_date->format('d/m/Y H:i') }}</p>
+                                @endif
                             </div>
                         </div>
                     @endif
 
-                    @if($delivery->actual_return_date)
+                    <!-- Retour reçu (actual_return_date) -->
+                    @if(in_array($delivery->status, ['retour_recu', 'terminee']) || $delivery->actual_return_date)
                         <div class="flex items-start">
                             <span class="inline-block w-2 h-2 rounded-full bg-amber-400 mt-2 mr-3 shrink-0"></span>
                             <div>
                                 <p class="font-medium text-gray-900">Retour reçu</p>
-                                <p class="text-gray-600">{{ $delivery->actual_return_date->format('d/m/Y H:i') }}</p>
+                                @if($delivery->actual_return_date)
+                                    <p class="text-gray-600">{{ $delivery->actual_return_date->format('d/m/Y H:i') }}</p>
+                                @endif
                             </div>
                         </div>
                     @endif
 
+                    <!-- Terminée -->
                     @if($delivery->status === 'terminee')
                         <div class="flex items-start">
                             <span class="inline-block w-2 h-2 rounded-full bg-gray-400 mt-2 mr-3 shrink-0"></span>
                             <div>
                                 <p class="font-medium text-gray-900">Terminée</p>
+                                <p class="text-gray-600">{{ $delivery->updated_at->format('d/m/Y H:i') }}</p>
                             </div>
                         </div>
                     @endif

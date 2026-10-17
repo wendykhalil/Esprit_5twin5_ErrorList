@@ -19,6 +19,119 @@
     </div>
 @endif
 
+<!-- Filters and Search Section -->
+<div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+    <form method="GET" action="{{ route('admin.deliveries.index') }}" class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Search Field -->
+            <div>
+                <label for="search" class="block text-sm font-medium text-gray-700 mb-2">
+                    Rechercher
+                </label>
+                <input 
+                    type="text" 
+                    name="search" 
+                    id="search" 
+                    placeholder="ID, client, équipement..." 
+                    value="{{ $activeFilters['search'] ?? '' }}"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+            </div>
+
+            <!-- Equipment Filter -->
+            <div>
+                <label for="equipment_id" class="block text-sm font-medium text-gray-700 mb-2">
+                    Filtrer par équipement
+                </label>
+                <select 
+                    name="equipment_id" 
+                    id="equipment_id"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                    <option value="">Tous les équipements</option>
+                    @foreach($equipmentList as $equipment)
+                        <option 
+                            value="{{ $equipment->id }}"
+                            {{ ($activeFilters['equipment_id'] ?? '') == $equipment->id ? 'selected' : '' }}
+                        >
+                            {{ $equipment->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <!-- Status Filter -->
+            <div>
+                <label for="status" class="block text-sm font-medium text-gray-700 mb-2">
+                    Filtrer par statut
+                </label>
+                <select 
+                    name="status" 
+                    id="status"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                    <option value="">Tous les statuts</option>
+                    @foreach($statuses as $statusKey => $statusLabel)
+                        <option 
+                            value="{{ $statusKey }}"
+                            {{ ($activeFilters['status'] ?? '') === $statusKey ? 'selected' : '' }}
+                        >
+                            {{ $statusLabel }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex items-end gap-2">
+                <button 
+                    type="submit" 
+                    class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition"
+                >
+                    Filtrer
+                </button>
+                <a 
+                    href="{{ route('admin.deliveries.index') }}"
+                    class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium transition text-center"
+                >
+                    Réinitialiser
+                </a>
+            </div>
+        </div>
+    </form>
+
+    <!-- Active Filters Display -->
+    @if($activeFilters['search'] || $activeFilters['equipment_id'] || $activeFilters['status'])
+        <div class="mt-4 pt-4 border-t">
+            <p class="text-sm text-gray-600 mb-2">Filtres actifs:</p>
+            <div class="flex flex-wrap gap-2">
+                @if($activeFilters['search'])
+                    <span class="inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                        Recherche: "{{ $activeFilters['search'] }}"
+                    </span>
+                @endif
+                @if($activeFilters['equipment_id'])
+                    <span class="inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                        Équipement: {{ $equipmentList->find($activeFilters['equipment_id'])?->name ?? 'N/A' }}
+                    </span>
+                @endif
+                @if($activeFilters['status'])
+                    <span class="inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                        Statut: {{ $statuses[$activeFilters['status']] ?? 'N/A' }}
+                    </span>
+                @endif
+            </div>
+        </div>
+    @endif
+</div>
+
+<!-- Pagination Info -->
+@if($deliveries->total() > 0)
+    <div class="mb-4 text-sm text-gray-600">
+        Affichage de {{ $deliveries->firstItem() }} à {{ $deliveries->lastItem() }} sur {{ $deliveries->total() }} livraison{{ $deliveries->total() !== 1 ? 's' : '' }}
+    </div>
+@endif
+
 <div class="bg-white rounded-lg shadow-sm">
     @forelse($deliveries as $delivery)
         <div class="border-b last:border-b-0 p-5 hover:bg-gray-50 transition">
@@ -80,13 +193,17 @@
             </div>
         </div>
     @empty
-        <div class="p-8 text-center text-gray-500">
-            <p>Aucune livraison trouvée.</p>
+        <div class="p-12 text-center text-gray-500">
+            <p class="text-lg">Aucune livraison ne correspond à vos critères.</p>
+            <p class="text-sm mt-2">Essayez d'ajuster vos filtres ou réinitialiser la recherche.</p>
         </div>
     @endforelse
 </div>
 
-<div class="mt-6">
-    {{ $deliveries->links() }}
-</div>
+<!-- Pagination -->
+@if($deliveries->total() > 0)
+    <div class="mt-6">
+        {{ $deliveries->links() }}
+    </div>
+@endif
 @endsection

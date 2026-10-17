@@ -197,6 +197,25 @@
                     </div>
                 @endif
 
+                <!-- Action Button: Confirm Receipt -->
+                @auth
+                    @if($delivery->status === 'prete' && auth()->id() === $delivery->user_id)
+                        <div class="mt-8 mb-8">
+                            <form action="{{ route('deliveries.confirmReceipt', $delivery) }}" method="POST" class="max-w-md">
+                                @csrf
+                                <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                                    <p class="text-sm text-blue-900 mb-4">
+                                        Confirmez la réception de votre équipement pour continuer le processus de livraison.
+                                    </p>
+                                    <button type="submit" class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition">
+                                        Confirmer la réception
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    @endif
+                @endauth
+
                 <!-- Related Reservation -->
                 <div class="mt-8 pt-8 border-t">
                     <h3 class="font-semibold text-gray-900 mb-4">Réservation associée</h3>
