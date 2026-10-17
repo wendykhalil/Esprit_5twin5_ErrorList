@@ -176,6 +176,10 @@ Route::middleware('auth')->group(function () {
     
     Route::get('/livraisons/{delivery}', [DeliveryController::class, 'show'])
         ->name('deliveries.show');
+    
+    // Client confirms receipt of equipment
+    Route::post('/livraisons/{delivery}/confirm-receipt', [DeliveryController::class, 'confirmReceipt'])
+        ->name('deliveries.confirmReceipt');
 });
 
 

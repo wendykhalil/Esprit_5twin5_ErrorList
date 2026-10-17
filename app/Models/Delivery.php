@@ -13,14 +13,18 @@ class Delivery extends Model
      * Delivery statuses.
      * Business rule: Delivery lifecycle for equipment hand-over and return
      * 
-     * Initial status on creation is now 'prete' (Ready) instead of 'a_preparer'
-     * because delivery is created after client accepts the contract, meaning
-     * equipment is ready for handover.
+     * Workflow stages:
+     * 1. a_preparer - Equipment being prepared (admin only)
+     * 2. prete - Equipment ready for pickup (admin only)
+     * 3. remise_au_client - Client has confirmed receipt
+     * 4. retour_recu - Equipment returned, admin confirmed receipt
+     * 5. terminee - Transaction complete
      */
     public const STATUTS = [
-        'prete' => 'Prête',                     // Initial state: Ready for pickup
-        'remise_au_client' => 'Remise au client', // Handed over to client
-        'retour_recu' => 'Retour reçu',         // Equipment returned
+        'a_preparer' => 'À préparer',           // Being prepared
+        'prete' => 'Prête',                     // Ready for pickup
+        'remise_au_client' => 'Remise au client', // Handed over to client (client confirmed)
+        'retour_recu' => 'Retour reçu',         // Equipment returned and received
         'terminee' => 'Terminée',               // Delivery/return complete
     ];
 
@@ -36,6 +40,9 @@ class Delivery extends Model
         'notes',
         'delivery_notes',
         'return_notes',
+        'prepared_at',
+        'ready_at',
+        'client_received_at',
     ];
 
     protected $casts = [
@@ -43,6 +50,9 @@ class Delivery extends Model
         'actual_delivery_date' => 'datetime',
         'planned_return_date' => 'date',
         'actual_return_date' => 'datetime',
+        'prepared_at' => 'datetime',
+        'ready_at' => 'datetime',
+        'client_received_at' => 'datetime',
     ];
 
     /**
@@ -96,15 +106,17 @@ class Delivery extends Model
     /**
      * Get valid status transitions from current status.
      * 
-     * State machine:
-     * - prete (initial) → remise_au_client
-     * - remise_au_client → retour_recu
-     * - retour_recu → terminee
+     * State machine (5-step workflow):
+     * - a_preparer (initial) → prete
+     * - prete → remise_au_client (client confirms receipt)
+     * - remise_au_client → retour_recu (admin marks return received)
+     * - retour_recu → terminee (admin completes)
      * - terminee → (terminal, no transitions)
      */
     public function getValidTransitions(): array
     {
         return match ($this->status) {
+            'a_preparer' => ['prete'],
             'prete' => ['remise_au_client'],
             'remise_au_client' => ['retour_recu'],
             'retour_recu' => ['terminee'],

@@ -13,19 +13,30 @@ use Illuminate\Support\Collection;
  * Provides a single reusable method to determine blocked periods for equipment.
  * Uses half-open interval convention: [start_date, end_date)
  *
- * Blocking statuses: en_attente, confirmee, en_cours, litige
- * Non-blocking statuses: terminee, annulea, refusee
+ * Blocking reservations:
+ * - Statuses: en_attente, confirmee, en_cours, litige (pending, confirmed, in progress, dispute)
+ * - BUT NOT if the associated delivery has status 'terminee' (equipment returned)
+ *
+ * Non-blocking reservations:
+ * - Statuses: annulea, refusea, or any reservation with status 'terminee'
+ * - OR any reservation whose delivery is marked 'terminee'
+ *
+ * This ensures that once a delivery is marked complete, the original planned dates
+ * become available for new reservations, even if the reservation status is still confirmed.
  */
 class EquipmentAvailabilityService
 {
     /**
      * Get all blocked periods for a given equipment.
      *
-     * Blocked periods are determined by reservations with blocking statuses:
-     * - en_attente (pending)
-     * - confirmee (confirmed)
-     * - en_cours (in progress)
-     * - litige (dispute)
+     * Blocked periods are determined by reservations that should block dates:
+     * - Reservations with blocking statuses (en_attente, confirmee, en_cours, litige)
+     *   UNLESS their associated delivery is marked 'terminee' (equipment returned)
+     * - Non-blocking statuses (annulea, refusee) never block
+     * - Reservations with status 'terminee' never block
+     *
+     * Uses Reservation::shouldBlockDates() to determine if a reservation blocks,
+     * which considers both reservation status AND delivery completion status.
      *
      * @param Equipment $equipment The equipment to check availability for
      * @param Reservation|null $excludeReservation Optional reservation to exclude from results (for editing scenarios)
@@ -42,11 +53,13 @@ class EquipmentAvailabilityService
      */
     public function getBlockedPeriods(Equipment $equipment, Reservation $excludeReservation = null): Collection
     {
+        // Get potential blocking statuses, but will filter by shouldBlockDates() which checks delivery status
         $blockingStatuses = ['en_attente', 'confirmee', 'en_cours', 'litige'];
 
         $query = Reservation::where('equipment_id', $equipment->id)
             ->whereIn('statut', $blockingStatuses)
-            ->select('date_debut', 'date_fin')
+            ->with('delivery')  // Eager load delivery for shouldBlockDates() check
+            ->select('id', 'date_debut', 'date_fin', 'statut')
             ->orderBy('date_debut', 'asc');
 
         // Exclude a specific reservation if provided (for editing scenarios)
@@ -55,6 +68,7 @@ class EquipmentAvailabilityService
         }
 
         return $query->get()
+            ->filter(fn(Reservation $reservation) => $reservation->shouldBlockDates())
             ->map(fn(Reservation $reservation) => [
                 'start_date' => $reservation->date_debut->format('Y-m-d'),
                 'end_date' => $reservation->date_fin->format('Y-m-d'),
@@ -67,11 +81,14 @@ class EquipmentAvailabilityService
      * Uses half-open interval: [start_date, end_date)
      * Overlap exists if: existing.start_date < new.end_date AND existing.end_date > new.start_date
      *
+     * Only considers reservations that should actually block dates (via shouldBlockDates()).
+     * This excludes reservations whose deliveries are marked 'terminee'.
+     *
      * @param Equipment $equipment The equipment to check
      * @param Carbon|string $startDate Start date (inclusive)
      * @param Carbon|string $endDate End date (exclusive)
      * @param Reservation|null $excludeReservation Optional reservation to exclude
-     * @return bool True if overlap exists, false otherwise
+     * @return bool True if overlap exists with a blocking reservation, false otherwise
      */
     public function hasOverlap(Equipment $equipment, $startDate, $endDate, Reservation $excludeReservation = null): bool
     {
@@ -82,6 +99,7 @@ class EquipmentAvailabilityService
 
         $query = Reservation::where('equipment_id', $equipment->id)
             ->whereIn('statut', $blockingStatuses)
+            ->with('delivery')  // Eager load delivery for shouldBlockDates() check
             ->where('date_debut', '<', $end)
             ->where('date_fin', '>', $start);
 
@@ -89,7 +107,10 @@ class EquipmentAvailabilityService
             $query->where('id', '!=', $excludeReservation->id);
         }
 
-        return $query->exists();
+        // Filter by shouldBlockDates() to exclude completed deliveries
+        return $query->get()
+            ->filter(fn(Reservation $reservation) => $reservation->shouldBlockDates())
+            ->count() > 0;
     }
 
     /**

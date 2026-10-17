@@ -136,4 +136,38 @@ class Reservation extends Model
         return (float) $this->prix_total;
     }
 
+    /**
+     * Check if this reservation should block dates in availability calculations.
+     *
+     * A reservation blocks dates if:
+     * 1. It has a blocking status (en_attente, confirmee, en_cours, litige) OR
+     * 2. Its associated delivery (if exists) is NOT completed (status !== 'terminee')
+     *
+     * A reservation does NOT block dates if:
+     * - Reservation status is terminee, annulee, or refusee OR
+     * - Reservation has a completed delivery (status = 'terminee')
+     *
+     * This handles the case where a reservation is marked confirmed but the delivery
+     * is already marked as complete, meaning the equipment has been returned and
+     * the dates should become available again.
+     *
+     * @return bool True if this reservation should block overlapping dates
+     */
+    public function shouldBlockDates(): bool
+    {
+        // Non-blocking statuses never block (always available)
+        if (in_array($this->statut, ['annulea', 'refusee'])) {
+            return false;
+        }
+
+        // If delivery exists and is marked 'terminee', don't block
+        if ($this->delivery && $this->delivery->status === 'terminee') {
+            return false;
+        }
+
+        // Otherwise, check if reservation status is blocking
+        $blockingStatuses = ['en_attente', 'confirmee', 'en_cours', 'litige'];
+        return in_array($this->statut, $blockingStatuses);
+    }
+
 }
