@@ -18,6 +18,7 @@ use App\Http\Controllers\Admin\CompensationCodeController;
 use App\Http\Controllers\Admin\TransactionController;
 use App\Http\Controllers\Admin\SupportTicketController as AdminSupportTicketController;
 use App\Http\Controllers\Admin\EquipmentGuideAIController;
+use App\Http\Controllers\Admin\EquipmentDescriptionAIController;
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
 
@@ -60,6 +61,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::delete('/equipements/{equipment}', [EquipmentController::class, 'destroy'])
         ->whereNumber('equipment')
         ->name('equipments.destroy');
+Route::post(
+    '/equipments/ai/generate-description',
+    [EquipmentDescriptionAIController::class, 'generate']
+)->name('equipments.ai.generate-description');
 
 
     // --------------------------------------------------

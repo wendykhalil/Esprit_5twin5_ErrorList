@@ -1,3 +1,4 @@
+
 @extends('layouts.backend')
 
 @section('title', 'Ajouter un équipement - SolarShare Admin')
@@ -17,17 +18,17 @@
                     Partagez votre équipement avec la communauté SolarShare. Validation côté serveur après envoi.
                 </p>
             </div>
-            <a
-                href="{{ route('admin.equipments') }}"
-                class="shrink-0 px-4 py-2 border border-slate-200 rounded-lg text-sm font-semibold text-slate-600 hover:bg-white transition-colors"
-                style="font-family: Outfit, sans-serif"
-            >
+
+            <a href="{{ route('admin.equipments') }}"
+               class="shrink-0 px-4 py-2 border border-slate-200 rounded-lg text-sm font-semibold text-slate-600 hover:bg-white transition-colors"
+               style="font-family: Outfit, sans-serif">
                 ← Retour à la liste
             </a>
         </div>
 
         @php
             $validationStep = 1;
+
             if ($errors->hasAny(['location'])) {
                 $validationStep = 2;
             } elseif ($errors->hasAny(['image'])) {
@@ -45,7 +46,6 @@
                 <p class="font-semibold text-red-800 mb-2">
                     Veuillez corriger les champs suivants :
                 </p>
-
                 <ul class="list-disc list-inside text-sm text-red-700 space-y-1">
                     @foreach ($errors->all() as $error)
                         <li>{{ $error }}</li>
@@ -118,9 +118,14 @@
             >
                 @csrf
 
-                <div id="wizardStepAlert" class="hidden mb-4 bg-red-50 border border-red-200 rounded-xl p-4" role="alert">
-                    <p class="font-semibold text-red-800 mb-2">Veuillez corriger les champs de cette étape :</p>
-                    <ul id="wizardStepAlertList" class="list-disc list-inside text-sm text-red-700 space-y-1"></ul>
+                <div id="wizardStepAlert"
+                     class="hidden mb-4 bg-red-50 border border-red-200 rounded-xl p-4"
+                     role="alert">
+                    <p class="font-semibold text-red-800 mb-2">
+                        Veuillez corriger les champs de cette étape :
+                    </p>
+                    <ul id="wizardStepAlertList"
+                        class="list-disc list-inside text-sm text-red-700 space-y-1"></ul>
                 </div>
 
                 {{-- STEP 1 --}}
@@ -215,6 +220,45 @@
                             @enderror
                         </div>
 
+                        {{-- AI Description Generator --}}
+                        <div class="bg-amber-50 border border-amber-200 rounded-xl p-5">
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                <div>
+                                    <p class="font-bold text-slate-900 text-sm">
+                                        ✨ Assistant IA SolarShare
+                                    </p>
+                                    <p class="text-xs text-slate-600 mt-1">
+                                        Générez automatiquement une description en français,
+                                        la puissance et la capacité à partir des informations
+                                        vérifiées de l'équipement.
+                                    </p>
+                                </div>
+
+                                <button
+                                    type="button"
+                                    id="generateEquipmentDescriptionAI"
+                                    class="shrink-0 px-5 py-3 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-60"
+                                >
+                                    <span id="generateEquipmentDescriptionAIText">
+                                        ✨ Générer avec l'IA
+                                    </span>
+                                </button>
+                            </div>
+
+                            <p
+                                id="equipmentDescriptionAIStatus"
+                                class="hidden mt-3 text-sm"
+                                role="status"
+                                aria-live="polite"
+                            ></p>
+
+                            <p class="mt-3 text-xs text-slate-500">
+                                Les informations générées sont modifiables.
+                                Les valeurs techniques non vérifiables restent vides.
+                                Rien n'est enregistré automatiquement.
+                            </p>
+                        </div>
+
                         {{-- Description --}}
                         <div>
                             <label for="description"
@@ -232,7 +276,10 @@
                                 @error('description') border-red-500 @else border-slate-200 @enderror"
                             >{{ old('description') }}</textarea>
 
-                            <p class="mt-1 text-xs text-slate-500">10 à 1000 caractères.</p>
+                            <p class="mt-1 text-xs text-slate-500">
+                                10 à 1000 caractères.
+                            </p>
+
                             @error('description')
                                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                             @enderror
@@ -352,7 +399,6 @@
                     </h2>
 
                     <div class="space-y-5">
-
                         <div>
                             <label for="location"
                                    class="block text-sm font-semibold text-slate-700 mb-2">
@@ -383,14 +429,12 @@
                                     'Médenine',
                                     'Tataouine'
                                 ] as $city)
-
                                     <option
                                         value="{{ $city }}"
                                         {{ old('location') === $city ? 'selected' : '' }}
                                     >
                                         {{ $city }}
                                     </option>
-
                                 @endforeach
                             </select>
 
@@ -403,13 +447,11 @@
 
                         <div class="bg-amber-50 border border-green-200 rounded-lg p-4 flex gap-3">
                             <span class="text-2xl">📍</span>
-
                             <p class="text-sm text-green-800">
                                 Votre localisation aide les utilisateurs proches
                                 à trouver votre équipement plus facilement.
                             </p>
                         </div>
-
                     </div>
                 </div>
 
@@ -422,7 +464,6 @@
                     </h2>
 
                     <div class="space-y-5">
-
                         <label
                             for="image"
                             class="block border-2 border-dashed border-amber-300 rounded-lg p-12 text-center hover:border-amber-500 transition-colors cursor-pointer bg-amber-50"
@@ -472,7 +513,6 @@
                                 <li>• Montrez les éventuels défauts visibles.</li>
                             </ul>
                         </div>
-
                     </div>
                 </div>
 
@@ -505,13 +545,15 @@
                                     class="w-full px-4 py-3 pr-16 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400
                                     @error('price_per_day') border-red-500 @else border-slate-200 @enderror"
                                 >
-
                                 <span class="absolute right-3 top-3 text-slate-500 font-medium">
                                     TND
                                 </span>
                             </div>
 
-                            <p class="mt-1 text-xs text-slate-500">Tarif journalier en TND (0 à 99 999).</p>
+                            <p class="mt-1 text-xs text-slate-500">
+                                Tarif journalier en TND (0 à 99 999).
+                            </p>
+
                             @error('price_per_day')
                                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                             @enderror
@@ -519,7 +561,6 @@
 
                         {{-- Availability --}}
                         <div class="border border-slate-200 rounded-lg p-4">
-
                             <label class="flex items-center gap-3 cursor-pointer">
                                 <input
                                     type="checkbox"
@@ -528,7 +569,6 @@
                                     {{ old('availability', true) ? 'checked' : '' }}
                                     class="w-5 h-5 text-green-600 rounded border-slate-200 focus:ring-amber-400"
                                 >
-
                                 <div>
                                     <p class="font-semibold text-slate-800">
                                         Équipement disponible
@@ -540,7 +580,6 @@
                                     </p>
                                 </div>
                             </label>
-
                         </div>
 
                         {{-- Status --}}
@@ -579,19 +618,16 @@
 
                         {{-- Revenue estimation --}}
                         <div class="bg-amber-50 border border-green-200 rounded-lg p-6">
-
                             <p class="text-sm font-semibold text-slate-900 mb-4">
                                 Estimation de revenus
                             </p>
 
                             <div class="grid grid-cols-3 gap-3">
-
                                 <div class="bg-white border border-green-200 rounded-lg p-3 text-center">
                                     <p class="text-lg font-bold text-amber-700"
                                        id="estimate-week">
                                         0 TND
                                     </p>
-
                                     <p class="text-xs text-slate-600">
                                         1 semaine
                                     </p>
@@ -602,7 +638,6 @@
                                        id="estimate-2weeks">
                                         0 TND
                                     </p>
-
                                     <p class="text-xs text-slate-600">
                                         2 semaines
                                     </p>
@@ -613,12 +648,10 @@
                                        id="estimate-month">
                                         0 TND
                                     </p>
-
                                     <p class="text-xs text-slate-600">
                                         1 mois
                                     </p>
                                 </div>
-
                             </div>
                         </div>
 
@@ -635,7 +668,6 @@
 
                     <div class="text-center mb-8">
                         <div class="text-6xl mb-4">🎉</div>
-
                         <p class="text-slate-600">
                             Vérifiez vos informations avant de publier votre équipement.
                         </p>
@@ -643,47 +675,36 @@
 
                     {{-- Summary --}}
                     <div class="bg-amber-50 border border-green-200 rounded-lg p-6 mb-6">
-
                         <div class="space-y-3">
 
                             <div class="flex justify-between text-sm">
                                 <span class="text-slate-600">Nom</span>
                                 <span class="font-semibold text-slate-900"
-                                      id="summary-name">
-                                    —
-                                </span>
+                                      id="summary-name">—</span>
                             </div>
 
                             <div class="flex justify-between text-sm">
                                 <span class="text-slate-600">Catégorie</span>
                                 <span class="font-semibold text-slate-900"
-                                      id="summary-category">
-                                    —
-                                </span>
+                                      id="summary-category">—</span>
                             </div>
 
                             <div class="flex justify-between text-sm">
                                 <span class="text-slate-600">Localisation</span>
                                 <span class="font-semibold text-slate-900"
-                                      id="summary-location">
-                                    —
-                                </span>
+                                      id="summary-location">—</span>
                             </div>
 
                             <div class="flex justify-between text-sm">
                                 <span class="text-slate-600">État</span>
                                 <span class="font-semibold text-slate-900"
-                                      id="summary-condition">
-                                    —
-                                </span>
+                                      id="summary-condition">—</span>
                             </div>
 
                             <div class="flex justify-between text-sm">
                                 <span class="text-slate-600">Prix</span>
                                 <span class="font-semibold text-amber-700"
-                                      id="summary-price">
-                                    —
-                                </span>
+                                      id="summary-price">—</span>
                             </div>
 
                         </div>
@@ -695,7 +716,6 @@
                     >
                         Publier mon équipement
                     </button>
-
                 </div>
 
                 {{-- Navigation --}}
@@ -799,6 +819,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         form.querySelectorAll('.border-red-500').forEach(function (el) {
             el.classList.remove('border-red-500');
+
             if (!el.classList.contains('border-slate-200')) {
                 el.classList.add('border-slate-200');
             }
@@ -810,6 +831,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         Object.keys(errors).forEach(function (field) {
             const fieldMessages = errors[field];
+
             if (!fieldMessages || !fieldMessages.length) {
                 return;
             }
@@ -823,9 +845,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (field === 'condition') {
                 const group = stepRoot.querySelector('#condition-wizard-group');
+
                 if (group) {
                     group.appendChild(errorEl);
                 }
+
                 return;
             }
 
@@ -842,11 +866,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (messages.length) {
             wizardStepAlertList.innerHTML = '';
+
             messages.forEach(function (msg) {
                 const li = document.createElement('li');
                 li.textContent = msg;
                 wizardStepAlertList.appendChild(li);
             });
+
             wizardStepAlert.classList.remove('hidden');
         }
     }
@@ -879,65 +905,44 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function updateStepIndicators() {
-
         stepIndicators.forEach((indicator, index) => {
-
             const stepNumber = index + 1;
 
-            indicator.classList.remove(
-                'active-step',
-                'completed-step'
-            );
+            indicator.classList.remove('active-step', 'completed-step');
 
             if (stepNumber === currentStep) {
                 indicator.classList.add('active-step');
-            }
-            else if (stepNumber < currentStep) {
+            } else if (stepNumber < currentStep) {
                 indicator.classList.add('completed-step');
             }
-
         });
 
         stepConnectors.forEach((connector, index) => {
-
             connector.classList.remove('completed-connector');
 
             if (index < currentStep - 1) {
                 connector.classList.add('completed-connector');
             }
-
         });
     }
 
     function showStep(step) {
-
         formSteps.forEach(function (element) {
             element.classList.add('hidden');
         });
 
-        document
-            .getElementById('step-' + step)
-            .classList.remove('hidden');
+        document.getElementById('step-' + step).classList.remove('hidden');
 
         if (step === 1) {
-
             prevBtn.classList.add('hidden');
             nextBtn.classList.remove('hidden');
-
-        }
-        else if (step === totalSteps) {
-
+        } else if (step === totalSteps) {
             prevBtn.classList.remove('hidden');
             nextBtn.classList.add('hidden');
-
             updateSummary();
-
-        }
-        else {
-
+        } else {
             prevBtn.classList.remove('hidden');
             nextBtn.classList.remove('hidden');
-
         }
 
         updateStepIndicators();
@@ -955,17 +960,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (currentStep <= 4) {
             clearWizardStepErrors();
+
             nextBtn.disabled = true;
             nextBtn.classList.add('opacity-70', 'cursor-wait');
 
             try {
                 const valid = await validateCurrentStepOnServer();
+
                 if (!valid) {
                     return;
                 }
             } catch (error) {
                 wizardStepAlertList.innerHTML =
                     '<li>Impossible de valider cette étape. Réessayez.</li>';
+
                 wizardStepAlert.classList.remove('hidden');
                 return;
             } finally {
@@ -980,7 +988,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     prevBtn.addEventListener('click', function () {
-
         if (currentStep > 1) {
             currentStep--;
             showStep(currentStep);
@@ -989,11 +996,9 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     function updateConditionDisplay() {
-
         document
             .querySelectorAll('input[name="condition"]')
             .forEach(function (radio) {
-
                 const label = radio.closest('label');
 
                 label.classList.remove(
@@ -1004,33 +1009,23 @@ document.addEventListener('DOMContentLoaded', function () {
                 label.classList.add('border-slate-200');
 
                 if (radio.checked) {
-
                     label.classList.remove('border-slate-200');
-
                     label.classList.add(
                         'border-amber-500',
                         'bg-amber-50'
                     );
                 }
-
             });
     }
 
     document
         .querySelectorAll('input[name="condition"]')
         .forEach(function (radio) {
-
-            radio.addEventListener(
-                'change',
-                updateConditionDisplay
-            );
-
+            radio.addEventListener('change', updateConditionDisplay);
         });
 
     function updateRevenueEstimates() {
-
-        const price =
-            parseFloat(priceInput.value) || 0;
+        const price = parseFloat(priceInput.value) || 0;
 
         document.getElementById('estimate-week').textContent =
             (price * 7).toFixed(2) + ' TND';
@@ -1042,49 +1037,27 @@ document.addEventListener('DOMContentLoaded', function () {
             (price * 30).toFixed(2) + ' TND';
     }
 
-    priceInput.addEventListener(
-        'input',
-        updateRevenueEstimates
-    );
+    priceInput.addEventListener('input', updateRevenueEstimates);
 
     imageInput.addEventListener('change', function () {
-
-        const display =
-            document.getElementById('selectedImageName');
+        const display = document.getElementById('selectedImageName');
 
         if (this.files.length > 0) {
-
-            display.textContent =
-                '📸 ' + this.files[0].name;
-
+            display.textContent = '📸 ' + this.files[0].name;
             display.classList.remove('hidden');
-
-        }
-        else {
-
+        } else {
             display.classList.add('hidden');
-
         }
     });
 
     function updateSummary() {
-
-        const name =
-            document.getElementById('name').value;
-
-        const category =
-            document.getElementById('category_id');
-
-        const location =
-            document.getElementById('location');
-
-        const price =
-            document.getElementById('price_per_day').value;
-
-        const condition =
-            document.querySelector(
-                'input[name="condition"]:checked'
-            );
+        const name = document.getElementById('name').value;
+        const category = document.getElementById('category_id');
+        const location = document.getElementById('location');
+        const price = document.getElementById('price_per_day').value;
+        const condition = document.querySelector(
+            'input[name="condition"]:checked'
+        );
 
         document.getElementById('summary-name').textContent =
             name || '—';
@@ -1106,9 +1079,225 @@ document.addEventListener('DOMContentLoaded', function () {
                 : '—';
     }
 
+    // ====================================================
+    // AI Equipment Generator
+    // French Description + Power (W) + Capacity (Wh)
+    // ====================================================
+
+    const aiButton = document.getElementById(
+        'generateEquipmentDescriptionAI'
+    );
+
+    const aiButtonText = document.getElementById(
+        'generateEquipmentDescriptionAIText'
+    );
+
+    const aiStatus = document.getElementById(
+        'equipmentDescriptionAIStatus'
+    );
+
+    const descriptionInput = document.getElementById('description');
+    const powerInput = document.getElementById('power');
+    const capacityInput = document.getElementById('capacity');
+
+    const aiEndpoint = @json(route('admin.equipments.ai.generate-description'));
+
+    function showAIStatus(message, isError = false) {
+        aiStatus.textContent = message;
+
+        aiStatus.classList.remove(
+            'hidden',
+            'text-red-700',
+            'text-green-700',
+            'text-slate-700'
+        );
+
+        aiStatus.classList.add(
+            isError ? 'text-red-700' : 'text-green-700'
+        );
+    }
+
+    function fillAIField(input, value) {
+        if (!input) {
+            return false;
+        }
+
+        if (value === null || value === undefined || value === '') {
+            return false;
+        }
+
+        const number = Number(value);
+
+        if (!Number.isFinite(number) || number < 0) {
+            return false;
+        }
+
+        input.value = String(number);
+
+        input.dispatchEvent(
+            new Event('input', { bubbles: true })
+        );
+
+        input.dispatchEvent(
+            new Event('change', { bubbles: true })
+        );
+
+        return true;
+    }
+
+    aiButton.addEventListener('click', async function () {
+
+        const name = document.getElementById('name').value.trim();
+        const categorySelect = document.getElementById('category_id');
+        const brand = document.getElementById('brand').value.trim();
+
+        const power = powerInput.value.trim();
+        const capacity = capacityInput.value.trim();
+
+        const condition = document.querySelector(
+            'input[name="condition"]:checked'
+        );
+
+        if (name.length < 3) {
+            showAIStatus(
+                "Saisissez d'abord le nom de l'équipement (au moins 3 caractères).",
+                true
+            );
+
+            document.getElementById('name').focus();
+            return;
+        }
+
+        if (descriptionInput.value.trim() !== '') {
+            if (!confirm(
+                'Une description existe déjà. Voulez-vous la remplacer par une description générée avec l’IA ?'
+            )) {
+                return;
+            }
+        }
+
+        const category = categorySelect.value
+            ? categorySelect.options[categorySelect.selectedIndex].text.trim()
+            : '';
+
+        const payload = {
+            name: name,
+            category: category,
+            brand: brand,
+            power: power === '' ? null : Number(power),
+            capacity: capacity === '' ? null : Number(capacity),
+            condition: condition ? condition.value : null
+        };
+
+        aiButton.disabled = true;
+        aiButtonText.textContent = '⏳ Génération en cours...';
+
+        aiStatus.textContent =
+            'Mistral prépare votre description et vos caractéristiques...';
+
+        aiStatus.classList.remove(
+            'hidden',
+            'text-red-700',
+            'text-green-700'
+        );
+
+        aiStatus.classList.add('text-slate-700');
+
+        try {
+            const response = await fetch(aiEndpoint, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+                const validationMessage = data.errors
+                    ? Object.values(data.errors).flat()[0]
+                    : null;
+
+                throw new Error(
+                    validationMessage ||
+                    data.message ||
+                    'La génération a échoué.'
+                );
+            }
+
+            if (
+                typeof data.description !== 'string' ||
+                data.description.trim().length < 10 ||
+                data.description.length > 1000
+            ) {
+                throw new Error(
+                    'La description générée ne respecte pas la longueur autorisée.'
+                );
+            }
+
+            // Fill Description
+            descriptionInput.value = data.description.trim();
+
+            descriptionInput.dispatchEvent(
+                new Event('input', { bubbles: true })
+            );
+
+            // Fill Puissance only when empty.
+            // Preserve values already entered by the admin.
+            let powerFilled = false;
+
+            if (powerInput.value.trim() === '') {
+                powerFilled = fillAIField(powerInput, data.power);
+            }
+
+            // Fill Capacité only when empty.
+            let capacityFilled = false;
+
+            if (capacityInput.value.trim() === '') {
+                capacityFilled = fillAIField(capacityInput, data.capacity);
+            }
+
+            const filledFields = ['description'];
+
+            if (powerFilled) {
+                filledFields.push('puissance');
+            }
+
+            if (capacityFilled) {
+                filledFields.push('capacité');
+            }
+
+            let successMessage =
+                '✓ ' + filledFields.join(', ') +
+                ' générée(s) ! Vous pouvez modifier les valeurs avant publication.';
+
+            if (!powerFilled && !capacityFilled) {
+                successMessage =
+                    '✓ Description générée ! Les caractéristiques techniques manquantes doivent être vérifiées.';
+            }
+
+            showAIStatus(successMessage);
+
+        } catch (error) {
+            showAIStatus(
+                error.message || 'Impossible de contacter le serveur.',
+                true
+            );
+        } finally {
+            aiButton.disabled = false;
+            aiButtonText.textContent = "✨ Générer avec l'IA";
+        }
+    });
+
     updateConditionDisplay();
     updateRevenueEstimates();
     showStep(currentStep);
+
 });
 </script>
 
