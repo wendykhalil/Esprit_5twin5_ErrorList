@@ -41,6 +41,7 @@
                 method="POST"
                 action="{{ route('equipments.ai.recommend.store') }}"
                 id="recommendation-form"
+                novalidate
             >
                 @csrf
 
@@ -55,9 +56,14 @@
                     minlength="10"
                     maxlength="1000"
                     required
+                    aria-describedby="needs-error"
                     placeholder="Exemple : Je cherche un panneau solaire pour alimenter une petite installation domestique..."
                     class="w-full rounded-2xl border border-slate-200 bg-slate-50 p-4 focus:ring-2 focus:ring-green-400 focus:border-green-400 outline-none resize-y"
                 >{{ old('needs', $needs ?? '') }}</textarea>
+
+                <p id="needs-error"
+                   class="hidden text-red-600 text-sm mt-2"
+                   role="alert"></p>
 
                 <div class="grid md:grid-cols-2 gap-5 mt-6">
                     <div>
@@ -74,8 +80,13 @@
                             step="0.01"
                             value="{{ old('budget', $budget ?? '') }}"
                             placeholder="Optionnel"
+                            aria-describedby="budget-error"
                             class="w-full rounded-xl border border-slate-200 p-3 focus:ring-2 focus:ring-green-400 outline-none"
                         >
+
+                        <p id="budget-error"
+                           class="hidden text-red-600 text-sm mt-2"
+                           role="alert"></p>
                     </div>
 
                     <div>
@@ -90,8 +101,13 @@
                             maxlength="100"
                             value="{{ old('location', $location ?? '') }}"
                             placeholder="Exemple : Tunis"
+                            aria-describedby="location-error"
                             class="w-full rounded-xl border border-slate-200 p-3 focus:ring-2 focus:ring-green-400 outline-none"
                         >
+
+                        <p id="location-error"
+                           class="hidden text-red-600 text-sm mt-2"
+                           role="alert"></p>
                     </div>
                 </div>
 
@@ -215,8 +231,134 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (!form || !button || !loading) return;
 
-    form.addEventListener('submit', function () {
-        if (!form.checkValidity()) return;
+    const fields = [
+        document.getElementById('needs'),
+        document.getElementById('budget'),
+        document.getElementById('location')
+    ];
+
+    function showError(field, message) {
+        const error = document.getElementById(field.id + '-error');
+
+        if (!error) return;
+
+        error.textContent = message;
+        error.classList.remove('hidden');
+
+        field.classList.remove('border-slate-200');
+        field.classList.add('border-red-500');
+        field.setAttribute('aria-invalid', 'true');
+    }
+
+    function clearError(field) {
+        const error = document.getElementById(field.id + '-error');
+
+        if (!error) return;
+
+        error.textContent = '';
+        error.classList.add('hidden');
+
+        field.classList.remove('border-red-500');
+        field.classList.add('border-slate-200');
+        field.removeAttribute('aria-invalid');
+    }
+
+    function validateField(field) {
+        const value = field.value.trim();
+
+        clearError(field);
+
+        if (field.id === 'needs') {
+            if (value.length === 0) {
+                showError(field, 'Veuillez décrire votre besoin.');
+                return false;
+            }
+
+            if (value.length < 10) {
+                showError(
+                    field,
+                    'Veuillez saisir au moins 10 caractères pour décrire votre besoin.'
+                );
+                return false;
+            }
+
+            if (value.length > 1000) {
+                showError(field, 'Votre description ne doit pas dépasser 1000 caractères.');
+                return false;
+            }
+        }
+
+        if (field.id === 'budget' && value !== '') {
+            const budget = Number(value);
+
+            if (!Number.isFinite(budget) || field.validity.badInput) {
+                showError(field, 'Veuillez saisir un budget valide.');
+                return false;
+            }
+
+            if (budget < 0) {
+                showError(field, 'Le budget ne peut pas être négatif.');
+                return false;
+            }
+
+            if (budget > 1000000) {
+                showError(field, 'Le budget maximum autorisé est de 1 000 000 TND.');
+                return false;
+            }
+
+            if (!field.validity.stepMismatch) {
+                return true;
+            }
+
+            showError(field, 'Veuillez saisir un montant avec deux décimales maximum.');
+            return false;
+        }
+
+        if (field.id === 'location' && value.length > 100) {
+            showError(field, 'Le nom de la ville ne doit pas dépasser 100 caractères.');
+            return false;
+        }
+
+        return true;
+    }
+
+    fields.forEach(function (field) {
+        if (!field) return;
+
+        field.addEventListener('input', function () {
+            validateField(field);
+        });
+
+        field.addEventListener('blur', function () {
+            validateField(field);
+        });
+    });
+
+    form.addEventListener('submit', function (event) {
+        let valid = true;
+        let firstInvalid = null;
+
+        fields.forEach(function (field) {
+            if (!field) return;
+
+            if (!validateField(field)) {
+                valid = false;
+
+                if (!firstInvalid) {
+                    firstInvalid = field;
+                }
+            }
+        });
+
+        if (!valid) {
+            event.preventDefault();
+
+            if (firstInvalid) {
+                firstInvalid.focus();
+            }
+
+            return;
+        }
 
         button.disabled = true;
         button.textContent = 'Analyse en cours...';
