@@ -71,7 +71,7 @@ class ReclamationController extends Controller
                 'reservation_id' => $validated['reservation_id'],
                 'user_id' => $user->id,
                 'title' => $validated['title'],
-                'description' => $validated['description'],
+                'description' => null, // Description now managed at incident level
                 'status' => 'en_attente',
             ]);
 
@@ -100,6 +100,7 @@ class ReclamationController extends Controller
                     'reclamation_id' => $reclamation->id,
                     'equipment_id' => $incidentData['equipment_id'],
                     'type_probleme' => $incidentData['type_probleme'],
+                    'titre' => $incidentData['titre'] ?? null,
                     'description' => $incidentData['description'],
                     'damage_percentage' => $incidentData['damage_percentage'] ?? null,
                     'proposed_refund_percentage' => $proposedRefundPercentage,
