@@ -370,6 +370,9 @@
 
                 @endif
 
+                {{-- SolarShare AI Equipment Assistant --}}
+@include('frontend.equipments.partials.ai-chat')
+
             </main>
 
             {{-- RIGHT: sticky reservation card --}}
