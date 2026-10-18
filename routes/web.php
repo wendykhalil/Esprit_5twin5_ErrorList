@@ -3,6 +3,7 @@
 use App\Http\Controllers\EquipmentController;
 use App\Http\Controllers\Frontend\PaymentController;
 use App\Http\Controllers\ContractController;
+use App\Http\Controllers\IncidentController;
 use App\Http\Controllers\InspectionController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReservationController;
@@ -211,6 +212,12 @@ Route::middleware('auth')->group(function () {
 // --------------------------------------------------
 // RECLAMATIONS (CLIENT)
 // --------------------------------------------------
+
+Route::middleware('auth')->group(function () {
+    // AI-powered incident description generation
+    Route::post('/incidents/generate-description', [IncidentController::class, 'generateDescription'])
+        ->name('incidents.generate-description');
+});
 
 Route::middleware('auth')->prefix('reclamations')->name('reclamations.')->group(function () {
     Route::get('/', [ReclamationController::class, 'index'])->name('index');

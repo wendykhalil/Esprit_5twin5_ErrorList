@@ -1,11 +1,11 @@
 <?php
 
-namespace Tests\Unit;
+namespace Tests\Feature;
 
 use App\Models\CompensationCode;
 use Tests\TestCase;
 
-class CompensationCodeCalculationTest extends TestCase
+class CompensationCodeValidationTest extends TestCase
 {
     /**
      * Test Case 1: Valid percentage discount (50%)

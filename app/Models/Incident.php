@@ -14,6 +14,7 @@ class Incident extends Model
         'reclamation_id',
         'equipment_id',
         'type_probleme',
+        'titre',
         'description',
         'damage_percentage',
         'proposed_refund_percentage',

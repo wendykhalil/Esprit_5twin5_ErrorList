@@ -27,12 +27,11 @@
             height: auto !important;
             max-height: none !important;
             position: relative;
-            z-index: 0;
         }
 
-        /* Toujours au-dessus du contenu (cartes transform, panneaux sticky, etc.) */
+        /* Navbar always above content */
         #frontend-site-nav {
-            z-index: 1000 !important;
+            z-index: 50;
             isolation: isolate;
         }
     </style>
@@ -47,11 +46,11 @@
 
     <main id="frontend-main">
         @yield('content')
-
-        @unless(request()->routeIs('login', 'register'))
-            @include('components.frontend.footer')
-        @endunless
     </main>
+
+    @unless(request()->routeIs('login', 'register'))
+        @include('components.frontend.footer')
+    @endunless
 
     <script>
         document.body.classList.remove('overflow-y-hidden');
