@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EquipmentController;
+use App\Http\Controllers\Admin\EquipmentAnalyticsController;
 use App\Http\Controllers\Admin\EquipmentGuideController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\RentalController;
@@ -29,13 +30,15 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::get('/dashboard/stats', [DashboardController::class, 'stats'])
         ->name('dashboard.stats');
 
-
     // --------------------------------------------------
     // EQUIPMENTS
     // --------------------------------------------------
 
     Route::get('/equipements', [EquipmentController::class, 'index'])
         ->name('equipments');
+
+    Route::get('/equipements/analytics', [EquipmentAnalyticsController::class, 'index'])
+        ->name('equipments.analytics');
 
     Route::get('/equipements/create', [EquipmentController::class, 'create'])
         ->name('equipments.create');
@@ -61,26 +64,25 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::delete('/equipements/{equipment}', [EquipmentController::class, 'destroy'])
         ->whereNumber('equipment')
         ->name('equipments.destroy');
-Route::post(
-    '/equipments/ai/generate-description',
-    [EquipmentDescriptionAIController::class, 'generate']
-)->name('equipments.ai.generate-description');
 
+    Route::post(
+        '/equipments/ai/generate-description',
+        [EquipmentDescriptionAIController::class, 'generate']
+    )->name('equipments.ai.generate-description');
 
     // --------------------------------------------------
     // EQUIPMENT USAGE GUIDES - ADMIN ONLY
     // --------------------------------------------------
 
-Route::post(
-    '/equipment-guides/ai/generate',
-    [EquipmentGuideAIController::class, 'generate']
-)->name('equipment-guides.ai.generate');
+    Route::post(
+        '/equipment-guides/ai/generate',
+        [EquipmentGuideAIController::class, 'generate']
+    )->name('equipment-guides.ai.generate');
 
     Route::resource(
         'equipment-guides',
         EquipmentGuideController::class
     )->whereNumber('equipment_guide');
-
 
     // --------------------------------------------------
     // USERS
@@ -105,11 +107,9 @@ Route::post(
         ->whereNumber('user')
         ->name('users.destroy');
 
-
     // Rentals
     Route::get('/locations', [RentalController::class, 'index'])
         ->name('rentals');
-
 
     // --------------------------------------------------
     // RESERVATIONS
@@ -142,15 +142,12 @@ Route::post(
     Route::delete('/reservations/{reservation}', [ReservationController::class, 'destroy'])
         ->name('reservations.destroy');
 
-
     // Inspections
     Route::resource('inspections', InspectionController::class);
-
 
     // Settings
     Route::get('/parametres', [SettingsController::class, 'index'])
         ->name('settings');
-
 
     // --------------------------------------------------
     // PAYMENTS
@@ -163,7 +160,6 @@ Route::post(
 
     Route::post('/payments/{payment}/refund', [PaymentController::class, 'refundStore'])
         ->name('payments.refund.store');
-
 
     // --------------------------------------------------
     // CONTRACTS
@@ -181,7 +177,6 @@ Route::post(
     Route::get('/contracts/{contract}/print', [ContractController::class, 'print'])
         ->name('contracts.print');
 
-
     // --------------------------------------------------
     // DELIVERIES
     // --------------------------------------------------
@@ -195,10 +190,8 @@ Route::post(
     Route::patch('/livraisons/{delivery}/status', [DeliveryController::class, 'updateStatus'])
         ->name('deliveries.updateStatus');
 
-
     // Transactions
     Route::resource('transactions', TransactionController::class);
-
 
     // --------------------------------------------------
     // SUPPORT TICKETS
@@ -216,7 +209,6 @@ Route::post(
     Route::patch('/tickets/{supportTicket}', [AdminSupportTicketController::class, 'update'])
         ->name('tickets.update');
 
-
     // --------------------------------------------------
     // SERVICE PROVIDERS
     // --------------------------------------------------
@@ -232,7 +224,6 @@ Route::post(
 
     Route::patch('/service-providers/{serviceProvider}/reject', [\App\Http\Controllers\Admin\ServiceProviderController::class, 'reject'])
         ->name('service-providers.reject');
-
 
     // --------------------------------------------------
     // RECLAMATIONS - ADMIN
@@ -255,7 +246,6 @@ Route::post(
 
     Route::post('/reclamations/{reclamation}/reject', [ReclamationController::class, 'reject'])
         ->name('reclamations.reject');
-
 
     // --------------------------------------------------
     // COMPENSATION CODES - ADMIN
