@@ -63,7 +63,7 @@
                     @if($equipment->image)
 
                         <img
-                            src="{{ asset('storage/' . $equipment->image) }}"
+                            src="{{ $equipment->image_url }}"
                             alt="{{ $equipment->name }}"
                             class="block object-contain"
                             style="

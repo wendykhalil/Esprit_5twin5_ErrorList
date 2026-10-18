@@ -74,7 +74,7 @@
     <tr class="group transition-colors hover:bg-amber-50/30">
      <td class="px-6 py-4"><div class="flex items-center gap-3">
       @if($equipment->image)
-       <img src="{{ asset('storage/' . $equipment->image) }}" alt="{{ $equipment->name }}" class="h-12 w-12 shrink-0 rounded-xl border border-slate-100 object-cover">
+       <img src="{{ $equipment->image_url }}" alt="{{ $equipment->name }}" class="h-12 w-12 shrink-0 rounded-xl border border-slate-100 object-cover">
       @else
        <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-emerald-100 bg-emerald-50 text-xl" aria-hidden="true">☀️</div>
       @endif

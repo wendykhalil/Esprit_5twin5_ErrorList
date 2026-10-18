@@ -46,6 +46,8 @@
             @csrf
             @method('PUT')
 
+            {{-- Image preview is rendered inside this partial.
+                 Use $equipment?->image_url there for Cloudinary/local compatibility. --}}
             @include('backend.equipments._form', ['equipment' => $equipment])
 
             <div class="flex flex-col sm:flex-row gap-3 pt-5 border-t border-slate-200">

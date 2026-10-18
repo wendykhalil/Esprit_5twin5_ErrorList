@@ -42,7 +42,7 @@
 
                             @if($equipment->image)
 
-                                <img src="{{ asset('storage/' . $equipment->image) }}"
+                                <img src="{{ $equipment->image_url }}"
 
                                      alt="{{ $equipment->name }}"
 
@@ -639,7 +639,7 @@
 
                             @if($eq->image)
 
-                                <img src="{{ asset('storage/' . $eq->image) }}" alt="{{ $eq->name }}" class="w-full h-40 object-cover">
+                                <img src="{{ $eq->image_url }}" alt="{{ $eq->name }}" class="w-full h-40 object-cover">
 
                             @else
 
