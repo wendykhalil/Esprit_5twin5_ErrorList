@@ -53,6 +53,23 @@ Route::middleware('auth')->group(function () {
 });
 
 
+
+
+// SolarShare AI Equipment Recommendations
+Route::get(
+    '/equipements/recommandations-ia',
+    [\App\Http\Controllers\EquipmentRecommendationController::class, 'index']
+)->name('equipments.ai.recommend.index');
+
+Route::post(
+    '/equipements/recommandations-ia',
+    [\App\Http\Controllers\EquipmentRecommendationController::class, 'recommend']
+)
+    ->middleware(['auth', 'throttle:5,1'])
+    ->name('equipments.ai.recommend.store');
+
+
+
 // --------------------------------------------------
 // EQUIPMENT DETAILS
 // IMPORTANT: keep this after /create and /edit
@@ -155,16 +172,16 @@ Route::middleware('auth')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::get('/contracts', [ContractController::class, 'index'])
         ->name('contracts.index');
-    
+
     Route::get('/contracts/{contract}', [ContractController::class, 'show'])
         ->name('contracts.show');
-    
+
     Route::post('/contracts/{contract}/accept', [ContractController::class, 'accept'])
         ->name('contracts.accept');
-    
+
     Route::get('/contracts/{contract}/print', [ContractController::class, 'print'])
         ->name('contracts.print');
-    
+
     Route::get('/contracts/{contract}/download', [ContractController::class, 'download'])
         ->name('contracts.download');
 });
@@ -181,10 +198,10 @@ use App\Http\Controllers\CompensationCodeController;
 Route::middleware('auth')->group(function () {
     Route::get('/livraisons', [DeliveryController::class, 'index'])
         ->name('deliveries.index');
-    
+
     Route::get('/livraisons/{delivery}', [DeliveryController::class, 'show'])
         ->name('deliveries.show');
-    
+
     // Client confirms receipt of equipment
     Route::post('/livraisons/{delivery}/confirm-receipt', [DeliveryController::class, 'confirmReceipt'])
         ->name('deliveries.confirmReceipt');
@@ -284,7 +301,7 @@ Route::middleware('auth')->prefix('notifications')->name('notifications.')->grou
     Route::get('/{notification}', [NotificationController::class, 'show'])->name('show');
     Route::post('/{notification}/read', [NotificationController::class, 'markAsRead'])->name('read');
     Route::post('/read-all', [NotificationController::class, 'markAllAsRead'])->name('read-all');
-    
+
     // API endpoints for AJAX/real-time updates
     Route::get('/api/unread', [NotificationController::class, 'unread'])->name('api.unread');
     Route::get('/api/count', [NotificationController::class, 'count'])->name('api.count');
@@ -347,6 +364,9 @@ Route::middleware('auth')->group(function () {
 
 Route::get('/services/{serviceProvider}', [ServiceProviderController::class, 'show'])
     ->name('service-providers.show');
+
+
+
 
 
 // --------------------------------------------------

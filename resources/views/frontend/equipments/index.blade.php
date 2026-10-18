@@ -4,6 +4,19 @@
 
 @section('content')
 <div class="min-h-screen bg-slate-50">
+    {{-- AI recommendations entry point --}}
+    <div class="bg-gradient-to-r from-green-800 to-emerald-600 px-5 py-5">
+        <div class="max-w-[1680px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="text-white">
+                <h2 class="text-lg font-bold">🤖 Besoin d'aide pour choisir ?</h2>
+                <p class="text-sm text-green-100 mt-1">Découvrez notre moteur de recommandation intelligent.</p>
+            </div>
+            <a href="{{ route('equipments.ai.recommend.index') }}"
+               class="bg-white text-green-800 hover:bg-green-50 font-bold px-6 py-3 rounded-xl transition whitespace-nowrap">
+                ✨ Recommandations IA
+            </a>
+        </div>
+    </div>
     {{-- Page header and controls --}}
     <header class="bg-white border-b border-green-100">
         <div class="max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-10 2xl:px-12 py-7 lg:py-9">
