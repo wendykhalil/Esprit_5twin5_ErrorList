@@ -34,15 +34,18 @@ class EquipmentGuideAIController extends Controller
         );
 
         $details = $equipment->only([
-            'name',
-            'description',
-            'brand',
-            'power',
-            'capacity',
-            'condition',
-        ]);
+    'name',
+    'description',
+    'brand',
+    'power',
+    'capacity',
+    'condition',
+]);
 
-        try {
+// Allow longer execution for local AI guide generation.
+@set_time_limit(240);
+
+try {
 
             // Generate the guide using Ollama / Mistral.
             $raw = $ai->generateUsageGuide($details);
