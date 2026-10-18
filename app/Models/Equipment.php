@@ -26,6 +26,7 @@ class Equipment extends Model
         'location',
         'availability',
         'image',
+        'image_public_id',
         'status',
     ];
 
@@ -36,37 +37,39 @@ class Equipment extends Model
         'price_per_day' => 'decimal:2',
     ];
 
-    /**
-     * Owner of the equipment.
-     */
+    public function getImageUrlAttribute(): ?string
+    {
+        if (!$this->image) {
+            return null;
+        }
+
+        if (
+            str_starts_with($this->image, 'https://') ||
+            str_starts_with($this->image, 'http://')
+        ) {
+            return $this->image;
+        }
+
+        return asset('storage/' . ltrim($this->image, '/'));
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Category of the equipment.
-     */
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
     }
 
-    /**
-     * Service requests for this equipment.
-     */
     public function serviceRequests(): HasMany
     {
         return $this->hasMany(ServiceRequest::class);
     }
 
-    
-/**
- * Usage guides associated with this equipment.
- */
-public function equipmentGuides(): HasMany
-{
-    return $this->hasMany(EquipmentGuide::class);
-}
-
+    public function equipmentGuides(): HasMany
+    {
+        return $this->hasMany(EquipmentGuide::class);
+    }
 }

@@ -120,7 +120,7 @@
                             <a href="{{ route('equipments.show', $eq) }}" class="group flex flex-col min-w-0 bg-white rounded-2xl border border-green-100 shadow-sm hover:shadow-xl hover:border-green-200 hover:-translate-y-1 transition-all duration-200 overflow-hidden">
                                 <div class="relative h-56 lg:h-60 bg-green-50 overflow-hidden shrink-0">
                                     @if($eq->image)
-                                        <img src="{{ asset('storage/' . $eq->image) }}" alt="{{ $eq->name }}" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                                        <img src="{{ $eq->image_url }}" alt="{{ $eq->name }}" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                                     @else
                                         <div class="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-green-50 to-emerald-50 text-green-700">
                                             <div class="w-20 h-20 bg-white/80 rounded-2xl flex items-center justify-center shadow-sm"><svg class="w-10 h-10 text-green-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10" r="1.5"/><path stroke-linecap="round" stroke-linejoin="round" d="m3 16 5-4 4 3 3-3 6 5"/></svg></div>
