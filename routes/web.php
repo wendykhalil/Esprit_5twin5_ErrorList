@@ -65,6 +65,14 @@ Route::get('/equipements/{equipment}', [EquipmentController::class, 'show'])
 Route::get('/equipements/{equipment}/availability', [EquipmentController::class, 'availability'])
     ->whereNumber('equipment')
     ->name('equipments.availability');
+// SolarShare AI Equipment Chat
+Route::post(
+    '/equipements/{equipment}/ai/chat',
+    [\App\Http\Controllers\EquipmentChatAIController::class, 'chat']
+)
+    ->middleware(['auth', 'throttle:10,1'])
+    ->whereNumber('equipment')
+    ->name('equipments.ai.chat');
 
 
 // --------------------------------------------------
