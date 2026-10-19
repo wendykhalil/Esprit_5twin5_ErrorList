@@ -1,5 +1,6 @@
 import './bootstrap';
 import './echo';
+import './ai-reclamation-assistant';
 
 import Alpine from 'alpinejs';
 import { initAdminRealtimeListeners } from './admin-realtime';

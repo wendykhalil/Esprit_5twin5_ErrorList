@@ -213,6 +213,8 @@ Route::middleware('auth')->group(function () {
 // RECLAMATIONS (CLIENT)
 // --------------------------------------------------
 
+use App\Http\Controllers\AIReclamationAssistantController;
+
 Route::middleware('auth')->group(function () {
     // AI-powered incident description generation
     Route::post('/incidents/generate-description', [IncidentController::class, 'generateDescription'])
@@ -227,6 +229,20 @@ Route::middleware('auth')->prefix('reclamations')->name('reclamations.')->group(
     Route::get('/{reclamation}/edit', [ReclamationController::class, 'edit'])->name('edit');
     Route::put('/{reclamation}', [ReclamationController::class, 'update'])->name('update');
     Route::delete('/{reclamation}', [ReclamationController::class, 'destroy'])->name('destroy');
+});
+
+// AI Reclamation Assistant routes
+Route::middleware('auth')->prefix('reclamations/ai-assistant')->name('reclamations.ai-assistant.')->group(function () {
+    Route::get('/reservations', [AIReclamationAssistantController::class, 'getReservations'])
+        ->name('reservations');
+    Route::post('/generate-reclamation-details', [AIReclamationAssistantController::class, 'generateReclamationDetails'])
+        ->name('generate-reclamation-details');
+    Route::post('/generate-description', [AIReclamationAssistantController::class, 'generateDescription'])
+        ->name('generate-description');
+    Route::post('/upload-evidence', [AIReclamationAssistantController::class, 'uploadEvidence'])
+        ->name('upload-evidence');
+    Route::post('/submit', [AIReclamationAssistantController::class, 'submitReclamation'])
+        ->name('submit');
 });
 
 

@@ -35,6 +35,11 @@
 
 
 @layer components {
+    /* Alpine.js x-cloak: Hide elements until Alpine initializes */
+    [x-cloak] {
+        display: none !important;
+    }
+
     /* Fade-in animation for reward cards */
     @keyframes fadeIn {
         from {

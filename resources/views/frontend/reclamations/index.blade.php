@@ -3,7 +3,7 @@
 @section('title', 'Mes Réclamations')
 
 @section('content')
-<div class="container mx-auto px-4 py-8">
+<div class="container mx-auto px-4 py-8" x-data="aiReclamationAssistant()">
     <div class="max-w-4xl mx-auto">
         <!-- Header -->
         <div class="flex justify-between items-center mb-8">
@@ -11,9 +11,15 @@
                 <h1 class="text-3xl font-bold text-gray-900">Mes Réclamations</h1>
                 <p class="text-gray-600 mt-2">Consultez et gérez vos réclamations</p>
             </div>
-            <a href="{{ route('reclamations.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg">
-                + Nouvelle Réclamation
-            </a>
+            <div class="flex gap-3">
+                <button @click="openModal()"
+                        class="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-lg inline-flex items-center gap-2">
+                    ✨ Créer avec l'IA
+                </button>
+                <a href="{{ route('reclamations.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg">
+                    + Nouvelle Réclamation
+                </a>
+            </div>
         </div>
 
         <!-- Messages -->
@@ -123,9 +129,15 @@
                 </div>
                 <h3 class="text-lg font-semibold text-gray-900 mb-2">Aucune réclamation</h3>
                 <p class="text-gray-600 mb-6">Vous n'avez pas encore créé de réclamation.</p>
-                <a href="{{ route('reclamations.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg inline-block">
-                    Créer une réclamation
-                </a>
+                <div class="flex gap-3 justify-center">
+                    <button @click="openModal()"
+                            class="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-lg inline-flex items-center gap-2">
+                        ✨ Créer avec l'IA
+                    </button>
+                    <a href="{{ route('reclamations.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg inline-block">
+                        + Nouvelle Réclamation
+                    </a>
+                </div>
             </div>
         @endforelse
 
@@ -136,5 +148,8 @@
             </div>
         @endif
     </div>
+
+    <!-- AI Assistant Modal - must be INSIDE x-data container to access component state -->
+    @include('frontend.reclamations.ai-assistant-modal')
 </div>
 @endsection
