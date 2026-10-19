@@ -20,6 +20,7 @@ use App\Http\Controllers\Admin\TransactionController;
 use App\Http\Controllers\Admin\SupportTicketController as AdminSupportTicketController;
 use App\Http\Controllers\Admin\EquipmentGuideAIController;
 use App\Http\Controllers\Admin\EquipmentDescriptionAIController;
+use App\Http\Controllers\Admin\ReportsController;
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
 
@@ -29,6 +30,16 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
 
     Route::get('/dashboard/stats', [DashboardController::class, 'stats'])
         ->name('dashboard.stats');
+
+    // --------------------------------------------------
+    // REPORTS - AI POWERED
+    // --------------------------------------------------
+
+    Route::get('/reports', [ReportsController::class, 'index'])
+        ->name('reports.index');
+
+    Route::post('/reports/generate', [ReportsController::class, 'generate'])
+        ->name('reports.generate');
 
     // --------------------------------------------------
     // EQUIPMENTS
