@@ -8,6 +8,74 @@ use Illuminate\Support\Facades\Log;
 class OllamaService
 {
     /**
+     * Generate complete reclamation details (type, title, description) from client explanation
+     *
+     * @param string $clientExplanation Client's free-form explanation of the problem
+     * @param string|null $equipmentName Name of the equipment
+     * @param string|null $dateDebut Reservation start date (d/m/Y format)
+     * @param string|null $dateFin Reservation end date (d/m/Y format)
+     * @param int|null $reservationId Reservation ID for reference
+     * @return array Array with keys: type_probleme, titre, description
+     * @throws \Exception
+     */
+    public function generateReclamationDetails(
+        string $clientExplanation,
+        ?string $equipmentName = null,
+        ?string $dateDebut = null,
+        ?string $dateFin = null,
+        ?int $reservationId = null
+    ): array {
+        if (!config('ollama.enabled')) {
+            throw new \Exception('Ollama service is not enabled.');
+        }
+
+        // Build the prompt to generate all three fields
+        $prompt = $this->buildReclamationDetailsPrompt(
+            $clientExplanation,
+            $equipmentName,
+            $dateDebut,
+            $dateFin,
+            $reservationId
+        );
+
+        try {
+            $response = Http::timeout(config('ollama.timeout', 60))
+                ->post(
+                    config('ollama.base_url') . '/api/generate',
+                    [
+                        'model' => config('ollama.model'),
+                        'prompt' => $prompt,
+                        'stream' => false,
+                    ]
+                );
+
+            if (!$response->successful()) {
+                Log::error('Ollama API error', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+                throw new \Exception('Ollama API returned status ' . $response->status());
+            }
+
+            $data = $response->json();
+
+            if (!isset($data['response'])) {
+                Log::error('Ollama API invalid response', ['data' => $data]);
+                throw new \Exception('Ollama API returned invalid response');
+            }
+
+            // Parse the structured response
+            return $this->parseReclamationDetailsResponse($data['response']);
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            Log::error('Ollama connection failed', ['error' => $e->getMessage()]);
+            throw new \Exception('Impossible de se connecter au service Ollama. Vérifiez qu\'Ollama est en cours d\'exécution sur ' . config('ollama.base_url'));
+        } catch (\Illuminate\Http\Client\RequestException $e) {
+            Log::error('Ollama request failed', ['error' => $e->getMessage()]);
+            throw new \Exception('Erreur lors de la requête à Ollama: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Generate an incident description using Ollama Qwen2.5 3B model
      *
      * @param string $problemType Type of problem (endommage, manquant, etc.)
@@ -83,6 +151,135 @@ class OllamaService
             Log::error('Ollama request failed', ['error' => $e->getMessage()]);
             throw new \Exception('Erreur lors de la requête à Ollama: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Build a prompt to generate reclamation details from client explanation
+     *
+     * @param string $clientExplanation
+     * @param string|null $equipmentName
+     * @param string|null $dateDebut
+     * @param string|null $dateFin
+     * @param int|null $reservationId
+     * @return string
+     */
+    private function buildReclamationDetailsPrompt(
+        string $clientExplanation,
+        ?string $equipmentName = null,
+        ?string $dateDebut = null,
+        ?string $dateFin = null,
+        ?int $reservationId = null
+    ): string {
+        // Build context information
+        $contextLines = [];
+        
+        if ($reservationId) {
+            $contextLines[] = "Référence de réservation: #{$reservationId}";
+        }
+        
+        if ($equipmentName) {
+            $contextLines[] = "Équipement loué: {$equipmentName}";
+        }
+        
+        if ($dateDebut && $dateFin) {
+            $contextLines[] = "Période de location: du {$dateDebut} au {$dateFin}";
+        }
+        
+        $contextLines[] = "Explication du client: {$clientExplanation}";
+        
+        $context = implode("\n", $contextLines);
+
+        $prompt = <<<PROMPT
+Tu es un assistant spécialisé en analyse de réclamations pour une plateforme de location d'équipements SolarShare.
+
+CONTEXTE:
+{$context}
+
+TÂCHE:
+Analyse l'explication du client et génère une réclamation structurée. Tu dois répondre EXACTEMENT dans ce format JSON (valide et parsable):
+
+{
+  "type_probleme": "endommage|manquant|malfonctionnant|autre",
+  "titre": "Titre concis (3-255 caractères)",
+  "description": "Description professionnelle (120-180 mots, sans formatage Markdown)"
+}
+
+RÈGLES STRICTES:
+1. Le type_probleme DOIT être l'une de ces valeurs exactes: "endommage", "manquant", "malfonctionnant", "autre"
+2. Le titre doit être une seule ligne, sans énumération, sans tirets
+3. La description doit être un paragraphe professionnel et courtois
+4. N'INVENTE JAMAIS de détails non mentionnés par le client
+5. N'AJOUTE PAS de formatage Markdown (* ** # etc.)
+6. Réponds UNIQUEMENT avec le JSON valide, aucun autre texte avant ou après
+
+EXEMPLE:
+{
+  "type_probleme": "endommage",
+  "titre": "Câbles de connexion endommagés",
+  "description": "L'équipement loué présente des câbles de connexion endommagés qui empêchent son fonctionnement correct. Suite à l'explication fournie, les dommages semblent résulter d'une manipulation inadvertante. Je vous demande de bien vouloir étudier cette réclamation et de proposer une solution adaptée."
+}
+
+ANALYSE ET GÉNÈRE MAINTENANT:
+PROMPT;
+
+        return trim($prompt);
+    }
+
+    /**
+     * Parse the structured reclamation details response from Ollama
+     *
+     * @param string $response
+     * @return array
+     * @throws \Exception
+     */
+    private function parseReclamationDetailsResponse(string $response): array
+    {
+        $response = trim($response);
+
+        // Try to extract JSON from the response
+        if (preg_match('/\{[\s\S]*\}/', $response, $matches)) {
+            $jsonStr = $matches[0];
+        } else {
+            throw new \Exception('Impossible de générer les détails de la réclamation. Format invalide.');
+        }
+
+        $data = json_decode($jsonStr, true);
+
+        if (!is_array($data)) {
+            throw new \Exception('Impossible de générer les détails de la réclamation. JSON invalide.');
+        }
+
+        // Validate required fields
+        $required = ['type_probleme', 'titre', 'description'];
+        foreach ($required as $field) {
+            if (!isset($data[$field]) || empty($data[$field])) {
+                throw new \Exception("Champ manquant dans la génération: {$field}");
+            }
+        }
+
+        // Validate type_probleme is one of the allowed values
+        $allowedTypes = ['endommage', 'manquant', 'malfonctionnant', 'autre'];
+        if (!in_array($data['type_probleme'], $allowedTypes)) {
+            throw new \Exception("Type de problème invalide: {$data['type_probleme']}");
+        }
+
+        // Validate title length
+        $titleLength = strlen($data['titre']);
+        if ($titleLength < 3 || $titleLength > 255) {
+            throw new \Exception("Le titre doit faire entre 3 et 255 caractères (reçu: {$titleLength})");
+        }
+
+        // Validate description length
+        $descLength = strlen($data['description']);
+        if ($descLength < 20 || $descLength > 2000) {
+            throw new \Exception("La description doit faire entre 20 et 2000 caractères (reçue: {$descLength})");
+        }
+
+        return [
+            'type_probleme' => $data['type_probleme'],
+            'titre' => $data['titre'],
+            'description' => $data['description'],
+        ];
     }
 
     /**
