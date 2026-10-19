@@ -33,5 +33,6 @@
         <env name="REVERB_PORT" value="8081"/>
         <env name="VITE_REVERB_PORT" value="8081"/>
         <env name="REVERB_SERVER_PORT" value="8081"/>
+        <env name="OLLAMA_ENABLED" value="false"/>
     </php>
 </phpunit>
