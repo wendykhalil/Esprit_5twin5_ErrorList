@@ -4,6 +4,7 @@
         ['url' => route('admin.dashboard'), 'label' => 'Tableau de bord', 'route' => 'admin.dashboard', 'icon' => 'dashboard'],
         ['url' => url('/admin/equipements'), 'label' => 'Équipements', 'route' => 'admin.equipments', 'icon' => 'equipment'],
         ['url' => route('admin.equipments.analytics'), 'label' => 'Statistiques équipements', 'route' => 'admin.equipments.analytics', 'icon' => 'analytics'],
+        ['url' => route('admin.reports.index'), 'label' => 'Rapports IA', 'route' => 'admin.reports.*', 'icon' => 'analytics'],
         ['url' => route('admin.equipment-guides.index'), 'label' => "Guides d'utilisation", 'route' => 'admin.equipment-guides.*', 'icon' => 'guides'],
         ['url' => route('admin.users'), 'label' => 'Utilisateurs', 'route' => 'admin.users', 'icon' => 'users'],
         ['url' => route('admin.rentals'), 'label' => 'Locations', 'route' => 'admin.rentals', 'icon' => 'rentals'],
@@ -13,7 +14,7 @@
         ['url' => route('admin.transactions.index'), 'label' => 'Transactions', 'route' => 'admin.transactions.index', 'icon' => 'transactions'],
         ['url' => route('admin.compensation-codes.index'), 'label' => 'Codes de Compensation', 'route' => 'admin.compensation-codes.*', 'icon' => 'check'],
         ['url' => route('admin.tickets.index'), 'label' => 'Support', 'route' => 'admin.tickets.index', 'icon' => 'support'],
-        ['url' => route('admin.reclamations.index'), 'label' => 'Réclamations', 'route' => 'admin.reclamations.*', 'icon' => 'support'],
+        ['url' => route('admin.reclamations.index'), 'label' => 'Incidents', 'route' => 'admin.reclamations.*', 'icon' => 'support'],
         ['url' => route('admin.service-providers.index'), 'label' => 'Prestataires', 'route' => 'admin.service-providers.*', 'icon' => 'providers'],
     ];
 

@@ -1,6 +1,6 @@
 @extends('layouts.frontend')
 
-@section('title', 'Mes Réclamations')
+@section('title', 'Mes Incidents')
 
 @section('content')
 <div class="container mx-auto px-4 py-8" x-data="aiReclamationAssistant()">
@@ -8,8 +8,8 @@
         <!-- Header -->
         <div class="flex justify-between items-center mb-8">
             <div>
-                <h1 class="text-3xl font-bold text-gray-900">Mes Réclamations</h1>
-                <p class="text-gray-600 mt-2">Consultez et gérez vos réclamations</p>
+                <h1 class="text-3xl font-bold text-gray-900">Mes Incidents</h1>
+                <p class="text-gray-600 mt-2">Consultez et gérez vos incidents</p>
             </div>
             <div class="flex gap-3">
                 <button @click="openModal()"
@@ -17,7 +17,7 @@
                     ✨ Créer avec l'IA
                 </button>
                 <a href="{{ route('reclamations.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg">
-                    + Nouvelle Réclamation
+                    + Nouvel Incident
                 </a>
             </div>
         </div>
@@ -106,7 +106,7 @@
                             ✎ Modifier
                         </a>
                         <form action="{{ route('reclamations.destroy', $reclamation->id) }}" method="POST" class="inline" 
-                            onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette réclamation ?');">
+                            onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet incident ?');">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="ml-4 text-red-600 hover:text-red-800 font-semibold">
@@ -115,7 +115,7 @@
                         </form>
                     @else
                         <span class="ml-4 text-gray-500 text-sm">
-                            ℹ️ Vous pouvez uniquement modifier les réclamations en attente
+                            ℹ️ Vous pouvez uniquement modifier les incidents en attente
                         </span>
                     @endif
                 </div>
@@ -127,15 +127,15 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
                 </div>
-                <h3 class="text-lg font-semibold text-gray-900 mb-2">Aucune réclamation</h3>
-                <p class="text-gray-600 mb-6">Vous n'avez pas encore créé de réclamation.</p>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Aucun incident</h3>
+                <p class="text-gray-600 mb-6">Vous n'avez pas encore créé d'incident.</p>
                 <div class="flex gap-3 justify-center">
                     <button @click="openModal()"
                             class="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-lg inline-flex items-center gap-2">
                         ✨ Créer avec l'IA
                     </button>
                     <a href="{{ route('reclamations.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg inline-block">
-                        + Nouvelle Réclamation
+                        + Nouvel Incident
                     </a>
                 </div>
             </div>

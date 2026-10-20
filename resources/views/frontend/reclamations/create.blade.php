@@ -1,6 +1,6 @@
 @extends('layouts.frontend')
 
-@section('title', 'Créer une Réclamation')
+@section('title', 'Créer un Incident')
 
 @section('content')
 <div class="container mx-auto px-4 py-8">
@@ -38,7 +38,7 @@
                 <label for="reservation_id" class="block text-sm font-semibold text-gray-900 mb-2">
                     Sélectionnez une réservation <span class="text-red-600">*</span>
                 </label>
-                <select id="reservation_id" name="reservation_id" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 @error('reservation_id') border-red-500 @enderror" aria-invalid="false" aria-describedby="error-reservation_id" onchange="updateEquipmentList()">
+                <select id="reservation_id" name="reservation_id" class="w-full px-4 py-2 border border-gray-300] rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 @error('reservation_id') border-red-500 @enderror" aria-invalid="false" aria-describedby="error-reservation_id" onchange="updateEquipmentList()">
                     <option value="">-- Choisissez une réservation --</option>
                     @foreach ($reservations as $res)
                         <option value="{{ $res->id }}" data-equipment-id="{{ $res->equipment_id }}" @selected(old('reservation_id') == $res->id)>
@@ -57,7 +57,7 @@
                 <label for="title" class="block text-sm font-semibold text-gray-900 mb-2">
                     Titre <span class="text-red-600">*</span>
                 </label>
-                <input type="text" id="title" name="title" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 @error('title') border-red-500 @enderror" placeholder="Titre général de la réclamation" value="{{ old('title') }}" aria-invalid="false" aria-describedby="error-title">
+                <input type="text" id="title" name="title" class="w-full px-4 py-2 border border-gray-300] rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 @error('title') border-red-500 @enderror" placeholder="Titre général de la réclamation" value="{{ old('title') }}" aria-invalid="false" aria-describedby="error-title">
                 <p id="error-title" class="text-red-600 text-sm mt-1 hidden"></p>
                 @error('title')
                     <p class="text-red-600 text-sm mt-1">{{ $message }}</p>

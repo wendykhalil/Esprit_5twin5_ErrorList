@@ -10,18 +10,6 @@
         <p class="text-gray-600 mt-2">Réclamation #{{ $reclamation->id }} de {{ $reclamation->user->name }}</p>
     </div>
 
-    <!-- Errors -->
-    @if ($errors->any())
-        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
-            <p class="font-semibold mb-2">Erreurs de validation :</p>
-            <ul class="list-disc list-inside">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
-
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Left Column: Reclamation Details -->
         <div class="lg:col-span-2">
@@ -109,12 +97,6 @@
                         @empty
                             <p class="text-gray-600">Aucun incident.</p>
                         @endforelse
-                    </div>
-
-                    <!-- Total -->
-                    <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-                        <p class="text-sm text-gray-600 mb-2">Montant Total à Rembourser</p>
-                        <p class="text-3xl font-bold text-green-600">{{ number_format($totalProposedRefund, 2, ',', ' ') }} TND</p>
                     </div>
 
                     <!-- Compensation Code Configuration -->

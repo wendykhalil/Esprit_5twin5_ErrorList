@@ -47,7 +47,6 @@
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Équipement</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Incidents</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Montant</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
             </thead>
@@ -92,12 +91,6 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {{ count($reclamation->incidents) }}
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600">
-                            @php
-                                $totalProposed = $reclamation->calculateTotalRefund();
-                            @endphp
-                            {{ number_format($totalProposed, 2, ',', ' ') }} €
-                        </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm">
                             <div class="flex gap-2">
                                 <a href="{{ route('admin.reclamations.show', $reclamation->id) }}" class="text-blue-600 hover:text-blue-800">
@@ -116,7 +109,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="8" class="px-6 py-4 text-center text-gray-600">
+                        <td colspan="7" class="px-6 py-4 text-center text-gray-600">
                             Aucune réclamation trouvée
                         </td>
                     </tr>

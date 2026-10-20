@@ -202,7 +202,7 @@
                                 class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700
                                        transition-colors border-t border-green-100 {{ request()->routeIs('reclamations.*') ? 'bg-green-50 text-green-800 font-medium' : '' }}"
                             >
-                                Mes réclamations
+                                Mes incidents
                             </a>
 
                             <a
@@ -218,7 +218,7 @@
                                 class="block px-4 py-2.5 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50
                                        transition-colors border-t border-green-100"
                             >
-                                ➕ Créer une réclamation
+                                ➕ Créer un incident
                             </a>
 
                             <a

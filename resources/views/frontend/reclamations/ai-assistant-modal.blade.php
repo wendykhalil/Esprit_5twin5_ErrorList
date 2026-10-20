@@ -17,7 +17,7 @@
              x-transition>
 
             <!-- Header -->
-            <div class="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-4 flex justify-between items-center">
+            <div class="bg-gradient-to-r] from-blue-600 to-blue-700 text-white px-6 py-4 flex justify-between items-center">
                 <div>
                     <h2 class="text-2xl font-bold">✨ Créer une Réclamation avec l'IA</h2>
                     <p class="text-sm text-blue-100 mt-1">Assistant conversationnel guidé</p>

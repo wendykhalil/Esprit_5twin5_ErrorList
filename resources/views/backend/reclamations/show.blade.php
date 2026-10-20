@@ -106,15 +106,6 @@
                                         </span>
                                     </p>
                                 </div>
-                                <div class="text-right">
-                                    <p class="text-sm text-gray-600">Remboursement proposé</p>
-                                    <p class="text-lg font-semibold {{ $incident->proposed_refund_amount > 0 ? 'text-green-600' : 'text-gray-600' }}">
-                                        {{ number_format($incident->proposed_refund_amount, 2, ',', ' ') }} TND
-                                    </p>
-                                    @if ($incident->proposed_refund_percentage > 0)
-                                        <p class="text-xs text-gray-500">({{ $incident->proposed_refund_percentage }}%)</p>
-                                    @endif
-                                </div>
                             </div>
                             <p class="text-gray-700 mb-2">{{ $incident->description }}</p>
                             @if ($incident->damage_percentage)
@@ -168,19 +159,7 @@
                         <p class="text-3xl font-bold text-gray-900">{{ count($reclamation->incidents) }}</p>
                     </div>
 
-                    <div class="pb-4 border-b border-gray-200">
-                        <p class="text-sm text-gray-600">Remboursement proposé</p>
-                        <p class="text-3xl font-bold text-green-600">{{ number_format($totalProposedRefund, 2, ',', ' ') }} €</p>
-                    </div>
-
                     @if ($reclamation->status === 'approuvee')
-                        <div class="pb-4 border-b border-gray-200">
-                            <p class="text-sm text-gray-600">Remboursement approuvé</p>
-                            <p class="text-2xl font-bold text-green-600">{{ number_format($reclamation->refund_amount ?? 0, 2, ',', ' ') }} €</p>
-                            @if ($reclamation->refund_approved_at)
-                                <p class="text-xs text-gray-600 mt-2">{{ $reclamation->refund_approved_at->format('d/m/Y à H:i') }}</p>
-                            @endif
-                        </div>
                     @elseif ($reclamation->status === 'rejetee')
                         <div class="pb-4 border-b border-gray-200">
                             <p class="text-sm text-gray-600">Rejetée le</p>
