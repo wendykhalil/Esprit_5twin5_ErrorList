@@ -1176,4 +1176,175 @@ class ReportsTest extends TestCase
             'status' => 'paid',
         ]);
     }
+
+    /**
+     * Test non-admin cannot export CSV
+     */
+    public function test_non_admin_cannot_export_csv(): void
+    {
+        $client = User::factory()->create(['role' => 'client']);
+
+        $response = $this->actingAs($client)->post(route('admin.reports.export.csv'), [
+            'period' => 'month',
+        ]);
+
+        $response->assertForbidden();
+    }
+
+    /**
+     * Test non-admin cannot export PDF
+     */
+    public function test_non_admin_cannot_export_pdf(): void
+    {
+        $client = User::factory()->create(['role' => 'client']);
+
+        $response = $this->actingAs($client)->post(route('admin.reports.export.pdf'), [
+            'period' => 'month',
+        ]);
+
+        $response->assertForbidden();
+    }
+
+    /**
+     * Test admin can export report as CSV
+     */
+    public function test_admin_can_export_report_as_csv(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $this->createTestData();
+
+        $response = $this->actingAs($admin)->post(route('admin.reports.export.csv'), [
+            'period' => 'month',
+        ]);
+
+        $response->assertOk();
+        $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
+        $response->assertHeader('Content-Disposition');
+    }
+
+    /**
+     * Test CSV export contains expected sections
+     */
+    public function test_csv_export_contains_expected_sections(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $this->createTestData();
+
+        $response = $this->actingAs($admin)->post(route('admin.reports.export.csv'), [
+            'period' => 'month',
+        ]);
+
+        $response->assertOk();
+        $content = $response->getContent();
+        $this->assertStringContainsString('RAPPORT SOLARSHARE', $content);
+        $this->assertStringContainsString('RÉSERVATIONS', $content);
+        $this->assertStringContainsString('REVENUS', $content);
+        $this->assertStringContainsString('RÉCLAMATIONS', $content);
+        $this->assertStringContainsString('ÉQUIPEMENTS', $content);
+    }
+
+    /**
+     * Test admin can export report as PDF
+     */
+    public function test_admin_can_export_report_as_pdf(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $this->createTestData();
+
+        $response = $this->actingAs($admin)->post(route('admin.reports.export.pdf'), [
+            'period' => 'month',
+        ]);
+
+        $response->assertOk();
+        $response->assertHeader('Content-Disposition');
+    }
+
+    /**
+     * Test PDF export contains expected HTML elements
+     */
+    public function test_pdf_export_contains_expected_elements(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $this->createTestData();
+
+        $response = $this->actingAs($admin)->post(route('admin.reports.export.pdf'), [
+            'period' => 'month',
+        ]);
+
+        $response->assertOk();
+        $content = $response->getContent();
+        $this->assertStringContainsString('Rapport SolarShare', $content);
+        $this->assertStringContainsString('Réservations', $content);
+        $this->assertStringContainsString('Revenus', $content);
+        $this->assertStringContainsString('Réclamations', $content);
+    }
+
+    /**
+     * Test CSV export with custom date range
+     */
+    public function test_csv_export_with_custom_date_range(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $this->createTestData();
+
+        $startDate = now()->subDays(10)->format('Y-m-d');
+        $endDate = now()->format('Y-m-d');
+
+        $response = $this->actingAs($admin)->post(route('admin.reports.export.csv'), [
+            'period' => 'custom',
+            'start_date' => $startDate,
+            'end_date' => $endDate,
+        ]);
+
+        $response->assertOk();
+        $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
+    }
+
+    /**
+     * Test PDF export with custom date range
+     */
+    public function test_pdf_export_with_custom_date_range(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $this->createTestData();
+
+        $startDate = now()->subDays(10)->format('Y-m-d');
+        $endDate = now()->format('Y-m-d');
+
+        $response = $this->actingAs($admin)->post(route('admin.reports.export.pdf'), [
+            'period' => 'custom',
+            'start_date' => $startDate,
+            'end_date' => $endDate,
+        ]);
+
+        $response->assertOk();
+    }
+
+    /**
+     * Test export validation - invalid period rejected
+     */
+    public function test_export_validation_invalid_period_rejected(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $response = $this->actingAs($admin)->post(route('admin.reports.export.csv'), [
+            'period' => 'invalid',
+        ]);
+
+        $response->assertSessionHasErrors('period');
+    }
+
+    /**
+     * Test export validation - custom period requires dates
+     */
+    public function test_export_validation_custom_period_requires_dates(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $response = $this->actingAs($admin)->post(route('admin.reports.export.csv'), [
+            'period' => 'custom',
+        ]);
+
+        $response->assertSessionHasErrors(['start_date', 'end_date']);
+    }
 }
