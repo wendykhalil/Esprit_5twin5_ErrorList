@@ -41,6 +41,12 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::post('/reports/generate', [ReportsController::class, 'generate'])
         ->name('reports.generate');
 
+    Route::post('/reports/export/csv', [ReportsController::class, 'exportCSV'])
+        ->name('reports.export.csv');
+
+    Route::post('/reports/export/pdf', [ReportsController::class, 'exportPDF'])
+        ->name('reports.export.pdf');
+
     // --------------------------------------------------
     // EQUIPMENTS
     // --------------------------------------------------

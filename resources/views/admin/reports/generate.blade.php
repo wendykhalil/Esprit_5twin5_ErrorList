@@ -351,6 +351,39 @@
             Générer un autre rapport
         </a>
     </div>
+
+    {{-- Export Options --}}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-6">
+        <form action="{{ route('admin.reports.export.csv') }}" method="POST" class="inline">
+            @csrf
+            <input type="hidden" name="period" value="{{ $period }}">
+            @if($period === 'custom')
+                <input type="hidden" name="start_date" value="{{ \Carbon\Carbon::parse($stats['period']['start'])->format('Y-m-d') }}">
+                <input type="hidden" name="end_date" value="{{ \Carbon\Carbon::parse($stats['period']['end'])->format('Y-m-d') }}">
+            @endif
+            <button type="submit" class="w-full flex items-center justify-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg text-sm font-600 hover:bg-green-700 transition-colors" style="font-family: Outfit, sans-serif">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2m0 0v-8m0 8H3m18 0h3" />
+                </svg>
+                Télécharger en CSV
+            </button>
+        </form>
+
+        <form action="{{ route('admin.reports.export.pdf') }}" method="POST" class="inline">
+            @csrf
+            <input type="hidden" name="period" value="{{ $period }}">
+            @if($period === 'custom')
+                <input type="hidden" name="start_date" value="{{ \Carbon\Carbon::parse($stats['period']['start'])->format('Y-m-d') }}">
+                <input type="hidden" name="end_date" value="{{ \Carbon\Carbon::parse($stats['period']['end'])->format('Y-m-d') }}">
+            @endif
+            <button type="submit" class="w-full flex items-center justify-center gap-2 px-6 py-3 bg-red-600 text-white rounded-lg text-sm font-600 hover:bg-red-700 transition-colors" style="font-family: Outfit, sans-serif">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
+                Télécharger en PDF
+            </button>
+        </form>
+    </div>
 </div>
 
 @endsection

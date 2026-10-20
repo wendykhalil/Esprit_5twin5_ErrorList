@@ -242,4 +242,125 @@ PROMPT;
 
         return implode("\n", $lines);
     }
+
+    /**
+     * Export report as CSV
+     */
+    public function exportCSV(Request $request)
+    {
+        $request->validate([
+            'period' => 'required|in:week,month,year,custom',
+            'start_date' => 'nullable|date|required_if:period,custom',
+            'end_date' => 'nullable|date|required_if:period,custom|after_or_equal:start_date',
+        ]);
+
+        $dates = $this->getDateRange($request->input('period'), $request->only('start_date', 'end_date'));
+        $stats = $this->reportService->aggregateStatistics($dates['start'], $dates['end']);
+
+        $filename = 'rapport_solarshare_' . $dates['start']->format('Y-m-d') . '_' . $dates['end']->format('Y-m-d') . '.csv';
+
+        // Build CSV content
+        $csv = "\xEF\xBB\xBF"; // BOM for UTF-8
+
+        // Header
+        $csv .= "RAPPORT SOLARSHARE\n";
+        $csv .= "Période: " . $dates['start']->format('d/m/Y') . " à " . $dates['end']->format('d/m/Y') . "\n";
+        $csv .= "Date de génération: " . now()->format('d/m/Y H:i:s') . "\n\n";
+
+        // Réservations Summary
+        $csv .= "RÉSERVATIONS\n";
+        $csv .= "Métrique;Valeur\n";
+        $csv .= "Total;" . $stats['reservations']['total'] . "\n";
+        $csv .= "Complétées;" . $stats['reservations']['completed'] . "\n";
+        $csv .= "Durée moyenne (jours);" . $stats['reservations']['avg_duration_days'] . "\n\n";
+
+        // Réservations by Status
+        $csv .= "RÉSERVATIONS PAR STATUT\n";
+        $csv .= "Statut;Nombre\n";
+        foreach ($stats['reservations']['by_status'] as $status => $count) {
+            $csv .= $status . ";" . $count . "\n";
+        }
+        $csv .= "\n";
+
+        // Revenue
+        $csv .= "REVENUS\n";
+        $csv .= "Métrique;Montant (TND)\n";
+        $csv .= "Total collecté;" . number_format($stats['revenue']['total'], 2, ',', '') . "\n";
+        $csv .= "Remboursements approuvés;" . number_format($stats['refunds']['total'], 2, ',', '') . "\n";
+        if ($stats['reservations']['total'] > 0) {
+            $avgPerReservation = $stats['revenue']['total'] / $stats['reservations']['total'];
+            $csv .= "Moyenne par réservation;" . number_format($avgPerReservation, 2, ',', '') . "\n";
+        }
+        $csv .= "\n";
+
+        // Reclamations
+        $csv .= "RÉCLAMATIONS\n";
+        $csv .= "Métrique;Valeur\n";
+        $csv .= "Total;" . $stats['reclamations']['total'] . "\n";
+        $csv .= "Taux (%);" . $stats['reclamations']['rate'] . "\n\n";
+
+        // Reclamations by Status
+        $csv .= "RÉCLAMATIONS PAR STATUT\n";
+        $csv .= "Statut;Nombre\n";
+        foreach ($stats['reclamations']['by_status'] as $status => $count) {
+            $csv .= $status . ";" . $count . "\n";
+        }
+        $csv .= "\n";
+
+        // Reclamations by Type
+        $csv .= "RÉCLAMATIONS PAR TYPE\n";
+        $csv .= "Type;Nombre\n";
+        foreach ($stats['reclamations']['by_type'] as $type => $count) {
+            $csv .= $type . ";" . $count . "\n";
+        }
+        $csv .= "\n";
+
+        // Equipment Rankings
+        $csv .= "ÉQUIPEMENTS LES PLUS DEMANDÉS\n";
+        $csv .= "Rang;Équipement;Réservations;Revenu (TND);Prix/jour (TND)\n";
+        foreach ($stats['equipment_rankings'] as $index => $equipment) {
+            $csv .= ($index + 1) . ";"
+                . $equipment['name'] . ";"
+                . $equipment['reservation_count'] . ";"
+                . number_format($equipment['revenue'], 2, ',', '') . ";"
+                . number_format($equipment['price_per_day'], 2, ',', '') . "\n";
+        }
+
+        return response($csv)
+            ->header('Content-Type', 'text/csv; charset=UTF-8')
+            ->header('Content-Disposition', "attachment; filename=\"{$filename}\"");
+    }
+
+    /**
+     * Export report as PDF (HTML-based using Blade rendering)
+     */
+    public function exportPDF(Request $request)
+    {
+        $request->validate([
+            'period' => 'required|in:week,month,year,custom',
+            'start_date' => 'nullable|date|required_if:period,custom',
+            'end_date' => 'nullable|date|required_if:period,custom|after_or_equal:start_date',
+        ]);
+
+        $dates = $this->getDateRange($request->input('period'), $request->only('start_date', 'end_date'));
+        $startDate = $dates['start'];
+        $endDate = $dates['end'];
+        $stats = $this->reportService->aggregateStatistics($startDate, $endDate);
+
+        // Generate PDF HTML content
+        $html = view('admin.reports.export-pdf', [
+            'period' => $request->input('period'),
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+            'stats' => $stats,
+            'generatedAt' => now(),
+        ])->render();
+
+        // Create basic PDF by converting HTML to downloadable format
+        $filename = 'rapport_solarshare_' . $startDate->format('Y-m-d') . '_' . $endDate->format('Y-m-d') . '.html';
+
+        return response($html)
+            ->header('Content-Type', 'application/octet-stream')
+            ->header('Content-Disposition', "attachment; filename=\"{$filename}\"");
+    }
 }
