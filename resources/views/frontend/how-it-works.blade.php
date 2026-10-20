@@ -52,7 +52,7 @@
             </div>
         </div>
 
-        <div class="border-t border-green-100 my-12" />
+        <div class="border-t border-green-100 my-12"></div>
 
         {{-- For owners --}}
         <div class="mb-20">

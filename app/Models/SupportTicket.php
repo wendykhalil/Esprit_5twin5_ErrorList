@@ -24,6 +24,11 @@ class SupportTicket extends Model
         'priority',
         'status',
         'closed_at',
+        'ai_category',
+        'ai_suggested_priority',
+        'ai_summary',
+        'ai_suggested_reply',
+        'ai_analyzed_at',
     ];
 
     protected static function booted(): void
@@ -39,6 +44,16 @@ class SupportTicket extends Model
                 'reference' => sprintf('TCK-%06d', $ticket->id),
             ])->saveQuietly();
         });
+
+        static::deleting(function (SupportTicket $ticket) {
+            if ($ticket->accepted_reply_id === null) {
+                return;
+            }
+
+            $ticket->newQuery()->whereKey($ticket->id)->update([
+                'accepted_reply_id' => null,
+            ]);
+        });
     }
 
     /**
@@ -48,6 +63,7 @@ class SupportTicket extends Model
     {
         return [
             'closed_at' => 'datetime',
+            'ai_analyzed_at' => 'datetime',
         ];
     }
 
@@ -59,6 +75,11 @@ class SupportTicket extends Model
     public function replies(): HasMany
     {
         return $this->hasMany(TicketReply::class);
+    }
+
+    public function acceptedReply(): BelongsTo
+    {
+        return $this->belongsTo(TicketReply::class, 'accepted_reply_id');
     }
 
     /**

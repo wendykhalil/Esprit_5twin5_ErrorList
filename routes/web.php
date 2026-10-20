@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Route;
 // HOME
 // --------------------------------------------------
 Route::get('/', function () {
-    $categories = Category::orderBy('name')->get();
+    $categories = Category::withCount('equipment')->orderBy('name')->get();
 
     return view('frontend.home', compact('categories'));
 })->name('home');
@@ -288,6 +288,10 @@ Route::middleware('auth')->prefix('support')->name('support.tickets.')->group(fu
     Route::get('/{supportTicket}', [SupportTicketController::class, 'show'])->name('show');
     Route::post('/{supportTicket}/replies', [SupportTicketController::class, 'storeReply'])
         ->name('replies.store');
+    Route::post('/{supportTicket}/replies/{reply}/accept', [SupportTicketController::class, 'acceptSolution'])
+        ->name('replies.accept');
+    Route::post('/{supportTicket}/reopen', [SupportTicketController::class, 'reopen'])
+        ->name('reopen');
 });
 
 // --------------------------------------------------

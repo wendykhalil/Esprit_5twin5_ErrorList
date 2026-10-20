@@ -29,7 +29,7 @@
     textarea:focus-visible,
     select:focus,
     select:focus-visible {
-        @apply !border-blue-500 !outline-none !ring-2 !ring-blue-500/30;
+        @apply border-blue-500 outline-none ring-2 ring-blue-500/30;
     }
 }
 

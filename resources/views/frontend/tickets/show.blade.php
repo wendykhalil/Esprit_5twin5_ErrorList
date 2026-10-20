@@ -23,11 +23,25 @@
         @if(session('success'))
             <div class="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">{{ session('success') }}</div>
         @endif
+        @if(session('error'))
+            <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{{ session('error') }}</div>
+        @endif
 
         <div>
             <h2 class="text-sm font-semibold text-gray-700 mb-3">Conversation</h2>
-            <x-support.thread :ticket="$ticket" />
+            <x-support.thread :ticket="$ticket" :can-accept="auth()->id() === $ticket->user_id && ! $ticket->isClosed()" />
         </div>
+
+        @if($ticket->status === 'resolved')
+            <form method="POST" action="{{ route('support.tickets.reopen', $ticket) }}" class="bg-white border border-amber-200 rounded-xl p-5 space-y-3" novalidate>
+                @csrf
+                <label class="block text-sm font-medium text-gray-700">Le problème persiste</label>
+                <p class="text-xs text-gray-500">Décrivez ce qui n'est pas résolu. Ce motif sera ajouté à la conversation et le ticket sera rouvert.</p>
+                <textarea name="motif" rows="4" class="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500 @error('motif') border-red-500 @enderror">{{ old('motif') }}</textarea>
+                @error('motif')<p class="text-sm text-red-600">{{ $message }}</p>@enderror
+                <button type="submit" class="px-4 py-2 bg-amber-600 text-white text-sm rounded-lg hover:bg-amber-700">Rouvrir le ticket</button>
+            </form>
+        @endif
 
         @if($ticket->acceptsReplies())
             <form method="POST" action="{{ route('support.tickets.replies.store', $ticket) }}" class="bg-white border border-green-100 rounded-xl p-5 space-y-3" novalidate>

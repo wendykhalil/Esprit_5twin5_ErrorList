@@ -35,4 +35,19 @@ class SupportTicketPolicy
 
         return $user->isAdmin() || $supportTicket->user_id === $user->id;
     }
+
+    public function analyze(User $user, SupportTicket $supportTicket): bool
+    {
+        return $user->isAdmin();
+    }
+
+    public function acceptSolution(User $user, SupportTicket $supportTicket): bool
+    {
+        return $supportTicket->user_id === $user->id && ! $supportTicket->isClosed();
+    }
+
+    public function reopen(User $user, SupportTicket $supportTicket): bool
+    {
+        return $supportTicket->user_id === $user->id && $supportTicket->status === 'resolved';
+    }
 }

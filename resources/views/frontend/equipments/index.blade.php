@@ -36,7 +36,7 @@
                     <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" stroke-width="1.8"/><path d="m20 20-4-4" stroke-width="1.8" stroke-linecap="round"/></svg>
                     <input type="search" id="searchInput" aria-label="Rechercher un équipement" placeholder="Rechercher un équipement, une marque..." value="{{ request('q') }}" class="w-full h-12 pl-12 pr-4 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:bg-white transition">
                 </div>
-                <select id="sortSelect" aria-label="Trier les équipements" class="h-12 w-full px-4 rounded-xl border border-slate-200 bg-white text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-green-400">
+                <select id="sortSelect" aria-label="Trier les équipements" class="h-12 w-full pl-4 pr-10 rounded-xl border border-slate-200 bg-white text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-green-400">
                     <option value="" {{ request('sort', '') === '' ? 'selected' : '' }}>Plus récents</option>
                     <option value="price_asc" {{ request('sort') === 'price_asc' ? 'selected' : '' }}>Prix croissant</option>
                     <option value="price_desc" {{ request('sort') === 'price_desc' ? 'selected' : '' }}>Prix décroissant</option>
@@ -70,7 +70,7 @@
 
                 <div class="mt-6 pt-5 border-t border-slate-100">
                     <label for="locationSelect" class="block text-sm font-bold text-slate-800 mb-2">Ville</label>
-                    <select id="locationSelect" class="w-full h-11 px-3 rounded-xl border border-slate-200 bg-white text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-green-400">
+                    <select id="locationSelect" class="w-full h-11 pl-3 pr-10 rounded-xl border border-slate-200 bg-white text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-green-400">
                         <option value="">Toutes les villes</option>
                         @foreach($locations as $location)
                             <option value="{{ $location }}" {{ request('location') === $location ? 'selected' : '' }}>{{ $location }}</option>

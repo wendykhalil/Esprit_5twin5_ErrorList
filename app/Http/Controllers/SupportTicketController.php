@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ReopenSupportTicketRequest;
 use App\Http\Requests\StoreSupportTicketRequest;
 use App\Http\Requests\StoreTicketReplyRequest;
 use App\Models\SupportTicket;
+use App\Models\TicketReply;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class SupportTicketController extends Controller
@@ -74,5 +77,55 @@ class SupportTicketController extends Controller
         ]);
 
         return back()->with('success', 'Votre réponse a été envoyée.');
+    }
+
+    public function acceptSolution(SupportTicket $supportTicket, TicketReply $reply): RedirectResponse
+    {
+        $this->authorize('acceptSolution', $supportTicket);
+
+        DB::transaction(function () use ($supportTicket, $reply) {
+            $ticket = SupportTicket::query()->whereKey($supportTicket->id)->lockForUpdate()->firstOrFail();
+            $lockedReply = TicketReply::query()->whereKey($reply->id)->lockForUpdate()->firstOrFail();
+
+            if (
+                $ticket->user_id !== auth()->id()
+                || $ticket->isClosed()
+                || $lockedReply->is_internal
+                || $lockedReply->support_ticket_id !== $ticket->id
+            ) {
+                abort(403);
+            }
+
+            $ticket->accepted_reply_id = $lockedReply->id;
+            $ticket->status = 'resolved';
+            $ticket->syncClosedTimestampForStatus('resolved');
+            $ticket->save();
+        });
+
+        return back()->with('success', 'Cette réponse est enregistrée comme solution. Le ticket est résolu.');
+    }
+
+    public function reopen(ReopenSupportTicketRequest $request, SupportTicket $supportTicket): RedirectResponse
+    {
+        DB::transaction(function () use ($request, $supportTicket) {
+            $ticket = SupportTicket::query()->whereKey($supportTicket->id)->lockForUpdate()->firstOrFail();
+
+            if ($ticket->user_id !== $request->user()->id || $ticket->status !== 'resolved') {
+                abort(403);
+            }
+
+            $ticket->replies()->create([
+                'user_id' => $request->user()->id,
+                'body' => $request->validated('motif'),
+                'is_internal' => false,
+            ]);
+
+            $ticket->accepted_reply_id = null;
+            $ticket->status = 'open';
+            $ticket->syncClosedTimestampForStatus('open');
+            $ticket->save();
+        });
+
+        return back()->with('success', 'Le ticket a été rouvert.');
     }
 }

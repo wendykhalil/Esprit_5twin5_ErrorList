@@ -11,7 +11,7 @@
             alt="Panneaux solaires dans la nature"
             class="absolute inset-0 w-full h-full object-cover opacity-40"
         />
-        <div class="absolute inset-0 bg-gradient-to-r from-green-950/90 via-green-950/60 to-transparent" />
+        <div class="absolute inset-0 bg-gradient-to-r from-green-950/90 via-green-950/60 to-transparent"></div>
         <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
             <div class="max-w-2xl">
                 <div class="inline-flex items-center gap-2 bg-green-500/20 border border-green-400/30 text-green-300 text-sm font-medium px-4 py-1.5 rounded-full mb-6">
@@ -85,11 +85,11 @@
                 </div>
                 <select
                     name="category"
-                    class="md:w-52 px-4 py-3.5 border border-gray-200 rounded-xl text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent bg-white"
+                    class="md:w-52 pl-4 pr-10 py-3.5 border border-gray-200 rounded-xl text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent bg-white"
                 >
                     <option value="">Toutes les catégories</option>
                     @foreach($categories as $cat)
-                        <option value="{{ $cat['label'] }}">{{ $cat['label'] }}</option>
+                        <option value="{{ $cat->id }}">{{ $cat->name }}</option>
                     @endforeach
                 </select>
                 <button
@@ -112,15 +112,25 @@
                 <h2 class="text-4xl font-bold text-green-900 mb-3">Explorer par catégorie</h2>
                 <p class="text-gray-500 max-w-lg mx-auto">Trouvez l'équipement qui correspond à vos besoins parmi nos différentes catégories</p>
             </div>
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            @php
+                $categoryIcons = [
+                    'Panneaux solaires' => '☀️',
+                    'Batteries' => '🔋',
+                    'Stations électriques' => '⚡',
+                    'Équipements éoliens' => '💨',
+                    'Chargeurs solaires' => '🔌',
+                    'Autres équipements' => '🧰',
+                ];
+            @endphp
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                 @foreach($categories as $cat)
                     <a
-                        href="{{ route('equipments.index', ['category' => $cat['label']]) }}"
+                        href="{{ route('equipments.index', ['category' => $cat->id]) }}"
                         class="bg-white rounded-2xl p-6 text-center hover:shadow-md hover:-translate-y-1 transition-all duration-200 border border-green-100 group"
                     >
-                        <div class="text-4xl mb-3">{{ $cat['icon'] }}</div>
-                        <h3 class="text-sm font-semibold text-green-900 mb-1 group-hover:text-green-600 transition-colors">{{ $cat['label'] }}</h3>
-                        <p class="text-xs text-gray-400">{{ $cat['count'] }} équipements</p>
+                        <div class="text-4xl mb-3">{{ $categoryIcons[$cat->name] ?? '🌱' }}</div>
+                        <h3 class="text-sm font-semibold text-green-900 mb-1 group-hover:text-green-600 transition-colors">{{ $cat->name }}</h3>
+                        <p class="text-xs text-gray-400">{{ $cat->equipment_count }} {{ $cat->equipment_count > 1 ? 'équipements' : 'équipement' }}</p>
                     </a>
                 @endforeach
             </div>

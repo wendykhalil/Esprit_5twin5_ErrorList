@@ -1,0 +1,22 @@
+---
+description: Identifiants du compte admin SolarShare pour tests back-office
+alwaysApply: true
+---
+
+# Compte back-office (test local)
+
+Utiliser ce compte pour tester `/admin` après connexion sur `/login`.
+
+| Champ | Valeur |
+|-------|--------|
+| E-mail | `admin@solarshare.tn` |
+| Mot de passe | `password` |
+| Rôle | `admin` |
+
+Recréer ou réinitialiser le compte :
+
+```bash
+php artisan db:seed --class=AdminUserSeeder
+```
+
+Source : `database/seeders/AdminUserSeeder.php`

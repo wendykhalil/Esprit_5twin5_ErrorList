@@ -1,4 +1,4 @@
-@props(['ticket', 'showInternal' => false])
+@props(['ticket', 'showInternal' => false, 'canAccept' => false])
 
 @php
     $replies = $showInternal
@@ -31,6 +31,9 @@
                     <p class="text-xs text-slate-500">{{ $reply->created_at->format('d/m/Y H:i') }}</p>
                 </div>
                 <div class="flex items-center gap-2">
+                    @if((int) $ticket->accepted_reply_id === (int) $reply->id)
+                        <span class="text-xs font-medium text-green-800 bg-green-100 px-2 py-1 rounded">Solution</span>
+                    @endif
                     @if($showInternal && $reply->is_internal)
                         <span class="text-xs font-medium text-amber-800 bg-amber-100 px-2 py-1 rounded">Note interne</span>
                     @elseif($reply->author->isAdmin())
@@ -41,6 +44,12 @@
                 </div>
             </div>
             <p class="text-sm text-slate-700 whitespace-pre-wrap">{{ $reply->body }}</p>
+            @if($canAccept && ! $reply->is_internal && (int) $ticket->accepted_reply_id !== (int) $reply->id)
+                <form method="POST" action="{{ route('support.tickets.replies.accept', [$ticket, $reply]) }}" class="mt-3">
+                    @csrf
+                    <button type="submit" class="px-3 py-1.5 text-xs font-semibold text-green-800 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100">Accepter comme solution</button>
+                </form>
+            @endif
         </article>
     @endforeach
 </div>

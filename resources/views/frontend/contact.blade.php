@@ -87,7 +87,7 @@
                                 <select
                                     name="subject"
                                     required
-                                    class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-green-400 bg-white"
+                                    class="w-full pl-4 pr-10 py-3 border border-gray-200 rounded-xl text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-green-400 bg-white"
                                 >
                                     <option value="">Sélectionner un sujet</option>
                                     <option>Question générale</option>

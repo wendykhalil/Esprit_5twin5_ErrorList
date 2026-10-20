@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreAdminTicketReplyRequest;
 use App\Http\Requests\Admin\UpdateSupportTicketRequest;
 use App\Models\SupportTicket;
+use App\Services\SupportTicketAnalysisException;
+use App\Services\SupportTicketAssistant;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -85,5 +87,26 @@ class SupportTicketController extends Controller
         $supportTicket->update($data);
 
         return back()->with('success', 'Ticket mis à jour.');
+    }
+
+    public function analyze(SupportTicket $supportTicket, SupportTicketAssistant $assistant): RedirectResponse
+    {
+        $this->authorize('analyze', $supportTicket);
+
+        try {
+            $suggestion = $assistant->analyze($supportTicket);
+        } catch (SupportTicketAnalysisException $exception) {
+            return back()->with('error', $exception->getMessage());
+        }
+
+        $supportTicket->update([
+            'ai_category' => $suggestion['category'],
+            'ai_suggested_priority' => $suggestion['priority'],
+            'ai_summary' => $suggestion['summary'],
+            'ai_suggested_reply' => $suggestion['suggested_reply'],
+            'ai_analyzed_at' => now(),
+        ]);
+
+        return back()->with('success', 'Analyse enregistrée. Relisez le brouillon avant de l\'envoyer.');
     }
 }

@@ -23,6 +23,9 @@
     @if(session('success'))
         <div class="bg-green-50 border border-green-200 rounded-lg p-4 text-green-800 text-sm">{{ session('success') }}</div>
     @endif
+    @if(session('error'))
+        <div class="bg-red-50 border border-red-200 rounded-lg p-4 text-red-800 text-sm">{{ session('error') }}</div>
+    @endif
 
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <div class="xl:col-span-2 space-y-4">
@@ -48,6 +51,41 @@
             @endif
         </div>
 
+        <div class="space-y-4">
+        <div class="bg-white border border-slate-200 rounded-xl p-5">
+            <h3 class="text-sm font-semibold text-slate-800 mb-1">Assistant IA</h3>
+            <p class="text-xs text-slate-500 mb-4">Suggestion uniquement. La priorité, le statut et la conversation ne changent qu'après votre validation.</p>
+            <form method="POST" action="{{ route('admin.tickets.analyze', $ticket) }}">
+                @csrf
+                <button type="submit" class="w-full px-4 py-2.5 bg-amber-500 text-white text-sm rounded-lg hover:bg-amber-600">Analyser le ticket</button>
+            </form>
+            @if($ticket->ai_analyzed_at)
+                @php
+                    $categoryLabels = [
+                        'compte' => 'Compte',
+                        'paiement' => 'Paiement',
+                        'reservation' => 'Réservation',
+                        'equipement' => 'Équipement',
+                        'technique' => 'Technique',
+                        'autre' => 'Autre',
+                    ];
+                @endphp
+                <div class="mt-4 space-y-3 text-sm">
+                    <p><span class="font-medium text-slate-700">Catégorie :</span> {{ $categoryLabels[$ticket->ai_category] ?? $ticket->ai_category }}</p>
+                    <p><span class="font-medium text-slate-700">Priorité suggérée :</span> {{ $ticket->ai_suggested_priority }}</p>
+                    <p class="text-slate-600 whitespace-pre-wrap">{{ $ticket->ai_summary }}</p>
+                    <label for="ai-draft" class="block text-xs font-medium text-slate-600">Brouillon modifiable</label>
+                    <textarea id="ai-draft" rows="6" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm">{{ $ticket->ai_suggested_reply }}</textarea>
+                    <div class="flex flex-col gap-2">
+                        @if($ticket->acceptsReplies())
+                            <button type="button" id="use-ai-draft" class="px-3 py-2 border border-slate-300 text-slate-700 text-sm rounded-lg hover:bg-slate-50">Copier dans la réponse</button>
+                        @endif
+                        <button type="button" id="use-ai-priority" data-priority="{{ $ticket->ai_suggested_priority }}" class="px-3 py-2 border border-slate-300 text-slate-700 text-sm rounded-lg hover:bg-slate-50">Préremplir la priorité</button>
+                    </div>
+                    <p class="text-xs text-slate-400">Analysé le {{ $ticket->ai_analyzed_at->format('d/m/Y H:i') }}. Rien n'est envoyé tant que vous ne validez pas.</p>
+                </div>
+            @endif
+        </div>
         <div class="bg-white border border-slate-200 rounded-xl p-5 h-fit">
             <h3 class="text-sm font-semibold text-slate-800 mb-4">Gestion du ticket</h3>
             <form method="POST" action="{{ route('admin.tickets.update', $ticket) }}" class="space-y-4">
@@ -72,6 +110,24 @@
                 <button type="submit" class="w-full px-4 py-2.5 bg-slate-900 text-white text-sm rounded-lg hover:bg-slate-800">Mettre à jour</button>
             </form>
         </div>
+        </div>
     </div>
 </div>
+<script>
+    document.getElementById('use-ai-draft')?.addEventListener('click', function () {
+        const draft = document.getElementById('ai-draft');
+        const body = document.querySelector('textarea[name="body"]');
+        if (!draft || !body) {
+            return;
+        }
+        body.value = draft.value;
+        body.focus();
+    });
+    document.getElementById('use-ai-priority')?.addEventListener('click', function () {
+        const select = document.querySelector('select[name="priority"]');
+        if (select && this.dataset.priority) {
+            select.value = this.dataset.priority;
+        }
+    });
+</script>
 @endsection

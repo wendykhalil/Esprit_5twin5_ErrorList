@@ -226,6 +226,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::patch('/tickets/{supportTicket}', [AdminSupportTicketController::class, 'update'])
         ->name('tickets.update');
 
+    Route::post('/tickets/{supportTicket}/analyze', [AdminSupportTicketController::class, 'analyze'])
+        ->name('tickets.analyze');
+
     // --------------------------------------------------
     // SERVICE PROVIDERS
     // --------------------------------------------------
