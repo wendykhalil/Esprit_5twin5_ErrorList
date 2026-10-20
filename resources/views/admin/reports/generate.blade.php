@@ -27,9 +27,9 @@
 
     {{-- AI Summary Section --}}
     @if($aiSummary)
-        <div class="bg-gradient-to-r from-purple-50 to-purple-100 rounded-xl border border-purple-200 p-6">
+        <div class="bg-gradient-to-r] from-purple-50 to-purple-100 rounded-xl border border-purple-200 p-6">
             <div class="flex items-start gap-3">
-                <div class="flex-shrink-0 text-purple-600 mt-0.5">
+                <div class="flex-shrink-0] text-purple-600 mt-0.5">
                     <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
                     </svg>
@@ -43,9 +43,9 @@
             </div>
         </div>
     @elseif($aiError)
-        <div class="bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl border border-orange-200 p-6">
+        <div class="bg-gradient-to-r] from-orange-50 to-orange-100 rounded-xl border border-orange-200 p-6">
             <div class="flex items-start gap-3">
-                <div class="flex-shrink-0 text-orange-600 mt-0.5">
+                <div class="flex-shrink-0] text-orange-600 mt-0.5">
                     <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" />
                     </svg>
@@ -135,7 +135,7 @@
                 <div class="flex-1">
                     <p class="text-xs text-slate-500 font-semibold uppercase tracking-wider" style="font-family: Outfit, sans-serif">Remboursements</p>
                     <div class="flex items-baseline gap-1 mt-3 mb-2">
-                        <p class="text-2xl font-bold text-slate-900" style="font-family: Outfit, sans-serif">{{ number_format($stats['refunds']['total'], 2, ',', ' ') }}</p>
+                        <p class="text-2xl font-bold text-slate-900" style="font-family: Outfit, sans-serif">{{ number_format($stats['revenue']['refunded'], 2, ',', ' ') }}</p>
                         <span class="text-slate-500 text-sm font-600">TND</span>
                     </div>
                 </div>
@@ -260,7 +260,7 @@
                             'autre' => 'from-slate-50 to-slate-100 border-slate-200 text-slate-700',
                         ];
                     @endphp
-                    <div class="bg-gradient-to-br {{ $typeColors[$type] ?? 'from-slate-50 to-slate-100 border-slate-200 text-slate-700' }} rounded-lg border p-4 text-center">
+                    <div class="bg-gradient-to-br] {{ $typeColors[$type] ?? 'from-slate-50 to-slate-100 border-slate-200 text-slate-700' }} rounded-lg border p-4 text-center">
                         <p class="font-semibold text-lg">{{ $count }}</p>
                         <p class="text-xs font-medium mt-1">{{ $typeLabels[$type] ?? $type }}</p>
                     </div>
@@ -273,7 +273,44 @@
 
     {{-- Top Equipment Rankings --}}
     <div class="bg-white rounded-xl border border-slate-200 p-6">
-        <h3 class="font-bold text-slate-900 mb-4" style="font-family: Outfit, sans-serif">Équipements les plus demandés</h3>
+        <h3 class="font-bold text-slate-900 mb-4" style="font-family: Outfit, sans-serif">Équipements les plus demandés (par nombre de réservations)</h3>
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="border-b border-slate-200">
+                        <th class="text-left py-3 px-4 font-semibold text-slate-700" style="font-family: Outfit, sans-serif">#</th>
+                        <th class="text-left py-3 px-4 font-semibold text-slate-700" style="font-family: Outfit, sans-serif">Équipement</th>
+                        <th class="text-center py-3 px-4 font-semibold text-slate-700" style="font-family: Outfit, sans-serif">Réservations</th>
+                        <th class="text-right py-3 px-4 font-semibold text-slate-700" style="font-family: Outfit, sans-serif">Revenu (TND)</th>
+                        <th class="text-right py-3 px-4 font-semibold text-slate-700" style="font-family: Outfit, sans-serif">Prix/jour (TND)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($stats['equipment_rankings_by_reservations'] ?? [] as $index => $equipment)
+                        <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors" data-equipment-id="{{ $equipment['id'] }}">
+                            <td class="py-3 px-4 text-slate-600 font-medium">{{ $index + 1 }}</td>
+                            <td class="py-3 px-4 text-slate-900 font-medium">{{ $equipment['name'] }} <span class="text-xs text-slate-500">(ID: {{ $equipment['id'] }})</span></td>
+                            <td class="py-3 px-4 text-center text-slate-700">
+                                <span class="inline-block px-2.5 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-semibold">
+                                    {{ $equipment['reservation_count'] }}
+                                </span>
+                            </td>
+                            <td class="py-3 px-4 text-right text-slate-900 font-semibold">{{ number_format($equipment['revenue'], 2, ',', ' ') }}</td>
+                            <td class="py-3 px-4 text-right text-slate-600">{{ number_format($equipment['price_per_day'], 2, ',', ' ') }}</td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="5" class="py-3 px-4 text-center text-slate-500">Aucun équipement loué pour cette période</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {{-- Equipment by Revenue --}}
+    <div class="bg-white rounded-xl border border-slate-200 p-6">
+        <h3 class="font-bold text-slate-900 mb-4" style="font-family: Outfit, sans-serif">Équipements générant le plus de revenus</h3>
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
                 <thead>
@@ -289,7 +326,7 @@
                     @forelse($stats['equipment_rankings'] as $index => $equipment)
                         <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors" data-equipment-id="{{ $equipment['id'] }}">
                             <td class="py-3 px-4 text-slate-600 font-medium">{{ $index + 1 }}</td>
-                            <td class="py-3 px-4 text-slate-900 font-medium">{{ $equipment['name'] }}</td>
+                            <td class="py-3 px-4 text-slate-900 font-medium">{{ $equipment['name'] }} <span class="text-xs text-slate-500">(ID: {{ $equipment['id'] }})</span></td>
                             <td class="py-3 px-4 text-center text-slate-700">
                                 <span class="inline-block px-2.5 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-semibold">
                                     {{ $equipment['reservation_count'] }}
@@ -342,6 +379,69 @@
         </div>
     </div>
 
+    {{-- Charts Section --}}
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {{-- Reservations by Status Chart --}}
+        @if($stats['reservations']['by_status'])
+            <div class="bg-white rounded-xl border border-slate-200 p-6">
+                <h3 class="font-bold text-slate-900 mb-4" style="font-family: Outfit, sans-serif">Réservations par statut (graphique)</h3>
+                <div style="height: 250px; position: relative;">
+                    <canvas id="reservationStatusChart"></canvas>
+                </div>
+            </div>
+        @endif
+
+        {{-- Reclamations by Status Chart --}}
+        @if($stats['reclamations']['by_status'])
+            <div class="bg-white rounded-xl border border-slate-200 p-6">
+                <h3 class="font-bold text-slate-900 mb-4" style="font-family: Outfit, sans-serif">Réclamations par statut (graphique)</h3>
+                <div style="height: 250px; position: relative;">
+                    <canvas id="reclamationStatusChart"></canvas>
+                </div>
+            </div>
+        @endif
+
+        {{-- Revenue by Status Chart --}}
+        @if($stats['revenue']['by_status'])
+            <div class="bg-white rounded-xl border border-slate-200 p-6">
+                <h3 class="font-bold text-slate-900 mb-4" style="font-family: Outfit, sans-serif">Paiements par statut</h3>
+                <div style="height: 250px; position: relative;">
+                    <canvas id="paymentStatusChart"></canvas>
+                </div>
+            </div>
+        @endif
+
+        {{-- Top Equipment Chart --}}
+        @if($stats['equipment_rankings'])
+            <div class="bg-white rounded-xl border border-slate-200 p-6">
+                <h3 class="font-bold text-slate-900 mb-4" style="font-family: Outfit, sans-serif">Équipements par revenu généré</h3>
+                <div style="height: 250px; position: relative;">
+                    <canvas id="equipmentRevenueChart"></canvas>
+                </div>
+            </div>
+        @endif
+
+        {{-- Incidents by Type Chart --}}
+        @if($stats['reclamations']['by_type'])
+            <div class="bg-white rounded-xl border border-slate-200 p-6">
+                <h3 class="font-bold text-slate-900 mb-4" style="font-family: Outfit, sans-serif">Incidents par type</h3>
+                <div style="height: 250px; position: relative;">
+                    <canvas id="incidentTypeChart"></canvas>
+                </div>
+            </div>
+        @endif
+
+        {{-- Top Equipment by Reservations Chart --}}
+        @if($stats['equipment_rankings_by_reservations'])
+            <div class="bg-white rounded-xl border border-slate-200 p-6">
+                <h3 class="font-bold text-slate-900 mb-4" style="font-family: Outfit, sans-serif">Équipements les plus demandés</h3>
+                <div style="height: 250px; position: relative;">
+                    <canvas id="equipmentReservationsChart"></canvas>
+                </div>
+            </div>
+        @endif
+    </div>
+
     {{-- Back to Reports --}}
     <div class="flex justify-center pt-4">
         <a href="{{ route('admin.reports.index') }}" class="flex items-center gap-2 px-6 py-2.5 bg-slate-200 text-slate-900 rounded-lg text-sm font-600 hover:bg-slate-300 transition-colors" style="font-family: Outfit, sans-serif">
@@ -385,5 +485,288 @@
         </form>
     </div>
 </div>
+
+{{-- CHART.JS --}}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+<script>
+    if (typeof Chart === 'undefined') {
+        console.warn('Chart.js could not be loaded. Charts will not be displayed.');
+    } else {
+        Chart.defaults.font.family = 'Outfit, sans-serif';
+        Chart.defaults.color = '#64748b';
+
+        // Colors palette
+        const statusColors = {
+            'en_attente': '#fbbf24',
+            'confirmee': '#60a5fa',
+            'en_cours': '#a78bfa',
+            'terminee': '#34d399',
+            'litige': '#f87171',
+            'annulea': '#cbd5e1',
+            'refusee': '#ef4444',
+            'approuvee': '#34d399',
+            'rejetee': '#f87171',
+            'fermee': '#94a3b8',
+            'en_cours_rec': '#a78bfa'
+        };
+
+        const incidentColors = {
+            'endommage': '#ef4444',
+            'manquant': '#f97316',
+            'malfonctionnant': '#eab308',
+            'autre': '#64748b'
+        };
+
+        // Reservation Status Chart
+        @if($stats['reservations']['by_status'])
+            const reservationStatusData = @json($stats['reservations']['by_status']);
+            const reservationLabels = Object.keys(reservationStatusData).map(status => {
+                const labels = {
+                    'en_attente': 'En attente',
+                    'confirmee': 'Confirmée',
+                    'en_cours': 'En cours',
+                    'terminee': 'Terminée',
+                    'litige': 'Litige',
+                    'annulea': 'Annulée',
+                    'refusee': 'Refusée'
+                };
+                return labels[status] || status;
+            });
+            const reservationValues = Object.values(reservationStatusData);
+            const reservationChartColors = Object.keys(reservationStatusData).map(status => statusColors[status] || '#94a3b8');
+
+            new Chart(document.getElementById('reservationStatusChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: reservationLabels,
+                    datasets: [{
+                        data: reservationValues,
+                        backgroundColor: reservationChartColors,
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 15,
+                                font: { size: 12 }
+                            }
+                        }
+                    }
+                }
+            });
+        @endif
+
+        // Reclamation Status Chart
+        @if($stats['reclamations']['by_status'])
+            const reclamationStatusData = @json($stats['reclamations']['by_status']);
+            const reclamationLabels = Object.keys(reclamationStatusData).map(status => {
+                const labels = {
+                    'en_attente': 'En attente',
+                    'en_cours': 'En cours',
+                    'approuvee': 'Approuvée',
+                    'rejetee': 'Rejetée',
+                    'fermee': 'Fermée'
+                };
+                return labels[status] || status;
+            });
+            const reclamationValues = Object.values(reclamationStatusData);
+            const reclamationChartColors = Object.keys(reclamationStatusData).map(status => statusColors[status] || '#94a3b8');
+
+            new Chart(document.getElementById('reclamationStatusChart'), {
+                type: 'pie',
+                data: {
+                    labels: reclamationLabels,
+                    datasets: [{
+                        data: reclamationValues,
+                        backgroundColor: reclamationChartColors,
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 15,
+                                font: { size: 12 }
+                            }
+                        }
+                    }
+                }
+            });
+        @endif
+
+        // Payment Status Chart
+        @if($stats['revenue']['by_status'])
+            const paymentStatusData = @json($stats['revenue']['by_status']);
+            const paymentLabels = Object.keys(paymentStatusData).map(status => {
+                const labels = {
+                    'pending': 'En attente',
+                    'paid': 'Payé',
+                    'failed': 'Échoué',
+                    'refunded': 'Remboursé'
+                };
+                return labels[status] || status;
+            });
+            const paymentValues = Object.values(paymentStatusData);
+            const paymentChartColors = ['#fbbf24', '#34d399', '#ef4444', '#60a5fa'];
+
+            new Chart(document.getElementById('paymentStatusChart'), {
+                type: 'bar',
+                data: {
+                    labels: paymentLabels,
+                    datasets: [{
+                        label: 'Nombre de paiements',
+                        data: paymentValues,
+                        backgroundColor: paymentChartColors,
+                        borderRadius: 4,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        @endif
+
+        // Equipment Revenue Chart
+        @if($stats['equipment_rankings'])
+            const equipmentRevenueData = @json($stats['equipment_rankings']);
+            const equipmentRevenueLabels = equipmentRevenueData.map(e => e.name + ' (ID: ' + e.id + ')');
+            const equipmentRevenueValues = equipmentRevenueData.map(e => e.revenue);
+
+            new Chart(document.getElementById('equipmentRevenueChart'), {
+                type: 'bar',
+                data: {
+                    labels: equipmentRevenueLabels,
+                    datasets: [{
+                        label: 'Revenu (TND)',
+                        data: equipmentRevenueValues,
+                        backgroundColor: '#10b981',
+                        borderRadius: 4,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        @endif
+
+        // Incident Type Chart
+        @if($stats['reclamations']['by_type'])
+            const incidentTypeData = @json($stats['reclamations']['by_type']);
+            const incidentLabels = Object.keys(incidentTypeData).map(type => {
+                const labels = {
+                    'endommage': 'Endommagé',
+                    'manquant': 'Manquant',
+                    'malfonctionnant': 'Malfonctionnant',
+                    'autre': 'Autre'
+                };
+                return labels[type] || type;
+            });
+            const incidentValues = Object.values(incidentTypeData);
+            const incidentChartColors = Object.keys(incidentTypeData).map(type => incidentColors[type] || '#94a3b8');
+
+            new Chart(document.getElementById('incidentTypeChart'), {
+                type: 'bar',
+                data: {
+                    labels: incidentLabels,
+                    datasets: [{
+                        label: 'Nombre d\'incidents',
+                        data: incidentValues,
+                        backgroundColor: incidentChartColors,
+                        borderRadius: 4,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        @endif
+
+        // Equipment Reservations Chart
+        @if($stats['equipment_rankings_by_reservations'])
+            const equipmentReservationsData = @json($stats['equipment_rankings_by_reservations']);
+            const equipmentReservationsLabels = equipmentReservationsData.map(e => e.name + ' (ID: ' + e.id + ')');
+            const equipmentReservationsValues = equipmentReservationsData.map(e => e.reservation_count);
+
+            new Chart(document.getElementById('equipmentReservationsChart'), {
+                type: 'bar',
+                data: {
+                    labels: equipmentReservationsLabels,
+                    datasets: [{
+                        label: 'Nombre de réservations',
+                        data: equipmentReservationsValues,
+                        backgroundColor: '#8b5cf6',
+                        borderRadius: 4,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        @endif
+    }
+</script>
 
 @endsection

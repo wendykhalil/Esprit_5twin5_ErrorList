@@ -277,7 +277,7 @@
                 </div>
                 <div class="metric-card">
                     <div class="label">Remboursements approuvés</div>
-                    <div class="value">{{ number_format($stats['refunds']['total'], 2, ',', ' ') }}</div>
+                    <div class="value">{{ number_format($stats['revenue']['refunded'], 2, ',', ' ') }}</div>
                     <div class="unit">TND</div>
                 </div>
                 @if($stats['reservations']['total'] > 0)
@@ -356,9 +356,40 @@
             @endif
         </div>
 
-        {{-- Equipment Rankings --}}
+        {{-- Equipment Rankings by Reservations --}}
         <div class="section">
-            <div class="section-title">Équipements les plus demandés</div>
+            <div class="section-title">Équipements les plus demandés (par nombre de réservations)</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Rang</th>
+                        <th>Équipement</th>
+                        <th class="text-center">Réservations</th>
+                        <th class="text-right">Revenu (TND)</th>
+                        <th class="text-right">Prix/jour (TND)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($stats['equipment_rankings_by_reservations'] ?? [] as $index => $equipment)
+                        <tr>
+                            <td>{{ $index + 1 }}</td>
+                            <td>{{ $equipment['name'] }} (ID: {{ $equipment['id'] }})</td>
+                            <td class="text-center">{{ $equipment['reservation_count'] }}</td>
+                            <td class="text-right">{{ number_format($equipment['revenue'], 2, ',', ' ') }}</td>
+                            <td class="text-right">{{ number_format($equipment['price_per_day'], 2, ',', ' ') }}</td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="5" class="text-center">Aucun équipement loué durant cette période</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        {{-- Equipment Rankings by Revenue --}}
+        <div class="section">
+            <div class="section-title">Équipements générant le plus de revenus</div>
             <table>
                 <thead>
                     <tr>
@@ -373,7 +404,7 @@
                     @forelse($stats['equipment_rankings'] as $index => $equipment)
                         <tr>
                             <td>{{ $index + 1 }}</td>
-                            <td>{{ $equipment['name'] }}</td>
+                            <td>{{ $equipment['name'] }} (ID: {{ $equipment['id'] }})</td>
                             <td class="text-center">{{ $equipment['reservation_count'] }}</td>
                             <td class="text-right">{{ number_format($equipment['revenue'], 2, ',', ' ') }}</td>
                             <td class="text-right">{{ number_format($equipment['price_per_day'], 2, ',', ' ') }}</td>
