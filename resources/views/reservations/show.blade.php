@@ -97,7 +97,7 @@
                         @else
                             <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
                                 <p class="text-sm text-green-100">
-                                    ✓ Paiement déjà effectué (Statut: <span class="font-semibold">{{ ucfirst($paiementExistant->status) }}</span>)
+                                    ✓ Paiement effectué
                                 </p>
                                 @if($reservation->contract && $reservation->contract->count() > 0)
                                     <a href="{{ route('contracts.show', $reservation->contract->first()) }}"

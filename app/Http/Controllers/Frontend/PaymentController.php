@@ -365,25 +365,25 @@ class PaymentController extends Controller
     private function generateTermsAndConditions($reservation)
     {
         return <<<EOT
-TERMS AND CONDITIONS
+CONDITIONS GÉNÉRALES
 
-1. Equipment Rental Period
-The rental period begins on {$reservation->date_debut} and ends on {$reservation->date_fin}.
+1. Période de location de l'équipement
+La période de location commence le {$reservation->date_debut} et se termine le {$reservation->date_fin}.
 
-2. Equipment Condition
-The renter agrees to use the equipment in accordance with all manufacturer specifications and instructions provided.
+2. État de l'équipement
+Le locataire s'engage à utiliser l'équipement conformément aux spécifications et aux instructions du fabricant qui lui ont été fournies.
 
-3. Liability
-The renter assumes full responsibility for the equipment during the rental period and agrees to return it in the same condition as received.
+3. Responsabilité
+Le locataire assume l'entière responsabilité de l'équipement pendant la période de location et s'engage à le restituer dans le même état que celui dans lequel il l'a reçu.
 
-4. Cancellation Policy
-Cancellations must be made 48 hours in advance. Late cancellations will be charged in full.
+4. Politique d'annulation
+Les annulations doivent être effectuées 48 heures à l'avance. Toute annulation tardive sera facturée intégralement.
 
-5. Dispute Resolution
-Any disputes arising from this rental agreement will be resolved through the SolarShare support system.
+5. Règlement des litiges
+Tout litige découlant du présent contrat de location sera résolu par l'intermédiaire du système de support de SolarShare.
 
-6. Applicable Law
-This agreement is governed by the laws and regulations of the jurisdiction where the service is provided.
+6. Droit applicable
+Le présent contrat est régi par les lois et réglementations de la juridiction dans laquelle le service est fourni.
 EOT;
     }
 }

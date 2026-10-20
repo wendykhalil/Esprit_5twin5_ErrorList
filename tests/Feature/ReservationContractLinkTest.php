@@ -290,9 +290,8 @@ class ReservationContractLinkTest extends TestCase
 
         $response->assertStatus(200);
 
-        // Vérifier que le message de paiement s'affiche
-        $response->assertSee('Paiement déjà effectué');
-        $response->assertSee('Paid');
+        // Vérifier que le message de paiement s'affiche (simplifié sans status technique)
+        $response->assertSee('Paiement effectué');
 
         // Vérifier que le bouton s'affiche à côté
         $response->assertSee('Voir mon contrat');
