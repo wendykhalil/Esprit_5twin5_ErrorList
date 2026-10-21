@@ -15,6 +15,8 @@
         ['url' => route('admin.compensation-codes.index'), 'label' => 'Codes de Compensation', 'route' => 'admin.compensation-codes.*', 'icon' => 'check'],
         ['url' => route('admin.tickets.index'), 'label' => 'Support', 'route' => 'admin.tickets.index', 'icon' => 'support'],
         ['url' => route('admin.reclamations.index'), 'label' => 'Incidents', 'route' => 'admin.reclamations.*', 'icon' => 'support'],
+        ['url' => route('admin.impact.index'), 'label' => 'Impact écologique', 'route' => 'admin.impact.*', 'icon' => 'analytics'],
+        ['url' => route('admin.badges.index'), 'label' => 'Badges', 'route' => 'admin.badges.*', 'icon' => 'check'],
         ['url' => route('admin.service-providers.index'), 'label' => 'Prestataires', 'route' => 'admin.service-providers.*', 'icon' => 'providers'],
     ];
 

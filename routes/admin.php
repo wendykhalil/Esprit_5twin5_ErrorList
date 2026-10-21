@@ -21,6 +21,8 @@ use App\Http\Controllers\Admin\SupportTicketController as AdminSupportTicketCont
 use App\Http\Controllers\Admin\EquipmentGuideAIController;
 use App\Http\Controllers\Admin\EquipmentDescriptionAIController;
 use App\Http\Controllers\Admin\ReportsController;
+use App\Http\Controllers\Admin\ReleveEnergieController;
+use App\Http\Controllers\Admin\BadgeController;
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
 
@@ -171,6 +173,12 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     // --------------------------------------------------
 
     Route::resource('payments', PaymentController::class);
+    Route::resource('impact', ReleveEnergieController::class)->parameters(['impact' => 'releveEnergie']);
+    Route::patch('/impact/{releveEnergie}/verification', [ReleveEnergieController::class, 'verify'])
+        ->whereNumber('releveEnergie')->name('impact.verify');
+    Route::resource('badges', BadgeController::class);
+    Route::post('/badges/{badge}/assign', [BadgeController::class, 'assign'])->name('badges.assign');
+    Route::delete('/badges/{badge}/users/{user}', [BadgeController::class, 'revoke'])->name('badges.revoke');
 
     Route::get('/payments/{payment}/refund', [PaymentController::class, 'refundCreate'])
         ->name('payments.refund.create');

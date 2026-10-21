@@ -15,6 +15,9 @@
                 <h1 class="mt-2 text-4xl font-bold tracking-tight text-slate-900">Ma réservation</h1>
             </div>
             <div class="flex flex-wrap gap-3">
+                @if($reservation->statut === 'terminee' && !$reservation->releveEnergie)
+                    <a href="{{ route('impact.create', ['reservation_id' => $reservation->id]) }}" class="inline-flex items-center rounded-xl bg-amber-500 px-4 py-3 text-sm font-semibold text-white hover:bg-amber-600">Déclarer l’impact</a>
+                @endif
                 @if($reservation->statut === 'en_attente')
                     <a href="{{ route('reservations.edit', $reservation) }}" class="inline-flex items-center rounded-xl bg-green-600 px-4 py-3 text-sm font-semibold text-white hover:bg-green-700">Modifier</a>
                 @endif

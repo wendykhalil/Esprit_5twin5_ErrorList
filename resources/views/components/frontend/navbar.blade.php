@@ -61,6 +61,10 @@
                             'label' => 'Services'
                         ],
                         [
+                            'route' => 'ecology',
+                            'label' => 'Impact'
+                        ],
+                        [
                             'route' => 'how-it-works',
                             'label' => 'Comment ça marche'
                         ],
@@ -80,7 +84,9 @@
                         {{
                             request()->routeIs($link['pattern'] ?? $link['route'])
                                 ? 'bg-green-50 text-green-700'
-                                : 'text-gray-600 hover:text-green-700 hover:bg-green-50'
+                                : (($link['emphasis'] ?? false)
+                                    ? 'text-green-700 hover:bg-green-50'
+                                    : 'text-gray-600 hover:text-green-700 hover:bg-green-50')
                         }}"
                     >
                         {{ $link['label'] }}
@@ -195,6 +201,14 @@
                                        transition-colors border-t border-green-100"
                             >
                                 Mes inspections
+                            </a>
+
+                            <a
+                                href="{{ route('impact.index') }}"
+                                class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700
+                                       transition-colors border-t border-green-100 {{ request()->routeIs('impact.*') ? 'bg-green-50 text-green-800 font-medium' : '' }}"
+                            >
+                                Mon impact écologique
                             </a>
 
                             <a
@@ -426,6 +440,17 @@
                                rounded-lg hover:bg-green-50"
                     >
                         Mes inspections
+                    </a>
+
+                    <a
+                        href="{{ route('impact.index') }}"
+                        onclick="document.getElementById('mobileMenu').classList.add('hidden')"
+                        class="block px-4 py-2.5 text-sm font-medium
+                               text-center text-green-700
+                               border border-green-200
+                               rounded-lg hover:bg-green-50 {{ request()->routeIs('impact.*') ? 'bg-green-50 text-green-900 border-green-300' : '' }}"
+                    >
+                        Mon impact écologique
                     </a>
 
                     <a

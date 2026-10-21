@@ -47,6 +47,7 @@
     <main id="frontend-main">
         @yield('content')
     </main>
+    @include('components.energy-advisor')
 
     @unless(request()->routeIs('login', 'register'))
         @include('components.frontend.footer')

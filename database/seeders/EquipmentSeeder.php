@@ -28,15 +28,18 @@ class EquipmentSeeder extends Seeder
 
         $categories = Category::all();
 
-        // Create 12 equipments.
-        Equipment::factory()
-            ->count(12)
-            ->state(function () use ($user, $categories) {
-                return [
-                    'user_id' => $user->id,
-                    'category_id' => $categories->random()->id,
-                ];
-            })
-            ->create();
+        $items = [
+            ['name' => 'Chargeur solaire portable', 'power' => 20, 'brand' => 'SolarShare', 'category_id' => $categories->first()->id],
+            ['name' => 'Panneau solaire pliable', 'power' => 120, 'brand' => 'SolarShare', 'category_id' => $categories->first()->id],
+            ['name' => 'Station électrique portable', 'power' => 300, 'brand' => 'SolarShare', 'category_id' => $categories->first()->id],
+            ['name' => 'Batterie portable', 'power' => 100, 'brand' => 'SolarShare', 'category_id' => $categories->first()->id],
+            ['name' => 'Mini-éolienne portable', 'power' => 400, 'brand' => 'SolarShare', 'category_id' => $categories->last()->id],
+        ];
+        foreach ($items as $item) {
+            Equipment::updateOrCreate(
+                ['name' => $item['name'], 'user_id' => $user->id],
+                $item + ['description' => 'Équipement énergétique fiable pour une production indicative.', 'price_per_day' => 35, 'location' => 'Tunis', 'availability' => true, 'status' => 'active']
+            );
+        }
     }
 }

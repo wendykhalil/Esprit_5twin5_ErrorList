@@ -24,6 +24,8 @@ class DatabaseSeeder extends Seeder
             EquipmentSeeder::class,
             ReservationSeeder::class,
             InspectionSeeder::class,
+            ReleveEnergieSeeder::class,
+            BadgeSeeder::class,
             SupportTicketSeeder::class,
         ]);
 

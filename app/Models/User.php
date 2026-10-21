@@ -6,7 +6,9 @@ use App\Enums\UserRole;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
@@ -69,6 +71,16 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(SupportTicket::class);
     }
 
+    public function reservations(): HasMany
+    {
+        return $this->hasMany(Reservation::class);
+    }
+
+    public function inspections(): HasManyThrough
+    {
+        return $this->hasManyThrough(Inspection::class, Reservation::class);
+    }
+
     /**
      * Check whether the user is an administrator.
      */
@@ -123,6 +135,18 @@ class User extends Authenticatable implements MustVerifyEmail
     public function reclamations(): HasMany
     {
         return $this->hasMany(Reclamation::class);
+    }
+
+    public function badges(): BelongsToMany
+    {
+        return $this->belongsToMany(Badge::class)
+            ->withPivot(['reservation_id', 'date_obtention'])
+            ->withTimestamps();
+    }
+
+    public function relevesEnergie(): HasManyThrough
+    {
+        return $this->hasManyThrough(ReleveEnergie::class, Reservation::class);
     }
 
     /**

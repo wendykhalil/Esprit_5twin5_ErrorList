@@ -6,6 +6,7 @@ use App\Http\Requests\UpdateEquipmentRequest;
 use App\Models\Category;
 use App\Models\Equipment;
 use App\Services\EquipmentAvailabilityService;
+use App\Services\EstimationProductionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -90,12 +91,13 @@ class EquipmentController extends Controller
     /**
      * Display one equipment.
      */
-    public function show(Equipment $equipment)
+    public function show(Equipment $equipment, EstimationProductionService $estimator)
     {
         $equipment->load([
             'category',
             'user'
         ]);
+        $estimation = $estimator->estimate($equipment, 8);
 
         $related = Equipment::with([
             'category',
@@ -121,7 +123,8 @@ class EquipmentController extends Controller
             'frontend.equipments.show',
             compact(
                 'equipment',
-                'related'
+                'related',
+                'estimation'
             )
         );
     }
