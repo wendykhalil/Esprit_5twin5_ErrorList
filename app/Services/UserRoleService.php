@@ -15,6 +15,11 @@ class UserRoleService
         }
 
         $user->update(['role' => UserRole::Provider->value]);
+
+        if (class_exists(\Spatie\Permission\Models\Role::class)) {
+            \Spatie\Permission\Models\Role::findOrCreate(UserRole::Provider->value, 'web');
+            $user->syncRoles([UserRole::Provider->value]);
+        }
     }
 
     public function markAsClient(User $user): void
@@ -24,6 +29,11 @@ class UserRoleService
         }
 
         $user->update(['role' => UserRole::Client->value]);
+
+        if (class_exists(\Spatie\Permission\Models\Role::class)) {
+            \Spatie\Permission\Models\Role::findOrCreate(UserRole::Client->value, 'web');
+            $user->syncRoles([UserRole::Client->value]);
+        }
     }
 
     public function syncAfterProviderApproval(ServiceProvider $serviceProvider): void

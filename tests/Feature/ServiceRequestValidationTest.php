@@ -180,14 +180,24 @@ class ServiceRequestValidationTest extends TestCase
 
     private function equipmentFor(User $user): Equipment
     {
-        $category = Category::query()->create([
-            'name' => 'Panneaux',
-            'description' => 'Catégorie de test',
-        ]);
+        $category = Category::firstOrCreate(
+            ['name' => 'Panneaux'],
+            ['description' => 'Catégorie de test']
+        );
 
-        return Equipment::factory()->create([
+        return Equipment::query()->create([
             'user_id' => $user->id,
             'category_id' => $category->id,
+            'name' => 'Panneau Solaire 400W',
+            'description' => 'Équipement de test pour intervention.',
+            'brand' => 'EcoSolar',
+            'power' => 400,
+            'capacity' => null,
+            'condition' => 'good',
+            'price_per_day' => 25.00,
+            'location' => 'Tunis',
+            'availability' => true,
+            'status' => 'active',
         ]);
     }
 
