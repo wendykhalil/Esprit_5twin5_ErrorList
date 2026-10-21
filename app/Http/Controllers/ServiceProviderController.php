@@ -16,6 +16,10 @@ class ServiceProviderController extends Controller
     {
         $query = ServiceProvider::with('user')->where('status', 'approved');
 
+        if (auth()->check()) {
+            $query->where('user_id', '!=', auth()->id());
+        }
+
         if ($request->filled('specialty')) {
             $query->where('specialty', 'like', '%' . $request->specialty . '%');
         }
@@ -116,7 +120,9 @@ class ServiceProviderController extends Controller
      */
     public function update(StoreServiceProviderRequest $request, ServiceProvider $serviceProvider)
     {
-        $serviceProvider->update([
+        $isResubmission = ($serviceProvider->status === 'rejected');
+
+        $data = [
             'specialty' => $request->validated('specialty'),
             'description' => $request->validated('description'),
             'experience_years' => $request->validated('experience_years'),
@@ -124,10 +130,20 @@ class ServiceProviderController extends Controller
             'location' => $request->validated('location'),
             'hourly_rate' => $request->validated('hourly_rate'),
             'availability' => $request->boolean('availability'),
-        ]);
+        ];
+
+        if ($isResubmission) {
+            $data['status'] = 'pending';
+        }
+
+        $serviceProvider->update($data);
+
+        $message = $isResubmission
+            ? 'Votre profil a été mis à jour et soumis à nouveau pour validation.'
+            : 'Votre profil a été mis à jour avec succès.';
 
         return redirect()->route('service-providers.edit', $serviceProvider)
-            ->with('success', 'Votre profil a été mis à jour avec succès.');
+            ->with('success', $message);
     }
 
     /**

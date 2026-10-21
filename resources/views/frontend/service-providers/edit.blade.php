@@ -121,6 +121,11 @@
                     <a href="{{ route('service-providers.index') }}" class="text-gray-600 hover:text-gray-900 font-medium text-sm">
                         Retour
                     </a>
+                    @if($serviceProvider->status === 'approved')
+                        <a href="{{ route('service-providers.show', $serviceProvider) }}" class="inline-flex items-center px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition">
+                            Prévisualiser mon profil public
+                        </a>
+                    @endif
                     <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2.5 rounded-lg font-medium transition">
                         Enregistrer les modifications
                     </button>

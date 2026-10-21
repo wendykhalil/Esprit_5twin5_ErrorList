@@ -25,12 +25,35 @@
                            class="inline-flex items-center justify-center px-5 py-3 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-xl transition shrink-0">
                             Gérer les prestataires
                         </a>
-                    @elseif(auth()->user()->isProvider() && auth()->user()->serviceProvider)
-                        <a href="{{ route('service-providers.edit', auth()->user()->serviceProvider) }}"
-                           class="inline-flex items-center justify-center px-5 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl transition shrink-0">
-                            Gérer mon profil prestataire
-                        </a>
-                    @elseif(auth()->user()->isClient())
+                    @elseif(auth()->user()->serviceProvider)
+                        @php $myProvider = auth()->user()->serviceProvider; @endphp
+                        @if($myProvider->status === 'approved')
+                            <a href="{{ route('service-providers.edit', $myProvider) }}"
+                               class="inline-flex items-center justify-center px-5 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl transition shrink-0">
+                                Gérer mon profil prestataire
+                            </a>
+                        @elseif($myProvider->status === 'pending')
+                            <div class="inline-flex items-center gap-3">
+                                <span class="inline-flex items-center px-3.5 py-2 rounded-xl text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-200">
+                                    Profil en attente de validation
+                                </span>
+                                <a href="{{ route('service-providers.edit', $myProvider) }}"
+                                   class="inline-flex items-center justify-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 text-sm font-semibold rounded-xl transition shrink-0">
+                                    Voir / Modifier mon profil
+                                </a>
+                            </div>
+                        @elseif($myProvider->status === 'rejected')
+                            <div class="inline-flex items-center gap-3">
+                                <span class="inline-flex items-center px-3.5 py-2 rounded-xl text-xs font-semibold bg-red-100 text-red-800 border border-red-200">
+                                    Profil non validé
+                                </span>
+                                <a href="{{ route('service-providers.edit', $myProvider) }}"
+                                   class="inline-flex items-center justify-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-xl transition shrink-0">
+                                    Modifier et re-soumettre
+                                </a>
+                            </div>
+                        @endif
+                    @else
                         <a href="{{ route('service-providers.create') }}"
                            class="inline-flex items-center justify-center px-5 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl transition shrink-0">
                             Proposer mes services

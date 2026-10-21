@@ -365,6 +365,160 @@ class TechnicalServicesWorkflowTest extends TestCase
     }
 
     // --------------------------------------------------
+    // VISIBILITÉ DU PROFIL PROPRE, ONBOARDING ET RE-SOUMISSION
+    // --------------------------------------------------
+
+    public function test_approved_provider_does_not_see_own_profile_in_services_marketplace(): void
+    {
+        $providerAUser = $this->createProviderUser();
+        $providerA = ServiceProvider::factory()->create([
+            'user_id' => $providerAUser->id,
+            'status' => 'approved',
+            'specialty' => 'Installation Panneaux A',
+        ]);
+
+        $providerBUser = $this->createProviderUser();
+        $providerB = ServiceProvider::factory()->create([
+            'user_id' => $providerBUser->id,
+            'status' => 'approved',
+            'specialty' => 'Maintenance Solaire B',
+        ]);
+
+        $response = $this->actingAs($providerAUser)
+            ->get(route('service-providers.index'))
+            ->assertOk();
+
+        // Le prestataire A ne voit pas sa propre carte
+        $response->assertDontSee('Installation Panneaux A');
+        // Mais il voit la carte du prestataire B
+        $response->assertSee('Maintenance Solaire B');
+    }
+
+    public function test_another_user_sees_approved_provider_in_services_marketplace(): void
+    {
+        $providerUser = $this->createProviderUser();
+        ServiceProvider::factory()->create([
+            'user_id' => $providerUser->id,
+            'status' => 'approved',
+            'specialty' => 'Installation Solaire Publique',
+        ]);
+
+        $client = $this->createClientUser();
+
+        $this->actingAs($client)
+            ->get(route('service-providers.index'))
+            ->assertOk()
+            ->assertSee('Installation Solaire Publique');
+    }
+
+    public function test_pending_profile_shows_pending_state_and_does_not_show_proposer_services(): void
+    {
+        $user = $this->createClientUser();
+        ServiceProvider::factory()->create([
+            'user_id' => $user->id,
+            'status' => 'pending',
+        ]);
+
+        $response = $this->actingAs($user)
+            ->get(route('service-providers.index'))
+            ->assertOk();
+
+        $response->assertSee('Profil en attente de validation');
+        $response->assertSee('Voir / Modifier mon profil');
+        $response->assertDontSee('Proposer mes services');
+    }
+
+    public function test_rejected_profile_shows_rejected_state_and_does_not_show_proposer_services(): void
+    {
+        $user = $this->createClientUser();
+        ServiceProvider::factory()->create([
+            'user_id' => $user->id,
+            'status' => 'rejected',
+        ]);
+
+        $response = $this->actingAs($user)
+            ->get(route('service-providers.index'))
+            ->assertOk();
+
+        $response->assertSee('Profil non validé');
+        $response->assertSee('Modifier et re-soumettre');
+        $response->assertDontSee('Proposer mes services');
+    }
+
+    public function test_editing_rejected_profile_changes_status_back_to_pending(): void
+    {
+        $user = $this->createClientUser();
+        $provider = ServiceProvider::factory()->create([
+            'user_id' => $user->id,
+            'status' => 'rejected',
+            'specialty' => 'Ancienne spécialité',
+            'experience_years' => 2,
+            'location' => 'Tunis',
+            'hourly_rate' => 50,
+            'description' => 'Description détaillée suffisante pour validation.',
+        ]);
+
+        $response = $this->actingAs($user)->put(route('service-providers.update', $provider), [
+            'specialty' => 'Nouvelle spécialité corrigée',
+            'description' => 'Description corrigée suite aux remarques de l administrateur.',
+            'experience_years' => 3,
+            'location' => 'Sousse',
+            'hourly_rate' => 60,
+            'phone' => '98765432',
+            'availability' => true,
+        ]);
+
+        $response->assertRedirect(route('service-providers.edit', $provider));
+        $response->assertSessionHas('success', 'Votre profil a été mis à jour et soumis à nouveau pour validation.');
+
+        $this->assertEquals('pending', $provider->fresh()->status);
+        $this->assertEquals('Nouvelle spécialité corrigée', $provider->fresh()->specialty);
+    }
+
+    public function test_navbar_displays_mon_profil_prestataire_when_user_owns_profile(): void
+    {
+        $user = $this->createClientUser();
+        $provider = ServiceProvider::factory()->create([
+            'user_id' => $user->id,
+            'status' => 'pending',
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('service-providers.index'))
+            ->assertOk()
+            ->assertSee('Mon profil prestataire')
+            ->assertSee(route('service-providers.edit', $provider));
+    }
+
+    public function test_public_preview_button_appears_only_for_approved_provider_profiles(): void
+    {
+        // 1. Prestataire approuvé -> bouton présent
+        $approvedUser = $this->createProviderUser();
+        $approvedProvider = ServiceProvider::factory()->create([
+            'user_id' => $approvedUser->id,
+            'status' => 'approved',
+        ]);
+
+        $this->actingAs($approvedUser)
+            ->get(route('service-providers.edit', $approvedProvider))
+            ->assertOk()
+            ->assertSee('Prévisualiser mon profil public')
+            ->assertSee(route('service-providers.show', $approvedProvider));
+
+        // 2. Prestataire en attente -> bouton absent
+        $pendingUser = $this->createClientUser();
+        $pendingProvider = ServiceProvider::factory()->create([
+            'user_id' => $pendingUser->id,
+            'status' => 'pending',
+        ]);
+
+        $this->actingAs($pendingUser)
+            ->get(route('service-providers.edit', $pendingProvider))
+            ->assertOk()
+            ->assertDontSee('Prévisualiser mon profil public');
+    }
+
+    // --------------------------------------------------
     // HELPERS ISOLÉS
     // --------------------------------------------------
 

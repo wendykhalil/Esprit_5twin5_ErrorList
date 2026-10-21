@@ -183,6 +183,9 @@
                             @if(auth()->user()->isProvider())
                             <a href="{{ route('provider.service-requests.index') }}" class="block px-4 py-2.5 text-sm transition-colors border-t border-green-100 {{ request()->routeIs('provider.service-requests.*') ? 'bg-green-50 text-green-800 font-medium' : 'text-gray-700 hover:bg-green-50 hover:text-green-700' }}">Demandes reçues (prestataire)</a>
                             @endif
+                            @if(auth()->user()->serviceProvider)
+                            <a href="{{ route('service-providers.edit', auth()->user()->serviceProvider) }}" class="block px-4 py-2.5 text-sm transition-colors border-t border-green-100 {{ request()->routeIs('service-providers.edit') ? 'bg-green-50 text-green-800 font-medium' : 'text-gray-700 hover:bg-green-50 hover:text-green-700' }}">Mon profil prestataire</a>
+                            @endif
                             @if(auth()->user()->isAdmin())
                             <a href="{{ route('admin.dashboard') }}" class="block px-4 py-2.5 text-sm transition-colors border-t border-green-100 text-gray-700 hover:bg-green-50 hover:text-green-700">Administration</a>
                             @endif
@@ -418,6 +421,9 @@
                     <a href="{{ route('service-requests.index') }}" onclick="document.getElementById('mobileMenu').classList.add('hidden')" class="block px-4 py-2.5 text-sm font-medium text-center border rounded-lg hover:bg-green-50 transition-colors {{ request()->routeIs('service-requests.*') ? 'bg-green-50 text-green-900 border-green-300' : 'text-green-700 border-green-200' }}">Mes demandes</a>
                     @if(auth()->user()->isProvider())
                     <a href="{{ route('provider.service-requests.index') }}" onclick="document.getElementById('mobileMenu').classList.add('hidden')" class="block px-4 py-2.5 text-sm font-medium text-center border rounded-lg hover:bg-green-50 transition-colors {{ request()->routeIs('provider.service-requests.*') ? 'bg-green-50 text-green-900 border-green-300' : 'text-green-700 border-green-200' }}">Demandes reçues (prestataire)</a>
+                    @endif
+                    @if(auth()->user()->serviceProvider)
+                    <a href="{{ route('service-providers.edit', auth()->user()->serviceProvider) }}" onclick="document.getElementById('mobileMenu').classList.add('hidden')" class="block px-4 py-2.5 text-sm font-medium text-center border rounded-lg hover:bg-green-50 transition-colors {{ request()->routeIs('service-providers.edit') ? 'bg-green-50 text-green-900 border-green-300' : 'text-green-700 border-green-200' }}">Mon profil prestataire</a>
                     @endif
 
                     <a
