@@ -18,6 +18,7 @@ class StoreTicketReplyRequest extends FormRequest
     {
         return [
             'body' => ['required', 'string', 'max:5000'],
+            'attachment' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:2048'],
         ];
     }
 
@@ -28,6 +29,8 @@ class StoreTicketReplyRequest extends FormRequest
     {
         return [
             'body.required' => 'La réponse ne peut pas être vide.',
+            'attachment.mimes' => 'La pièce jointe doit être une image ou un PDF.',
+            'attachment.max' => 'La pièce jointe ne doit pas dépasser 2 Mo.',
         ];
     }
 }

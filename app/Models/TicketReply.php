@@ -20,6 +20,7 @@ class TicketReply extends Model
         'user_id',
         'body',
         'is_internal',
+        'attachment',
     ];
 
     /**
@@ -54,5 +55,31 @@ class TicketReply extends Model
     public function scopePublic(Builder $query): Builder
     {
         return $query->where('is_internal', false);
+    }
+
+    public static function normalizeBody(string $body): string
+    {
+        $normalized = preg_replace('/\s+/u', ' ', trim(mb_strtolower($body)));
+
+        return $normalized ?? '';
+    }
+
+    public function hasAttachment(): bool
+    {
+        return filled($this->attachment);
+    }
+
+    public function attachmentUrl(): ?string
+    {
+        if (! $this->hasAttachment()) {
+            return null;
+        }
+
+        return asset('storage/'.$this->attachment);
+    }
+
+    public function attachmentIsPdf(): bool
+    {
+        return $this->hasAttachment() && str_ends_with(strtolower((string) $this->attachment), '.pdf');
     }
 }

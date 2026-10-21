@@ -13,7 +13,6 @@ class SupportTicketFactory extends Factory
     public function definition(): array
     {
         $status = fake()->randomElement(['open', 'in_progress', 'resolved', 'closed']);
-        $isTerminal = in_array($status, ['closed', 'resolved'], true);
 
         return [
             'user_id' => User::factory(),
@@ -21,7 +20,8 @@ class SupportTicketFactory extends Factory
             'message' => fake()->paragraphs(2, true),
             'priority' => fake()->randomElement(['low', 'normal', 'high']),
             'status' => $status,
-            'closed_at' => $isTerminal ? fake()->dateTimeBetween('-10 days', 'now') : null,
+            'resolved_at' => $status === 'resolved' ? fake()->dateTimeBetween('-10 days', 'now') : null,
+            'closed_at' => $status === 'closed' ? fake()->dateTimeBetween('-10 days', 'now') : null,
         ];
     }
 
@@ -30,6 +30,7 @@ class SupportTicketFactory extends Factory
         return $this->state(fn () => [
             'status' => 'open',
             'closed_at' => null,
+            'resolved_at' => null,
         ]);
     }
 }

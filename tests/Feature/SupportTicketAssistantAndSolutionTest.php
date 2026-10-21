@@ -36,8 +36,11 @@ class SupportTicketAssistantAndSolutionTest extends TestCase
                     'content' => json_encode([
                         'category' => 'paiement',
                         'priority' => 'high',
+                        'priority_reason' => 'Le client decrit un paiement qui bloque son usage.',
                         'summary' => 'Le client ne parvient pas à finaliser son paiement.',
                         'suggested_reply' => 'Bonjour, nous vérifions votre paiement et revenons vers vous.',
+                        'missing_information' => ['La date approximative du paiement'],
+                        'confidence' => 0.4,
                     ]),
                 ],
             ]),
@@ -81,8 +84,11 @@ class SupportTicketAssistantAndSolutionTest extends TestCase
                     'content' => json_encode([
                         'category' => 'technique',
                         'priority' => 'normal',
+                        'priority_reason' => 'La panne est decrite sans blocage immediat du service.',
                         'summary' => 'Le client décrit une panne après une réponse publique.',
                         'suggested_reply' => 'Bonjour, nous examinons la panne signalée dans votre message.',
+                        'missing_information' => [],
+                        'confidence' => null,
                     ]),
                 ],
             ]),
@@ -279,7 +285,8 @@ class SupportTicketAssistantAndSolutionTest extends TestCase
         $this->assertSame('resolved', $ticket->status);
         $this->assertSame($reply->id, $ticket->accepted_reply_id);
         $this->assertSame('normal', $ticket->priority);
-        $this->assertSame('2026-10-19 10:00:00', $ticket->closed_at->format('Y-m-d H:i:s'));
+        $this->assertNull($ticket->closed_at);
+        $this->assertSame('2026-10-19 10:00:00', $ticket->resolved_at->format('Y-m-d H:i:s'));
     }
 
     public function test_a_second_acceptance_replaces_the_solution_without_overwriting_closed_at(): void
@@ -308,7 +315,8 @@ class SupportTicketAssistantAndSolutionTest extends TestCase
         $ticket->refresh();
         $this->assertSame($second->id, $ticket->accepted_reply_id);
         $this->assertSame('resolved', $ticket->status);
-        $this->assertSame('2026-10-19 10:00:00', $ticket->closed_at->format('Y-m-d H:i:s'));
+        $this->assertNull($ticket->closed_at);
+        $this->assertSame('2026-10-19 10:00:00', $ticket->resolved_at->format('Y-m-d H:i:s'));
     }
 
     public function test_internal_note_cannot_be_accepted(): void
@@ -419,7 +427,8 @@ class SupportTicketAssistantAndSolutionTest extends TestCase
         $ticket->refresh();
         $this->assertSame('resolved', $ticket->status);
         $this->assertSame($reply->id, $ticket->accepted_reply_id);
-        $this->assertSame('2026-10-19 10:00:00', $ticket->closed_at->format('Y-m-d H:i:s'));
+        $this->assertNull($ticket->closed_at);
+        $this->assertSame('2026-10-19 10:00:00', $ticket->resolved_at->format('Y-m-d H:i:s'));
 
         Carbon::setTestNow('2026-10-19 15:00:00');
         $this->actingAs($owner)->post(route('support.tickets.reopen', $ticket), [
@@ -430,6 +439,8 @@ class SupportTicketAssistantAndSolutionTest extends TestCase
         $this->assertSame('open', $ticket->status);
         $this->assertNull($ticket->accepted_reply_id);
         $this->assertNull($ticket->closed_at);
+        $this->assertNull($ticket->resolved_at);
+        $this->assertSame(1, $ticket->reopen_count);
         $this->assertDatabaseHas('ticket_replies', [
             'support_ticket_id' => $ticket->id,
             'user_id' => $owner->id,
@@ -467,4 +478,4 @@ class SupportTicketAssistantAndSolutionTest extends TestCase
             }
         }
     }
-};
+}

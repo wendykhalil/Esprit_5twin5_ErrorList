@@ -48,7 +48,7 @@
     </div>
 
     {{-- MAIN NAVIGATION --}}
-    <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+    <nav class="admin-sidebar-nav flex-1 px-3 py-4 space-y-1 overflow-y-auto">
 
         <p class="px-3 mb-2 text-xs text-slate-500 uppercase tracking-wider"
            style="font-family: Outfit, sans-serif">

@@ -33,7 +33,18 @@ class SupportTicketPolicy
             return false;
         }
 
+        if ($supportTicket->status === 'resolved' && ! $user->isAdmin()) {
+            return false;
+        }
+
         return $user->isAdmin() || $supportTicket->user_id === $user->id;
+    }
+
+    public function rate(User $user, SupportTicket $supportTicket): bool
+    {
+        return $supportTicket->user_id === $user->id
+            && $supportTicket->status === 'resolved'
+            && $supportTicket->satisfaction_rated_at === null;
     }
 
     public function analyze(User $user, SupportTicket $supportTicket): bool

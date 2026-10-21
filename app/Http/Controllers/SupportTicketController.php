@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ReopenSupportTicketRequest;
 use App\Http\Requests\StoreSupportTicketRequest;
 use App\Http\Requests\StoreTicketReplyRequest;
+use App\Http\Requests\StoreTicketSatisfactionRequest;
 use App\Models\SupportTicket;
 use App\Models\TicketReply;
 use Illuminate\Http\RedirectResponse;
@@ -45,11 +46,24 @@ class SupportTicketController extends Controller
                 ->store('support-tickets', 'public');
         }
 
-        $ticket = SupportTicket::create($data);
+        $similar = SupportTicket::findSimilarOpen(
+            $request->user()->id,
+            $data['subject'],
+            $data['message']
+        );
 
-        return redirect()
+        $ticket = SupportTicket::create($data);
+        $ticket->recordEvent('created', $request->user()->id);
+
+        $redirect = redirect()
             ->route('support.tickets.show', $ticket)
             ->with('success', 'Votre ticket a été créé. Référence : '.$ticket->reference);
+
+        if ($similar !== null) {
+            $redirect->with('warning', 'Une demande ouverte similaire existe déjà : '.$similar->reference.'.');
+        }
+
+        return $redirect;
     }
 
     public function show(SupportTicket $supportTicket): View
@@ -70,13 +84,25 @@ class SupportTicketController extends Controller
     {
         $this->authorize('reply', $supportTicket);
 
-        $supportTicket->replies()->create([
+        $body = $request->validated('body');
+        $duplicate = $supportTicket->hasDuplicatePublicBody($body);
+
+        $reply = $supportTicket->replies()->create([
             'user_id' => $request->user()->id,
-            'body' => $request->validated('body'),
+            'body' => $body,
             'is_internal' => false,
+            'attachment' => $request->hasFile('attachment')
+                ? $request->file('attachment')->store('support-replies', 'public')
+                : null,
         ]);
 
-        return back()->with('success', 'Votre réponse a été envoyée.');
+        $redirect = back()->with('success', 'Votre réponse a été envoyée.');
+
+        if ($duplicate) {
+            $redirect->with('warning', 'Ce texte est déjà présent dans la conversation.');
+        }
+
+        return $redirect;
     }
 
     public function acceptSolution(SupportTicket $supportTicket, TicketReply $reply): RedirectResponse
@@ -100,6 +126,9 @@ class SupportTicketController extends Controller
             $ticket->status = 'resolved';
             $ticket->syncClosedTimestampForStatus('resolved');
             $ticket->save();
+            $ticket->recordEvent('solution_accepted', auth()->id(), [
+                'reply_id' => $lockedReply->id,
+            ]);
         });
 
         return back()->with('success', 'Cette réponse est enregistrée comme solution. Le ticket est résolu.');
@@ -123,9 +152,32 @@ class SupportTicketController extends Controller
             $ticket->accepted_reply_id = null;
             $ticket->status = 'open';
             $ticket->syncClosedTimestampForStatus('open');
+            $ticket->reopen_count = (int) $ticket->reopen_count + 1;
+            $ticket->last_reopened_at = now();
+            $ticket->satisfaction_score = null;
+            $ticket->satisfaction_comment = null;
+            $ticket->satisfaction_rated_at = null;
             $ticket->save();
+            $ticket->recordEvent('reopened', $request->user()->id, [
+                'reopen_count' => $ticket->reopen_count,
+            ]);
         });
 
         return back()->with('success', 'Le ticket a été rouvert.');
+    }
+
+    public function rate(StoreTicketSatisfactionRequest $request, SupportTicket $supportTicket): RedirectResponse
+    {
+        $supportTicket->update([
+            'satisfaction_score' => (int) $request->validated('score'),
+            'satisfaction_comment' => $request->validated('comment'),
+            'satisfaction_rated_at' => now(),
+        ]);
+
+        $supportTicket->recordEvent('satisfaction', $request->user()->id, [
+            'score' => (int) $request->validated('score'),
+        ]);
+
+        return back()->with('success', 'Merci, votre avis a été enregistré.');
     }
 }

@@ -292,6 +292,8 @@ Route::middleware('auth')->prefix('support')->name('support.tickets.')->group(fu
         ->name('replies.accept');
     Route::post('/{supportTicket}/reopen', [SupportTicketController::class, 'reopen'])
         ->name('reopen');
+    Route::post('/{supportTicket}/satisfaction', [SupportTicketController::class, 'rate'])
+        ->name('satisfaction');
 });
 
 // --------------------------------------------------

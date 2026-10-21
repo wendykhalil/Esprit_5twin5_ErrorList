@@ -158,7 +158,8 @@ class SupportTicketTest extends TestCase
 
         $ticket->refresh();
         $this->assertSame('resolved', $ticket->status);
-        $this->assertNotNull($ticket->closed_at);
+        $this->assertNotNull($ticket->resolved_at);
+        $this->assertNull($ticket->closed_at);
     }
 
     public function test_internal_notes_are_hidden_from_client_view(): void

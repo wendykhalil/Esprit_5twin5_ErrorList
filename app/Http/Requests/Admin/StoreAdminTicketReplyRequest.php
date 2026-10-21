@@ -19,6 +19,7 @@ class StoreAdminTicketReplyRequest extends FormRequest
         return [
             'body' => ['required', 'string', 'max:5000'],
             'is_internal' => ['sometimes', 'boolean'],
+            'attachment' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:2048'],
         ];
     }
 }
