@@ -121,6 +121,84 @@
                 </div>
             </div>
 
+            {{-- AI Technical Pre-diagnosis Audit Card --}}
+            @if($serviceRequest->ai_pre_diagnosis)
+                @php $ai = $serviceRequest->ai_pre_diagnosis; @endphp
+                <div class="bg-white rounded-xl border border-amber-200 p-6 shadow-sm space-y-4">
+                    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xl">✨</span>
+                            <h4 class="text-base font-bold text-slate-900" style="font-family: Outfit, sans-serif">
+                                Audit IA : Pré-diagnostic technique indicatif
+                            </h4>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200">
+                                Source : {{ $ai['source'] ?? 'analysée' }}
+                            </span>
+                            @if(!empty($ai['severity']))
+                                @php
+                                    $severityBadges = [
+                                        'faible' => 'bg-emerald-100 text-emerald-800 border-emerald-200',
+                                        'moyenne' => 'bg-blue-100 text-blue-800 border-blue-200',
+                                        'elevee' => 'bg-orange-100 text-orange-800 border-orange-200',
+                                        'urgente' => 'bg-red-100 text-red-800 border-red-200',
+                                    ];
+                                    $sBadge = $severityBadges[$ai['severity']] ?? 'bg-slate-100 text-slate-800 border-slate-200';
+                                @endphp
+                                <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full border {{ $sBadge }}">
+                                    Gravité : {{ strtoupper($ai['severity']) }}
+                                </span>
+                            @endif
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                        <div class="sm:col-span-2">
+                            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider" style="font-family: Outfit, sans-serif">Diagnostic probable</span>
+                            <p class="font-bold text-slate-900 mt-1">{{ $ai['diagnostic_probable'] ?? 'Non spécifié' }}</p>
+                            @if(!empty($ai['short_summary']))
+                                <p class="text-xs text-slate-600 mt-1">{{ $ai['short_summary'] }}</p>
+                            @endif
+                        </div>
+
+                        <div>
+                            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider" style="font-family: Outfit, sans-serif">Durée estimée</span>
+                            <p class="text-sm font-medium text-slate-800 mt-1">⏱️ {{ $ai['estimated_duration'] ?? '1h à 2h' }}</p>
+                        </div>
+
+                        <div>
+                            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider" style="font-family: Outfit, sans-serif">Spécialité recommandée</span>
+                            <p class="text-sm font-medium text-slate-800 mt-1">🔧 {{ $ai['recommended_specialty'] ?? 'Non spécifiée' }}</p>
+                        </div>
+
+                        @if(!empty($ai['probable_components']))
+                            <div class="sm:col-span-2">
+                                <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider" style="font-family: Outfit, sans-serif">Composants ciblés</span>
+                                <div class="flex flex-wrap gap-1.5 mt-1.5">
+                                    @foreach($ai['probable_components'] as $comp)
+                                        <span class="bg-slate-50 border border-slate-200 text-slate-700 px-2 py-0.5 rounded text-xs">{{ $comp }}</span>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+
+                        @if(!empty($ai['safety_advice']))
+                            <div class="sm:col-span-2 bg-red-50 border border-red-200 rounded-lg p-3 text-xs text-red-800">
+                                <strong>⚠️ Conseil de sécurité généré :</strong> {{ $ai['safety_advice'] }}
+                            </div>
+                        @endif
+
+                        @if(!empty($ai['indicative_cost_range']))
+                            <div class="sm:col-span-2 bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-900 flex items-center justify-between">
+                                <span>Fourchette financière indicative communiquée au client :</span>
+                                <strong class="font-bold">{{ $ai['indicative_cost_range'] }}</strong>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            @endif
+
             {{-- Equipment Information --}}
             <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
                 <h4 class="text-base font-bold text-slate-900 mb-4" style="font-family: Outfit, sans-serif">

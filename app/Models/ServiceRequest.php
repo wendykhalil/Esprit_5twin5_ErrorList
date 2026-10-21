@@ -23,12 +23,14 @@ class ServiceRequest extends Model
         'cancellation_reason',
         'cancelled_at',
         'cancelled_by',
+        'ai_pre_diagnosis',
     ];
 
     protected $casts = [
         'requested_date' => 'datetime',
         'cancelled_at' => 'datetime',
         'estimated_price' => 'decimal:2',
+        'ai_pre_diagnosis' => 'array',
     ];
 
     /**

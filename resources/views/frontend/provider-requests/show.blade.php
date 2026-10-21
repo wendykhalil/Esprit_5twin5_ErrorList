@@ -121,6 +121,73 @@
                 <h3 class="text-lg font-semibold text-slate-800 mb-3 border-b border-slate-100 pb-2" style="font-family: Outfit, sans-serif">Description de la demande</h3>
                 <p class="text-slate-700 whitespace-pre-wrap">{{ $serviceRequest->description }}</p>
             </div>
+
+            {{-- AI Pre-Diagnosis Card (if available) --}}
+            @if($serviceRequest->ai_pre_diagnosis)
+                @php $ai = $serviceRequest->ai_pre_diagnosis; @endphp
+                <div class="md:col-span-2 mt-2 bg-amber-50/60 border border-amber-200 rounded-xl p-5 shadow-sm space-y-3">
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-amber-200 pb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="text-lg">✨</span>
+                            <h4 class="font-bold text-slate-900 text-sm" style="font-family: Outfit, sans-serif">
+                                Pré-diagnostic technique assisté par IA (Indicatif)
+                            </h4>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            @if(!empty($ai['severity']))
+                                @php
+                                    $severityBadges = [
+                                        'faible' => 'bg-emerald-100 text-emerald-800',
+                                        'moyenne' => 'bg-blue-100 text-blue-800',
+                                        'elevee' => 'bg-orange-100 text-orange-800',
+                                        'urgente' => 'bg-red-100 text-red-800',
+                                    ];
+                                    $sBadge = $severityBadges[$ai['severity']] ?? 'bg-slate-100 text-slate-800';
+                                @endphp
+                                <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full {{ $sBadge }}">
+                                    Gravité : {{ strtoupper($ai['severity']) }}
+                                </span>
+                            @endif
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <span class="text-xs text-slate-500 font-semibold uppercase tracking-wider">Hypothèse de panne</span>
+                            <p class="font-bold text-slate-900 mt-0.5">{{ $ai['diagnostic_probable'] ?? 'Non spécifiée' }}</p>
+                        </div>
+                        <div>
+                            <span class="text-xs text-slate-500 font-semibold uppercase tracking-wider">Durée estimée</span>
+                            <p class="font-medium text-slate-800 mt-0.5">{{ $ai['estimated_duration'] ?? '1h à 2h' }}</p>
+                        </div>
+                        @if(!empty($ai['probable_components']))
+                            <div class="sm:col-span-2">
+                                <span class="text-xs text-slate-500 font-semibold uppercase tracking-wider">Composants probables</span>
+                                <div class="flex flex-wrap gap-1.5 mt-1">
+                                    @foreach($ai['probable_components'] as $comp)
+                                        <span class="bg-white border border-slate-200 px-2 py-0.5 rounded text-xs text-slate-700">{{ $comp }}</span>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+                        @if(!empty($ai['safety_advice']))
+                            <div class="sm:col-span-2 bg-red-50 border border-red-200 rounded-lg p-3 text-xs text-red-800">
+                                <strong>⚠️ Consigne de sécurité communiquée au client :</strong> {{ $ai['safety_advice'] }}
+                            </div>
+                        @endif
+                    </div>
+
+                    @if(!empty($ai['indicative_cost_range']))
+                        <div class="bg-white border border-amber-200 rounded-lg p-3 text-xs text-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <div>
+                                <span class="text-slate-500">Fourchette indicative communiquée :</span>
+                                <strong class="text-amber-800 ml-1">{{ $ai['indicative_cost_range'] }}</strong>
+                            </div>
+                            <span class="text-[11px] text-slate-400 italic">Vous fixez librement votre devis officiel ci-dessous.</span>
+                        </div>
+                    @endif
+                </div>
+            @endif
         </div>
 
         {{-- Provider Actions --}}

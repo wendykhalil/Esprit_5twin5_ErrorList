@@ -6,6 +6,7 @@ use App\Http\Requests\StoreServiceRequest;
 use App\Models\ServiceRequest;
 use App\Models\ServiceProvider;
 use App\Models\Equipment;
+use App\Services\TechnicalServiceAIService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -50,6 +51,25 @@ class ServiceRequestController extends Controller
                 ->with('error', 'Vous ne pouvez pas demander une intervention à vous-même.');
         }
 
+        // Récupération et consommation unique du pré-diagnostic en session serveur
+        $stashed = session()->pull('ts_ai_pre_diagnosis_' . $serviceProvider->id);
+        $aiPreDiagnosis = null;
+
+        if (is_array($stashed) && isset($stashed['fingerprint'], $stashed['diagnosis'])) {
+            $equipmentId = $request->validated('equipment_id') ? (int) $request->validated('equipment_id') : null;
+            $currentFingerprint = TechnicalServiceAIService::computeFingerprint(
+                providerId: $serviceProvider->id,
+                equipmentId: $equipmentId,
+                title: (string) $request->validated('title'),
+                description: (string) $request->validated('description'),
+            );
+
+            // Persiste uniquement si le titre, la description et l'équipement correspondent exactement
+            if (hash_equals($stashed['fingerprint'], $currentFingerprint)) {
+                $aiPreDiagnosis = $stashed['diagnosis'];
+            }
+        }
+
         ServiceRequest::create([
             'user_id' => $request->user()->id,
             'service_provider_id' => $serviceProvider->id,
@@ -60,6 +80,7 @@ class ServiceRequestController extends Controller
             'address' => $request->validated('address'),
             'status' => 'pending',
             'estimated_price' => null,
+            'ai_pre_diagnosis' => $aiPreDiagnosis,
         ]);
 
         return redirect()->route('service-requests.index')

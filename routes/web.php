@@ -10,6 +10,7 @@ use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\SupportTicketController;
 use App\Http\Controllers\ServiceProviderController;
 use App\Http\Controllers\ServiceRequestController;
+use App\Http\Controllers\TechnicalServiceAIController;
 use App\Http\Controllers\ReleveEnergieController;
 use App\Http\Controllers\EcologyController;
 use App\Http\Controllers\ConseillerEnergieController;
@@ -372,6 +373,10 @@ Route::middleware('auth')->group(function () {
 
     Route::delete('/services/{serviceProvider}', [ServiceProviderController::class, 'destroy'])
         ->name('service-providers.destroy');
+
+    // Technical Services: AI Pre-diagnosis (nom unique unifié)
+    Route::post('/services/ai-diagnose', [TechnicalServiceAIController::class, 'diagnose'])
+        ->name('service-requests.ai-diagnose');
 
     // Technical Services: Service Requests
     Route::get('/services/{serviceProvider}/request', [ServiceRequestController::class, 'create'])
