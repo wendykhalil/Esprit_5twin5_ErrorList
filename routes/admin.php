@@ -254,6 +254,22 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
         ->name('service-providers.reject');
 
     // --------------------------------------------------
+    // TECHNICAL SERVICES: INTERVENTIONS (SERVICE REQUESTS)
+    // --------------------------------------------------
+
+    Route::get('/interventions', [\App\Http\Controllers\Admin\ServiceRequestController::class, 'index'])
+        ->name('service-requests.index');
+
+    Route::get('/interventions/{serviceRequest}', [\App\Http\Controllers\Admin\ServiceRequestController::class, 'show'])
+        ->name('service-requests.show');
+
+    Route::patch('/interventions/{serviceRequest}/cancel', [\App\Http\Controllers\Admin\ServiceRequestController::class, 'cancel'])
+        ->name('service-requests.cancel');
+
+    Route::patch('/interventions/{serviceRequest}/complete', [\App\Http\Controllers\Admin\ServiceRequestController::class, 'complete'])
+        ->name('service-requests.complete');
+
+    // --------------------------------------------------
     // RECLAMATIONS - ADMIN
     // --------------------------------------------------
 

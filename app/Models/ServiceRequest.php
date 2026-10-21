@@ -20,10 +20,14 @@ class ServiceRequest extends Model
         'address',
         'status',
         'estimated_price',
+        'cancellation_reason',
+        'cancelled_at',
+        'cancelled_by',
     ];
 
     protected $casts = [
         'requested_date' => 'datetime',
+        'cancelled_at' => 'datetime',
         'estimated_price' => 'decimal:2',
     ];
 
@@ -49,5 +53,13 @@ class ServiceRequest extends Model
     public function equipment(): BelongsTo
     {
         return $this->belongsTo(Equipment::class);
+    }
+
+    /**
+     * Get the user who cancelled the request.
+     */
+    public function cancelledBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'cancelled_by');
     }
 }

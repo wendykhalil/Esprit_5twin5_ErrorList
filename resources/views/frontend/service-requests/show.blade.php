@@ -27,6 +27,25 @@
         </div>
     @endif
 
+    @if($serviceRequest->status === 'cancelled')
+        <div class="mb-6 bg-slate-100 border border-slate-300 text-slate-800 p-5 rounded-2xl shadow-sm">
+            <div class="flex items-start gap-3">
+                <span class="text-xl">⚠️</span>
+                <div>
+                    <h4 class="font-semibold text-slate-900">Intervention annulée</h4>
+                    @if($serviceRequest->cancellation_reason)
+                        <p class="text-sm text-slate-700 mt-1"><strong>Motif :</strong> {{ $serviceRequest->cancellation_reason }}</p>
+                    @endif
+                    @if($serviceRequest->cancelled_at)
+                        <p class="text-xs text-slate-500 mt-1">Annulée le {{ $serviceRequest->cancelled_at->format('d/m/Y à H:i') }}
+                            @if($serviceRequest->cancelledBy) par l'administration ({{ $serviceRequest->cancelledBy->name }}) @endif
+                        </p>
+                    @endif
+                </div>
+            </div>
+        </div>
+    @endif
+
     <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
         {{-- Header Status --}}
         <div class="p-6 border-b border-slate-200 bg-slate-50 flex flex-col sm:flex-row sm:items-start justify-between gap-4">

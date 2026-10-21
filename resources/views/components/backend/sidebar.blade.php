@@ -1,4 +1,4 @@
-﻿
+
 @php
     $navItems = [
         ['url' => route('admin.dashboard'), 'label' => 'Tableau de bord', 'route' => 'admin.dashboard', 'icon' => 'dashboard'],
@@ -18,6 +18,7 @@
         ['url' => route('admin.impact.index'), 'label' => 'Impact écologique', 'route' => 'admin.impact.*', 'icon' => 'analytics'],
         ['url' => route('admin.badges.index'), 'label' => 'Badges', 'route' => 'admin.badges.*', 'icon' => 'check'],
         ['url' => route('admin.service-providers.index'), 'label' => 'Prestataires', 'route' => 'admin.service-providers.*', 'icon' => 'providers'],
+        ['url' => route('admin.service-requests.index'), 'label' => 'Interventions', 'route' => 'admin.service-requests.*', 'icon' => 'tools'],
     ];
 
     $bottomItems = [
@@ -124,6 +125,9 @@
                         'M3 7h18v13H3z',
                         'M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2',
                         'M3 12h18'
+                    ],
+                    'tools' => [
+                        'M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.05a4.5 4.5 0 004.486-6.32l-3.276 3.277a1.5 1.5 0 01-2.122-2.122l3.277-3.276a4.5 4.5 0 00-6.32 4.486c.138.58.114 1.193-.05 1.743'
                     ]
                 ];
             @endphp
