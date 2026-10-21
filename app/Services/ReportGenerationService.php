@@ -50,6 +50,8 @@ class ReportGenerationService
      *    If no completed reservations, returns 0 days.
      * 4. Period Filter: Uses date_debut (reservation start date) for period membership.
      *    This ensures consistent reporting across all metrics.
+     * 5. Created Count: NEW METRIC - Reservations created (created_at) during the period,
+     *    regardless of when they start. This measures booking activity, not rental activity.
      * 
      * CRITICAL FIX: Each aggregation uses separate query instances to prevent
      * query builder state consumption issues. Previously, reusing $reservationQuery
@@ -57,8 +59,12 @@ class ReportGenerationService
      */
     private function getReservationStats(Carbon $startDate, Carbon $endDate): array
     {
-        // Total count - separate query instance
+        // Total count (by rental date_debut) - separate query instance
         $totalReservations = Reservation::whereBetween('date_debut', [$startDate, $endDate])->count();
+
+        // Created count (by created_at) - NEW METRIC for booking activity
+        $createdReservations = Reservation::whereBetween('created_at', [$startDate->startOfDay(), $endDate->endOfDay()])
+            ->count();
 
         // Completed count - separate query instance
         $completedReservations = Reservation::whereBetween('date_debut', [$startDate, $endDate])
@@ -100,6 +106,7 @@ class ReportGenerationService
 
         return [
             'total' => $totalReservations,
+            'total_created' => $createdReservations,  // NEW: Reservations created in period
             'completed' => $completedReservations,
             'by_status' => $byStatus,
             'avg_duration_days' => round(max(0, $avgDuration), 2), // Ensure non-negative
@@ -178,8 +185,17 @@ class ReportGenerationService
      * Counts distinct reclamations and incidents linked to period reservations
      * Important: 1 Reclamation can have N Incidents - these are distinct counts
      * 
+     * CRITICAL FIX: Now tracks BOTH:
+     * 1. "total" - Reclamations linked to reservations with date_debut in period (rental period grouping)
+     * 2. "total_created" - Reclamations created (created_at) during the period (activity tracking)
+     * 
+     * This fix addresses the reporting discrepancy where new reclamations linked to future
+     * reservations would not appear in the current period's report, even though they were
+     * created during the period.
+     * 
      * Calculates:
-     * - Total reclamations count (distinct)
+     * - Total reclamations count by rental period (distinct)
+     * - Total reclamations created during the period (distinct) - NEW METRIC
      * - Total incidents count (distinct)
      * - Reclamations by status
      * - Incidents by type
@@ -187,19 +203,27 @@ class ReportGenerationService
      */
     private function getReclamationStats(Carbon $startDate, Carbon $endDate): array
     {
-        // Total distinct reclamations
+        // Total distinct reclamations linked to period reservations (by date_debut)
         $totalReclamations = Reclamation::whereHas('reservation', function ($query) use ($startDate, $endDate) {
             $query->whereBetween('date_debut', [$startDate, $endDate]);
         })->count();
 
-        // Total distinct incidents
+        // NEW: Total reclamations created during period (by created_at)
+        $totalReclamationsCreated = Reclamation::whereBetween('created_at', [$startDate->startOfDay(), $endDate->endOfDay()])
+            ->count();
+
+        // Total distinct incidents linked to period reservations
         $totalIncidents = Incident::whereHas('reclamation', function ($query) use ($startDate, $endDate) {
             $query->whereHas('reservation', function ($q) use ($startDate, $endDate) {
                 $q->whereBetween('date_debut', [$startDate, $endDate]);
             });
         })->count();
 
-        // Reclamations by status
+        // NEW: Total incidents created during period
+        $totalIncidentsCreated = Incident::whereBetween('created_at', [$startDate->startOfDay(), $endDate->endOfDay()])
+            ->count();
+
+        // Reclamations by status (linked to period reservations)
         $byStatus = Reclamation::whereHas('reservation', function ($query) use ($startDate, $endDate) {
             $query->whereBetween('date_debut', [$startDate, $endDate]);
         })
@@ -208,7 +232,7 @@ class ReportGenerationService
             ->pluck('count', 'status')
             ->toArray();
 
-        // Incidents by type
+        // Incidents by type (linked to period reclamations)
         $byType = Incident::whereHas('reclamation', function ($query) use ($startDate, $endDate) {
             $query->whereHas('reservation', function ($q) use ($startDate, $endDate) {
                 $q->whereBetween('date_debut', [$startDate, $endDate]);
@@ -223,13 +247,13 @@ class ReportGenerationService
         $totalReservations = Reservation::whereBetween('date_debut', [$startDate, $endDate])->count();
         $reclamationRate = $totalReservations > 0 ? ($totalReclamations / $totalReservations) * 100 : 0;
 
-        // Approved reclamations count
+        // Approved reclamations count (by period reservation)
         $approvedCount = Reclamation::where('status', 'approuvee')
             ->whereHas('reservation', function ($query) use ($startDate, $endDate) {
                 $query->whereBetween('date_debut', [$startDate, $endDate]);
             })->count();
 
-        // Rejected reclamations count
+        // Rejected reclamations count (by period reservation)
         $rejectedCount = Reclamation::where('status', 'rejetee')
             ->whereHas('reservation', function ($query) use ($startDate, $endDate) {
                 $query->whereBetween('date_debut', [$startDate, $endDate]);
@@ -237,7 +261,9 @@ class ReportGenerationService
 
         return [
             'total' => $totalReclamations,
+            'total_created' => $totalReclamationsCreated,  // NEW: Reclamations created in period
             'incidents_total' => $totalIncidents,
+            'incidents_total_created' => $totalIncidentsCreated,  // NEW: Incidents created in period
             'rate' => round($reclamationRate, 2),
             'by_status' => $byStatus,
             'by_type' => $byType,
@@ -359,10 +385,15 @@ class ReportGenerationService
      * 
      * IMPORTANT: When completed reservations = 0, explicitly mark duration as unavailable
      * to prevent Ollama from treating "0 jours" as a measured value.
+     * 
+     * Uses created_at counts for activity metrics since they represent actual records
+     * created during the period, improving accuracy for newly generated reports.
      */
     public function buildSummaryContext(array $stats, Carbon $startDate, Carbon $endDate): string
     {
         $completedReservations = $stats['reservations']['completed'];
+        $createdReservations = $stats['reservations']['total_created'] ?? $stats['reservations']['total'];
+        $createdReclamations = $stats['reclamations']['total_created'] ?? $stats['reclamations']['total'];
         
         // When no reservations are completed, mark duration as unavailable
         if ($completedReservations == 0) {
@@ -371,14 +402,16 @@ class ReportGenerationService
             $durationDisplay = $stats['reservations']['avg_duration_days'] . " jours";
         }
         
+        $incidentCount = $stats['reclamations']['incidents_total_created'] ?? $stats['reclamations']['incidents_total'];
         $lines = [
             "Période: {$startDate->format('d/m/Y')} à {$endDate->format('d/m/Y')}",
-            "Réservations totales: {$stats['reservations']['total']}",
+            "Réservations créées: {$createdReservations}",
+            "Réservations prévues: {$stats['reservations']['total']}",
             "Réservations complétées: {$stats['reservations']['completed']}",
             "Durée moyenne: {$durationDisplay}",
             "Revenus totaux: {$stats['revenue']['total']} TND",
-            "Réclamations totales: {$stats['reclamations']['total']}",
-            "Incidents totaux: {$stats['reclamations']['incidents_total']}",
+            "Réclamations créées: {$createdReclamations}",
+            "Incidents créés: {$incidentCount}",
             "Taux de réclamations: {$stats['reclamations']['rate']}%",
             "Remboursements approuvés: {$stats['revenue']['refunded']} TND",
         ];
@@ -413,18 +446,23 @@ class ReportGenerationService
      * 3. No AI summary is required
      * 
      * Ensures 100% consistency with calculated metrics. No invented data.
+     * Now displays both created (activity) and scheduled (rental) metrics.
      */
     public function generateDeterministicSummary(array $stats, Carbon $startDate, Carbon $endDate): string
     {
         $formattedStart = $startDate->format('d/m/Y');
         $formattedEnd = $endDate->format('d/m/Y');
         
+        $createdReservations = $stats['reservations']['total_created'] ?? $stats['reservations']['total'];
         $totalReservations = $stats['reservations']['total'];
         $completedReservations = $stats['reservations']['completed'];
         $completionRate = $totalReservations > 0 ? round(($completedReservations / $totalReservations) * 100, 1) : 0;
         $avgDuration = $stats['reservations']['avg_duration_days'];
         $totalRevenue = $stats['revenue']['total'];
+        $createdReclamations = $stats['reclamations']['total_created'] ?? $stats['reclamations']['total'];
         $totalReclamations = $stats['reclamations']['total'];
+        $createdIncidents = $stats['reclamations']['incidents_total_created'] ?? $stats['reclamations']['incidents_total'];
+        $totalIncidents = $stats['reclamations']['incidents_total'];
         $reclamationRate = $stats['reclamations']['rate'];
         
         $summary = [];
@@ -433,9 +471,10 @@ class ReportGenerationService
         $summary[] = "Période analysée: {$formattedStart} à {$formattedEnd}";
         $summary[] = "";
         
-        // Reservation statistics
+        // Reservation statistics with created vs scheduled distinction
         $summary[] = "Résumé des réservations";
-        $summary[] = "- Total de réservations: {$totalReservations}";
+        $summary[] = "- Réservations créées (enregistrées): {$createdReservations}";
+        $summary[] = "- Réservations prévues (date_debut): {$totalReservations}";
         $summary[] = "- Statuts observés: " . $this->formatReservationStatusesWithLabels($stats['reservations']['by_status']);
         
         // Completion rate with proper handling of 0
@@ -459,10 +498,13 @@ class ReportGenerationService
         
         $summary[] = "";
         
-        // Reclamations
+        // Reclamations with created vs linked distinction
         $summary[] = "Réclamations et incidents";
-        $summary[] = "- Total: {$totalReclamations} réclamations ({$reclamationRate}% des réservations)";
+        $summary[] = "- Réclamations créées: {$createdReclamations}";
+        $summary[] = "- Réclamations (liées aux réservations): {$totalReclamations} ({$reclamationRate}%)";
         $summary[] = "- Par statut: " . $this->formatReclamationStatusesWithLabels($stats['reclamations']['by_status']);
+        $summary[] = "- Incidents créés: {$createdIncidents}";
+        $summary[] = "- Incidents (liés aux réservations): {$totalIncidents}";
         $summary[] = "- Types de problèmes: " . $this->formatIncidentTypesWithLabels($stats['reclamations']['by_type']);
         
         $summary[] = "";
