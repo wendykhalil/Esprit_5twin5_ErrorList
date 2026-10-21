@@ -62,7 +62,9 @@ class EquipmentFactory extends Factory
         $item = fake()->randomElement($items);
 
         return [
-            // user_id and category_id will be assigned by EquipmentSeeder
+            // Create required foreign key relations
+            'user_id' => \App\Models\User::factory(),
+            'category_id' => \App\Models\Category::factory(),
 
             'name' => $item['name'],
             'description' => fake()->randomElement([
