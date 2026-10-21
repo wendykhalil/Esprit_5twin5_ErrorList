@@ -15,12 +15,13 @@ class ReleveEnergie extends Model
     protected $fillable = [
         'reservation_id', 'puissance_watts', 'heures_utilisation',
         'kwh_estimes', 'co2_evite_kg', 'date_releve', 'observations',
+        'statut_verification', 'motif_suspicion',
     ];
 
     protected $casts = [
         'heures_utilisation' => 'decimal:2',
-        'kwh_estimes' => 'decimal:2',
-        'co2_evite_kg' => 'decimal:2',
+        'kwh_estimes' => 'decimal:4',
+        'co2_evite_kg' => 'decimal:4',
         'date_releve' => 'date',
     ];
 

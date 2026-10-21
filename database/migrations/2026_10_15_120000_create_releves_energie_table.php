@@ -12,10 +12,12 @@ return new class extends Migration {
             $table->foreignId('reservation_id')->constrained('reservations')->cascadeOnDelete()->unique();
             $table->unsignedInteger('puissance_watts')->nullable();
             $table->decimal('heures_utilisation', 6, 2);
-            $table->decimal('kwh_estimes', 8, 2);
-            $table->decimal('co2_evite_kg', 8, 2);
+            $table->decimal('kwh_estimes', 12, 4);
+            $table->decimal('co2_evite_kg', 12, 4);
             $table->date('date_releve');
             $table->text('observations')->nullable();
+            $table->enum('statut_verification', ['normal', 'suspect', 'valide', 'rejete'])->default('normal')->index();
+            $table->text('motif_suspicion')->nullable();
             $table->timestamps();
         });
     }

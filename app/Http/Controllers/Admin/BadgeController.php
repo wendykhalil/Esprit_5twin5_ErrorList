@@ -91,11 +91,12 @@ class BadgeController extends Controller
             'description' => ['required', 'string', 'max:2000'],
             'image' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,svg', 'max:2048'],
             'critere' => ['required', 'in:kwh_total,co2_total,reservations_terminees,retours_sans_dommage,releves_declares'],
-            'seuil' => ['required', 'integer', 'min:0'],
+            'seuil' => ['required', 'numeric', 'min:0'],
             'niveau' => ['required', 'in:bronze,argent,or'],
-            'actif' => ['sometimes', 'boolean'],
+            'actif' => ['nullable', 'boolean'],
         ]);
         unset($data['image']);
+        $data['actif'] = $request->boolean('actif');
 
         return $data;
     }

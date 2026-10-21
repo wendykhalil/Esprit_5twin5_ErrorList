@@ -8,6 +8,8 @@ use App\Models\Reservation;
 use App\Services\ImpactEcologiqueService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Services\DetectionAnomalieService;
+use App\Services\BadgeAttributionService;
 
 class ReleveEnergieController extends Controller
 {
@@ -18,6 +20,9 @@ class ReleveEnergieController extends Controller
             $search = $request->string('search');
             $query->whereHas('reservation.user', fn ($q) => $q->where('name', 'like', '%'.$search.'%'))
                 ->orWhereHas('reservation.equipment', fn ($q) => $q->where('name', 'like', '%'.$search.'%'));
+        }
+        if ($request->input('statut') === 'suspect') {
+            $query->where('statut_verification', 'suspect');
         }
         return view('backend.impact.index', [
             'releves' => $query->latest('date_releve')->paginate(15)->withQueryString(),
@@ -32,7 +37,7 @@ class ReleveEnergieController extends Controller
         return view('backend.impact.create', compact('reservations'));
     }
 
-    public function store(Request $request, ImpactEcologiqueService $service)
+    public function store(Request $request, ImpactEcologiqueService $service, DetectionAnomalieService $detector)
     {
         $data = $this->validated($request);
         $reservation = Reservation::with('equipment')->findOrFail($data['reservation_id']);
@@ -49,6 +54,7 @@ class ReleveEnergieController extends Controller
             ]);
             return $releve;
         });
+        $detector->analyser($releve);
         return redirect()->route('admin.impact.show', $releve)->with('success', 'Relevé créé avec succès.');
     }
 
@@ -62,7 +68,7 @@ class ReleveEnergieController extends Controller
         return view('backend.impact.edit', ['releve' => $releveEnergie->load(['reservation.equipment', 'reservation.user'])]);
     }
 
-    public function update(Request $request, ReleveEnergie $releveEnergie, ImpactEcologiqueService $service)
+    public function update(Request $request, ReleveEnergie $releveEnergie, ImpactEcologiqueService $service, DetectionAnomalieService $detector)
     {
         $data = $this->validated($request);
         abort_unless((int) $data['reservation_id'] === $releveEnergie->reservation_id, 422);
@@ -77,7 +83,19 @@ class ReleveEnergieController extends Controller
             'date_releve' => $data['date_releve'],
             'observations' => $data['observations'] ?? null,
         ]);
+        $detector->analyser($releveEnergie);
         return redirect()->route('admin.impact.show', $releveEnergie)->with('success', 'Relevé modifié avec succès.');
+    }
+
+    public function verify(Request $request, ReleveEnergie $releveEnergie, BadgeAttributionService $badges)
+    {
+        $data = $request->validate(['decision' => ['required', 'in:valide,rejete'], 'motif' => ['nullable', 'string', 'max:2000']]);
+        $releveEnergie->load('reservation');
+        $releveEnergie->update(['statut_verification' => $data['decision'], 'motif_suspicion' => $data['motif'] ?? $releveEnergie->motif_suspicion]);
+        if ($data['decision'] === 'valide' && $releveEnergie->reservation?->user) {
+            $badges->evaluer($releveEnergie->reservation->user, $releveEnergie->reservation);
+        }
+        return back()->with('success', $data['decision'] === 'valide' ? 'Relevé validé.' : 'Relevé rejeté.');
     }
 
     public function destroy(ReleveEnergie $releveEnergie, ImpactEcologiqueService $service)

@@ -385,6 +385,10 @@
                         <span class="text-sm text-slate-500">/ jour</span>
 
                         <p class="text-xs text-slate-500 mt-1">Réservez votre équipement en quelques étapes.</p>
+                        <div class="mt-4 rounded-xl bg-green-50 p-3 text-sm text-green-900">
+                            <strong>Estimation indicative (8 h)</strong><br>
+                            {{ number_format($estimation['kwh_estimes'], 2) }} kWh attendus · {{ number_format($estimation['co2_evite_kg'], 2) }} kg CO2 évités
+                        </div>
 
                     </div>
 

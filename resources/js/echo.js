@@ -16,19 +16,26 @@ window.Pusher = Pusher;
  * - Auth: via /broadcasting/auth endpoint
  */
 
-window.Echo = new Echo({
-    broadcaster: 'reverb',
-    key: import.meta.env.VITE_REVERB_APP_KEY,
-    wsHost: import.meta.env.VITE_REVERB_HOST,
-    wsPort: import.meta.env.VITE_REVERB_PORT,
-    wssPort: import.meta.env.VITE_REVERB_PORT,
-    forceTLS: false,
-    enabledTransports: ['ws', 'wss'],
-    auth: {
-        headers: {
-            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content,
-        },
-    },
-});
+// Sans clé Reverb, new Echo() lève une exception qui stoppait tout le bundle (Alpine, graphiques, conseiller).
+if (import.meta.env.VITE_REVERB_APP_KEY) {
+    try {
+        window.Echo = new Echo({
+            broadcaster: 'reverb',
+            key: import.meta.env.VITE_REVERB_APP_KEY,
+            wsHost: import.meta.env.VITE_REVERB_HOST,
+            wsPort: import.meta.env.VITE_REVERB_PORT,
+            wssPort: import.meta.env.VITE_REVERB_PORT,
+            forceTLS: false,
+            enabledTransports: ['ws', 'wss'],
+            auth: {
+                headers: {
+                    'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content,
+                },
+            },
+    });
+    } catch (error) {
+        console.warn('Echo indisponible, temps réel désactivé.', error);
+    }
+}
 
 export default window.Echo;

@@ -34,14 +34,14 @@ class BadgeAttributionService
     private function valuesFor(User $user): array
     {
         return [
-            'kwh_total' => (float) $user->relevesEnergie()->sum('kwh_estimes'),
-            'co2_total' => (float) $user->relevesEnergie()->sum('co2_evite_kg'),
+            'kwh_total' => (float) $user->relevesEnergie()->whereIn('statut_verification', ['normal', 'valide'])->sum('kwh_estimes'),
+            'co2_total' => (float) $user->relevesEnergie()->whereIn('statut_verification', ['normal', 'valide'])->sum('co2_evite_kg'),
             'reservations_terminees' => (int) $user->reservations()->where('statut', 'terminee')->count(),
             'retours_sans_dommage' => (int) $user->inspections()
                 ->where('type', 'retour')
                 ->where('etat', '!=', 'endommage')
                 ->count(),
-            'releves_declares' => (int) $user->relevesEnergie()->count(),
+            'releves_declares' => (int) $user->relevesEnergie()->whereIn('statut_verification', ['normal', 'valide'])->count(),
         ];
     }
 }

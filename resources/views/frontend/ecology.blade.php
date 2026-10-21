@@ -4,6 +4,8 @@
 
 @section('content')
     @php
+        $formatEnergy = fn ($value) => \App\Support\ImpactFormatter::energy($value);
+        $formatCo2 = fn ($value) => \App\Support\ImpactFormatter::co2($value);
         $formatStat = fn ($value) => number_format($value, 0, ',', ' ');
         $imageUrl = fn ($badge) => $badge->image
             ? (str_starts_with($badge->image, 'images/') ? asset($badge->image) : Storage::url($badge->image))
@@ -57,14 +59,14 @@
             </div>
             <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
                 @foreach([
-                    ['key' => 'kwh', 'label' => 'kWh produits', 'suffix' => ' kWh', 'icon' => '☀️'],
-                    ['key' => 'co2', 'label' => 'kg de CO2 évités', 'suffix' => ' kg', 'icon' => '🌿'],
+                    ['key' => 'kwh', 'label' => 'énergie produite', 'suffix' => '', 'icon' => '☀️'],
+                    ['key' => 'co2', 'label' => 'CO2 évité', 'suffix' => '', 'icon' => '🌿'],
                     ['key' => 'reservations', 'label' => 'locations terminées', 'suffix' => '', 'icon' => '🤝'],
                     ['key' => 'badges', 'label' => 'badges décernés', 'suffix' => '', 'icon' => '🏅'],
                 ] as $stat)
                     <div x-data="{ value: 0, target: {{ $stats[$stat['key']] }} }" x-init="setTimeout(() => { const step = Math.max(1, target / 35); const timer = setInterval(() => { value = Math.min(target, value + step); if (value >= target) clearInterval(timer) }, 25) }, 150)" class="rounded-3xl border border-green-100 bg-white p-6 shadow-sm">
                         <div class="flex items-center justify-between"><span class="text-3xl">{{ $stat['icon'] }}</span><span class="text-xs font-semibold uppercase tracking-wider text-green-500">SolarShare</span></div>
-                        <p class="mt-7 text-3xl font-bold text-green-950"><span x-text="Math.round(value).toLocaleString('fr-FR')">0</span>{{ $stat['suffix'] }}</p>
+                        <p class="mt-7 text-3xl font-bold text-green-950">{{ $stat['key'] === 'kwh' ? $formatEnergy($stats[$stat['key']]) : ($stat['key'] === 'co2' ? $formatCo2($stats[$stat['key']]) : number_format($stats[$stat['key']], 0, ',', ' ')) }}</p>
                         <p class="mt-2 text-sm text-slate-500">{{ $stat['label'] }}</p>
                     </div>
                 @endforeach

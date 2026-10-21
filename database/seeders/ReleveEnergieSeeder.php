@@ -24,7 +24,7 @@ class ReleveEnergieSeeder extends Seeder
                 }
 
                 $maxHours = max(1, $reservation->date_debut->diffInDays($reservation->date_fin) * 24);
-                $hours = min(8, $maxHours);
+                $hours = min(1 + (($reservation->id % 4) * 0.5), $maxHours);
                 $calculated = $service->calculate($power, $hours);
 
                 ReleveEnergie::create([

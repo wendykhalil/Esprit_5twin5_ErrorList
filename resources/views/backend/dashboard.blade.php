@@ -88,6 +88,7 @@
                     <span><strong>{{ number_format($impactKwh, 2) }}</strong> kWh</span>
                     <span><strong>{{ number_format($impactCo2, 2) }}</strong> kg CO2 évités</span>
                     <span><strong>{{ $impactBadges }}</strong> badges</span>
+                    <a class="font-semibold text-red-700" href="{{ route('admin.impact.index', ['statut' => 'suspect']) }}">{{ $suspectReleves }} relevé(s) suspect(s)</a>
                 </div>
             </div>
             <div class="text-sm text-green-900">

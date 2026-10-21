@@ -20,7 +20,7 @@ return new class extends Migration {
                 'retours_sans_dommage',
                 'releves_declares',
             ]);
-            $table->unsignedInteger('seuil');
+            $table->decimal('seuil', 10, 2);
             $table->enum('niveau', ['bronze', 'argent', 'or']);
             $table->boolean('actif')->default(true);
             $table->timestamps();

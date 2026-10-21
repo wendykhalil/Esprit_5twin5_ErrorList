@@ -48,6 +48,7 @@
             @include('components.frontend.footer')
         @endunless
     </main>
+    @include('components.energy-advisor')
 
     <script>
         document.body.classList.remove('overflow-y-hidden');

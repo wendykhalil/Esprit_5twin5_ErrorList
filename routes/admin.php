@@ -150,6 +150,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
 
     Route::resource('payments', PaymentController::class);
     Route::resource('impact', ReleveEnergieController::class)->parameters(['impact' => 'releveEnergie']);
+    Route::patch('/impact/{releveEnergie}/verification', [ReleveEnergieController::class, 'verify'])
+        ->whereNumber('releveEnergie')->name('impact.verify');
     Route::resource('badges', BadgeController::class);
     Route::post('/badges/{badge}/assign', [BadgeController::class, 'assign'])->name('badges.assign');
     Route::delete('/badges/{badge}/users/{user}', [BadgeController::class, 'revoke'])->name('badges.revoke');

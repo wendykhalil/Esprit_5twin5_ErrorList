@@ -27,10 +27,11 @@ class DashboardController extends Controller
         // Transaction Statistics
         $totalTransactions = Transaction::count();
         $completedTransactions = Transaction::where('status', 'completed')->count();
-        $impactKwh = ReleveEnergie::sum('kwh_estimes');
-        $impactCo2 = ReleveEnergie::sum('co2_evite_kg');
+        $impactKwh = ReleveEnergie::whereIn('statut_verification', ['normal', 'valide'])->sum('kwh_estimes');
+        $impactCo2 = ReleveEnergie::whereIn('statut_verification', ['normal', 'valide'])->sum('co2_evite_kg');
+        $suspectReleves = ReleveEnergie::where('statut_verification', 'suspect')->count();
         $impactBadges = DB::table('badge_user')->count();
-        $topImpactUsers = User::withSum('relevesEnergie', 'kwh_estimes')
+        $topImpactUsers = User::withSum(['relevesEnergie' => fn ($query) => $query->whereIn('statut_verification', ['normal', 'valide'])], 'kwh_estimes')
             ->orderByDesc('releves_energie_sum_kwh_estimes')->limit(3)->get();
 
         return view('backend.dashboard', [
@@ -45,6 +46,7 @@ class DashboardController extends Controller
             'impactKwh' => $impactKwh,
             'impactCo2' => $impactCo2,
             'impactBadges' => $impactBadges,
+            'suspectReleves' => $suspectReleves,
             'topImpactUsers' => $topImpactUsers,
         ]);
     }

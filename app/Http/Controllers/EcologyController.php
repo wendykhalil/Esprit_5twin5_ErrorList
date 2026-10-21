@@ -14,8 +14,8 @@ class EcologyController extends Controller
     {
         return view('frontend.ecology', [
             'stats' => [
-                'kwh' => (float) ReleveEnergie::sum('kwh_estimes'),
-                'co2' => (float) ReleveEnergie::sum('co2_evite_kg'),
+                'kwh' => (float) ReleveEnergie::whereIn('statut_verification', ['normal', 'valide'])->sum('kwh_estimes'),
+                'co2' => (float) ReleveEnergie::whereIn('statut_verification', ['normal', 'valide'])->sum('co2_evite_kg'),
                 'reservations' => Reservation::where('statut', 'terminee')->count(),
                 'badges' => DB::table('badge_user')->count(),
             ],

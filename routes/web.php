@@ -11,6 +11,7 @@ use App\Http\Controllers\ServiceProviderController;
 use App\Http\Controllers\ServiceRequestController;
 use App\Http\Controllers\ReleveEnergieController;
 use App\Http\Controllers\EcologyController;
+use App\Http\Controllers\ConseillerEnergieController;
 use App\Models\Category;
 use Illuminate\Support\Facades\Route;
 
@@ -118,6 +119,9 @@ Route::middleware('auth')->group(function () {
     Route::resource('impact', ReleveEnergieController::class)
         ->parameters(['impact' => 'releveEnergie'])
         ->names('impact');
+    Route::get('/conseiller-energie', [ConseillerEnergieController::class, 'index'])->name('energy-advisor');
+    Route::post('/conseiller-energie/recommandations', [ConseillerEnergieController::class, 'recommend'])->name('energy-advisor.recommend');
+    Route::post('/impact/bilan-ia', [ConseillerEnergieController::class, 'bilan'])->name('impact.ai-summary');
 });
 
 

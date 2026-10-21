@@ -6,9 +6,10 @@ use App\Http\Requests\ReleveEnergieRequest;
 use App\Models\ReleveEnergie;
 use App\Models\Reservation;
 use App\Services\ImpactEcologiqueService;
+use App\Services\DetectionAnomalieService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\DB;
 
 class ReleveEnergieController extends Controller
 {
@@ -19,11 +20,50 @@ class ReleveEnergieController extends Controller
             ->latest('date_releve')->paginate(10);
         $user = auth()->user();
 
+        // Requête directe (pas via hasManyThrough) : la colonne laravel_through_key casserait le GROUP BY en MySQL strict.
+        $valid = ReleveEnergie::whereHas('reservation', fn ($query) => $query->where('user_id', $user->id))
+            ->whereIn('statut_verification', ['normal', 'valide']);
+        $monthly = (clone $valid)->selectRaw("DATE_FORMAT(date_releve, '%Y-%m') as period, SUM(kwh_estimes) as total")
+            ->groupBy('period')->orderBy('period')->get();
+        $months = collect(range(5, 0))->map(fn (int $offset) => now()->subMonths($offset)->format('Y-m'));
+        $monthlyByPeriod = $monthly->keyBy('period');
+        $monthly = $months->map(fn (string $period) => (object) [
+            'period' => $period,
+            'total' => (float) ($monthlyByPeriod->get($period)->total ?? 0),
+        ]);
+        $cumulative = [];
+        $running = 0.0;
+        foreach ($monthly as $row) {
+            $running += (float) $row->total;
+            $cumulative[] = ['period' => $row->period, 'total' => $running];
+        }
+        $byCategory = (clone $valid)->join('reservations', 'releves_energie.reservation_id', '=', 'reservations.id')
+            ->join('equipment', 'reservations.equipment_id', '=', 'equipment.id')
+            ->leftJoin('categories', 'equipment.category_id', '=', 'categories.id')
+            ->selectRaw("COALESCE(categories.name, 'Sans catégorie') as category, SUM(releves_energie.kwh_estimes) as total")
+            ->groupBy('category')->get();
+        $badges = $user->badges()->latest()->get();
+        $impactValues = [
+            'kwh_total' => (float) (clone $valid)->sum('kwh_estimes'),
+            'co2_total' => (float) (clone $valid)->sum('co2_evite_kg'),
+            'reservations_terminees' => (int) $user->reservations()->where('statut', 'terminee')->count(),
+            'retours_sans_dommage' => (int) $user->inspections()->where('type', 'retour')->where('etat', '!=', 'endommage')->count(),
+            'releves_declares' => (int) (clone $valid)->count(),
+        ];
         return view('impact.index', [
             'releves' => $releves,
-            'totalKwh' => $user->relevesEnergie()->sum('kwh_estimes'),
-            'totalCo2' => $user->relevesEnergie()->sum('co2_evite_kg'),
-            'badges' => $user->badges()->latest()->get(),
+            'totalKwh' => $user->relevesEnergie()->whereIn('statut_verification', ['normal', 'valide'])->sum('kwh_estimes'),
+            'totalCo2' => $user->relevesEnergie()->whereIn('statut_verification', ['normal', 'valide'])->sum('co2_evite_kg'),
+            'badges' => $badges,
+            'monthlyData' => $monthly,
+            'cumulativeData' => $cumulative,
+            'categoryData' => $byCategory,
+            'badgeCatalogue' => \App\Models\Badge::where('actif', true)->orderBy('seuil')->get(),
+            'impactFormatter' => \App\Support\ImpactFormatter::class,
+            'currentKwh' => (float) (clone $valid)->sum('kwh_estimes'),
+            'currentCo2' => (float) (clone $valid)->sum('co2_evite_kg'),
+            'impactValues' => $impactValues,
+            'co2Thresholds' => \App\Models\Badge::where('actif', true)->where('critere', 'co2_total')->orderBy('seuil')->pluck('seuil'),
         ]);
     }
 
@@ -38,7 +78,7 @@ class ReleveEnergieController extends Controller
         return view('impact.create', compact('reservations'));
     }
 
-    public function store(ReleveEnergieRequest $request, ImpactEcologiqueService $service): RedirectResponse
+    public function store(ReleveEnergieRequest $request, ImpactEcologiqueService $service, DetectionAnomalieService $detector): RedirectResponse
     {
         $data = $request->validated();
         $reservation = Reservation::with('equipment')
@@ -60,6 +100,7 @@ class ReleveEnergieController extends Controller
             ]);
             return $releve;
         });
+        $detector->analyser($releve);
 
         return redirect()->route('impact.show', $releve)->with('success', 'Relevé d’impact créé avec succès.');
     }
@@ -78,7 +119,7 @@ class ReleveEnergieController extends Controller
         return view('impact.edit', ['releve' => $releveEnergie]);
     }
 
-    public function update(ReleveEnergieRequest $request, ReleveEnergie $releveEnergie, ImpactEcologiqueService $service): RedirectResponse
+    public function update(ReleveEnergieRequest $request, ReleveEnergie $releveEnergie, ImpactEcologiqueService $service, DetectionAnomalieService $detector): RedirectResponse
     {
         $this->authorizeOwner($releveEnergie);
         $data = $request->validated();
@@ -94,6 +135,7 @@ class ReleveEnergieController extends Controller
             'date_releve' => $data['date_releve'],
             'observations' => $data['observations'] ?? null,
         ]);
+        $detector->analyser($releveEnergie);
         return redirect()->route('impact.show', $releveEnergie)->with('success', 'Relevé modifié avec succès.');
     }
 

@@ -30,7 +30,7 @@
         </div>
         <div>
             <label class="block text-sm font-semibold">Seuil</label>
-            <input name="seuil" type="number" min="0" value="{{ old('seuil', $badge->seuil ?? '') }}" required class="mt-2 w-full rounded-lg border-slate-200">
+            <input name="seuil" type="number" min="0" step="0.01" value="{{ old('seuil', $badge->seuil ?? '') }}" required class="mt-2 w-full rounded-lg border-slate-200">
         </div>
         <div>
             <label class="block text-sm font-semibold">Niveau</label>
