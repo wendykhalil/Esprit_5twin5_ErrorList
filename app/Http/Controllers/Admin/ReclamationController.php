@@ -11,8 +11,8 @@ use App\Models\Reclamation;
 use App\Models\Incident;
 use App\Models\Transaction;
 use App\Models\CompensationCode;
-use App\Services\ImmediateTransaction;
 use App\Services\ApplyCompensationCodeService;
+use App\Services\ApproveReclamationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -89,20 +89,27 @@ class ReclamationController extends Controller
         $this->authorize('approve', $reclamation);
 
         $validated = $request->validated();
-        $service = new ApplyCompensationCodeService();
 
         try {
-            $compensationCode = $service->apply(
-                reclamation: $reclamation,
-                validated: $validated,
-                createdBy: Auth::id()
-            );
+            if ($request->filled('type')) {
+                $compensationCode = (new ApplyCompensationCodeService())->apply(
+                    reclamation: $reclamation,
+                    validated: $validated,
+                    createdBy: Auth::id()
+                );
 
-            // Dispatch event after successful approval
-            ReclamationApproved::dispatch($reclamation->refresh());
+                ReclamationApproved::dispatch($reclamation->refresh());
+
+                return redirect()->route('admin.reclamations.show', $reclamation->id)
+                    ->with('success', 'Réclamation approuvée. Code de compensation attribué : ' . $compensationCode->code);
+            }
+
+            $approved = (new ApproveReclamationService())->approve($reclamation, $validated);
+
+            ReclamationApproved::dispatch($approved);
 
             return redirect()->route('admin.reclamations.show', $reclamation->id)
-                ->with('success', 'Réclamation approuvée. Code de compensation attribué : ' . $compensationCode->code);
+                ->with('success', 'Réclamation approuvée. Remboursement enregistré.');
         } catch (\Exception $e) {
             return redirect()->back()
                 ->withInput()

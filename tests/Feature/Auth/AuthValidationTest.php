@@ -15,7 +15,7 @@ class AuthValidationTest extends TestCase
         $this->from('/login')
             ->post('/login', [])
             ->assertRedirect('/login')
-            ->assertSessionHasErrors(['email', 'password']);
+            ->assertSessionHasErrors(['login', 'password']);
 
         $this->assertGuest();
     }
@@ -23,11 +23,11 @@ class AuthValidationTest extends TestCase
     public function test_login_rejects_invalid_email_and_non_string_values_as_json(): void
     {
         $this->postJson('/login', [
-            'email' => 'not-an-email',
+            'login' => ['not-a-string'],
             'password' => ['secret'],
         ])
             ->assertUnprocessable()
-            ->assertJsonValidationErrors(['email', 'password']);
+            ->assertJsonValidationErrors(['login', 'password']);
 
         $this->assertGuest();
     }
@@ -35,11 +35,11 @@ class AuthValidationTest extends TestCase
     public function test_login_rejects_an_email_that_is_too_long(): void
     {
         $this->postJson('/login', [
-            'email' => str_repeat('a', 244).'@example.com',
+            'login' => str_repeat('a', 256),
             'password' => 'password',
         ])
             ->assertUnprocessable()
-            ->assertJsonValidationErrors(['email']);
+            ->assertJsonValidationErrors(['login']);
     }
 
     public function test_login_rejects_a_password_longer_than_the_hash_limit(): void
@@ -47,7 +47,7 @@ class AuthValidationTest extends TestCase
         $user = User::factory()->create();
 
         $this->postJson('/login', [
-            'email' => $user->email,
+            'login' => $user->email,
             'password' => str_repeat('a', 73),
         ])
             ->assertUnprocessable()
@@ -63,7 +63,7 @@ class AuthValidationTest extends TestCase
         ]);
 
         $this->post('/login', [
-            'email' => '  Person@Example.com  ',
+            'login' => '  Person@Example.com  ',
             'password' => 'password',
         ])->assertRedirect(route('home', absolute: false));
 
@@ -75,20 +75,20 @@ class AuthValidationTest extends TestCase
         $user = User::factory()->create();
 
         $unknown = $this->postJson('/login', [
-            'email' => 'missing@example.com',
+            'login' => 'missing@example.com',
             'password' => 'password',
         ]);
 
         $wrong = $this->postJson('/login', [
-            'email' => $user->email,
+            'login' => $user->email,
             'password' => 'wrong-password',
         ]);
 
         $unknown->assertUnprocessable();
         $wrong->assertUnprocessable();
         $this->assertSame(
-            $unknown->json('errors.email.0'),
-            $wrong->json('errors.email.0')
+            $unknown->json('errors.login.0'),
+            $wrong->json('errors.login.0')
         );
         $this->assertGuest();
     }
@@ -99,21 +99,21 @@ class AuthValidationTest extends TestCase
 
         for ($attempt = 0; $attempt < 5; $attempt++) {
             $this->post('/login', [
-                'email' => $user->email,
+                'login' => $user->email,
                 'password' => 'wrong-password',
-            ])->assertSessionHasErrors('email');
+            ])->assertSessionHasErrors('login');
         }
 
         $response = $this->from('/login')
             ->post('/login', [
-                'email' => $user->email,
+                'login' => $user->email,
                 'password' => 'wrong-password',
             ]);
 
-        $response->assertRedirect('/login')->assertSessionHasErrors('email');
+        $response->assertRedirect('/login')->assertSessionHasErrors('login');
         $this->assertStringContainsString(
             'Trop de tentatives',
-            session('errors')->get('email')[0]
+            session('errors')->get('login')[0]
         );
 
         $this->assertGuest();
@@ -124,7 +124,7 @@ class AuthValidationTest extends TestCase
         $user = User::factory()->create();
 
         $this->postJson('/login', [
-            'email' => $user->email,
+            'login' => $user->email,
             'password' => 'password',
             'role' => 'admin',
         ])
@@ -138,10 +138,12 @@ class AuthValidationTest extends TestCase
     {
         $this->postJson('/register', [])
             ->assertUnprocessable()
-            ->assertJsonValidationErrors(['name', 'email', 'password', 'password_confirmation']);
+            ->assertJsonValidationErrors(['name', 'username', 'phone', 'email', 'password', 'password_confirmation']);
 
         $this->postJson('/register', [
             'name' => 'Ada Lovelace',
+            'username' => 'ada_lovelace',
+            'phone' => '+21620000000',
             'email' => 'ada@example.com',
             'password' => 'short',
             'password_confirmation' => 'short',
@@ -151,6 +153,8 @@ class AuthValidationTest extends TestCase
 
         $this->postJson('/register', [
             'name' => 'Ada Lovelace',
+            'username' => 'ada_lovelace',
+            'phone' => '+21620000000',
             'email' => 'ada@example.com',
             'password' => 'password',
             'password_confirmation' => 'different',
@@ -165,6 +169,8 @@ class AuthValidationTest extends TestCase
     {
         $this->postJson('/register', [
             'name' => 'Ada Lovelace',
+            'username' => 'ada_lovelace',
+            'phone' => '+21620000000',
             'email' => 'ada@example.com',
             'password' => str_repeat('a', 73),
             'password_confirmation' => str_repeat('a', 73),
@@ -205,6 +211,7 @@ class AuthValidationTest extends TestCase
         $this->from('/register')
             ->post('/register', [
                 'name' => 'Ada Lovelace',
+                'username' => 'ada_lovelace',
                 'email' => 'ada@example.com',
                 'password' => 'password',
                 'password_confirmation' => 'password',
@@ -212,7 +219,7 @@ class AuthValidationTest extends TestCase
                 'phone' => '0600000000',
             ])
             ->assertRedirect('/register')
-            ->assertSessionHasErrors(['role', 'form']);
+            ->assertSessionHasErrors(['role']);
 
         $this->assertDatabaseCount('users', 0);
     }

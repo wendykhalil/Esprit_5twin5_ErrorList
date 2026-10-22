@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Services\OllamaService;
+use App\Services\OllamaSettings;
 use App\Services\ReportGenerationService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -263,14 +264,16 @@ PROMPT;
     private function callOllamaDirectly(string $prompt): ?string
     {
         try {
-            $response = \Illuminate\Support\Facades\Http::timeout(config('ollama.timeout', 60))
+            app(\App\Services\OllamaAvailability::class)->ensureBeforeCall(
+                OllamaSettings::baseUrl(),
+                OllamaSettings::model()
+            );
+            $response = \Illuminate\Support\Facades\Http::timeout(OllamaSettings::timeout())
                 ->post(
-                    config('ollama.base_url') . '/api/generate',
-                    [
-                        'model' => config('ollama.model'),
+                    OllamaSettings::baseUrl() . '/api/generate',
+                    array_merge(OllamaSettings::requestFields(), [
                         'prompt' => $prompt,
-                        'stream' => false,
-                    ]
+                    ])
                 );
 
             if (!$response->successful()) {

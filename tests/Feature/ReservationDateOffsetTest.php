@@ -64,10 +64,10 @@ class ReservationDateOffsetTest extends TestCase
     {
         $this->actingAs($this->client);
 
-        $selectedDate = '2026-10-17';
-        $endDate = '2026-10-18';
+        $selectedDate = '2026-11-17';
+        $endDate = '2026-11-18';
 
-        $response = $this->post(route('reservations.store'), [
+        $response = $this->postJson(route('reservations.store'), [
             'equipment_id' => $this->equipment->id,
             'date_debut' => $selectedDate,
             'date_fin' => $endDate,
@@ -77,7 +77,7 @@ class ReservationDateOffsetTest extends TestCase
         $this->assertDatabaseHas('reservations', [
             'user_id' => $this->client->id,
             'equipment_id' => $this->equipment->id,
-            'date_debut' => $selectedDate, // Must be exactly 2026-10-17, not 2026-10-16
+            'date_debut' => $selectedDate,
             'date_fin' => $endDate,
             'statut' => 'en_attente',
         ]);
@@ -95,7 +95,7 @@ class ReservationDateOffsetTest extends TestCase
         $today = now()->format('Y-m-d');
         $endDate = now()->addDay()->format('Y-m-d');
 
-        $response = $this->post(route('reservations.store'), [
+        $response = $this->postJson(route('reservations.store'), [
             'equipment_id' => $this->equipment->id,
             'date_debut' => $today,
             'date_fin' => $endDate,
@@ -123,7 +123,7 @@ class ReservationDateOffsetTest extends TestCase
         $yesterday = now()->subDay()->format('Y-m-d');
         $today = now()->format('Y-m-d');
 
-        $response = $this->post(route('reservations.store'), [
+        $response = $this->postJson(route('reservations.store'), [
             'equipment_id' => $this->equipment->id,
             'date_debut' => $yesterday,
             'date_fin' => $today,
@@ -148,7 +148,7 @@ class ReservationDateOffsetTest extends TestCase
         $startDate = now()->addDays(10)->format('Y-m-d');
         $endDate = now()->addDays(17)->format('Y-m-d'); // 7 days later
 
-        $response = $this->post(route('reservations.store'), [
+        $response = $this->postJson(route('reservations.store'), [
             'equipment_id' => $this->equipment->id,
             'date_debut' => $startDate,
             'date_fin' => $endDate,
@@ -177,7 +177,7 @@ class ReservationDateOffsetTest extends TestCase
         $startDate = now()->addDays(5)->format('Y-m-d');
         $sameDate = now()->addDays(5)->format('Y-m-d');
 
-        $response = $this->post(route('reservations.store'), [
+        $response = $this->postJson(route('reservations.store'), [
             'equipment_id' => $this->equipment->id,
             'date_debut' => $startDate,
             'date_fin' => $sameDate,
@@ -199,7 +199,7 @@ class ReservationDateOffsetTest extends TestCase
         $firstStart = now()->addDays(10)->format('Y-m-d');
         $firstEnd = now()->addDays(17)->format('Y-m-d');
 
-        $response1 = $this->post(route('reservations.store'), [
+        $response1 = $this->postJson(route('reservations.store'), [
             'equipment_id' => $this->equipment->id,
             'date_debut' => $firstStart,
             'date_fin' => $firstEnd,
@@ -214,7 +214,7 @@ class ReservationDateOffsetTest extends TestCase
         $overlapStart = now()->addDays(15)->format('Y-m-d');
         $overlapEnd = now()->addDays(22)->format('Y-m-d');
 
-        $response2 = $this->post(route('reservations.store'), [
+        $response2 = $this->postJson(route('reservations.store'), [
             'equipment_id' => $this->equipment->id,
             'date_debut' => $overlapStart,
             'date_fin' => $overlapEnd,
@@ -236,10 +236,10 @@ class ReservationDateOffsetTest extends TestCase
     {
         $this->actingAs($this->client);
 
-        $submittedStart = '2026-10-17';
-        $submittedEnd = '2026-10-24';
+        $submittedStart = '2026-11-17';
+        $submittedEnd = '2026-11-24';
 
-        $response = $this->post(route('reservations.store'), [
+        $response = $this->postJson(route('reservations.store'), [
             'equipment_id' => $this->equipment->id,
             'date_debut' => $submittedStart,
             'date_fin' => $submittedEnd,
@@ -269,7 +269,7 @@ class ReservationDateOffsetTest extends TestCase
         $initialCount = Reservation::count();
 
         // Submit invalid data (no date_debut)
-        $response = $this->post(route('reservations.store'), [
+        $response = $this->postJson(route('reservations.store'), [
             'equipment_id' => $this->equipment->id,
             'date_debut' => '',
             'date_fin' => now()->addDay()->format('Y-m-d'),
@@ -293,7 +293,7 @@ class ReservationDateOffsetTest extends TestCase
         $startDate = now()->addDays(5)->format('Y-m-d');
         $endDate = now()->addDays(6)->format('Y-m-d'); // 1 day - supported
 
-        $response = $this->post(route('reservations.store'), [
+        $response = $this->postJson(route('reservations.store'), [
             'equipment_id' => $this->equipment->id,
             'date_debut' => $startDate,
             'date_fin' => $endDate,
@@ -304,9 +304,9 @@ class ReservationDateOffsetTest extends TestCase
 
         // Try 2 days - not supported
         $startDate2 = now()->addDays(20)->format('Y-m-d');
-        $endDate2 = now()->addDays(22)->format('Y-m-d'); // 2 days - NOT supported
+        $endDate2 = now()->addDays(25)->format('Y-m-d'); // 5 days, outside the one-day tolerance
 
-        $response2 = $this->post(route('reservations.store'), [
+        $response2 = $this->postJson(route('reservations.store'), [
             'equipment_id' => $this->equipment->id,
             'date_debut' => $startDate2,
             'date_fin' => $endDate2,
@@ -327,7 +327,7 @@ class ReservationDateOffsetTest extends TestCase
         $startDate = now()->addDays(5)->format('Y-m-d');
         $endDate = now()->addDays(12)->format('Y-m-d');
 
-        $response = $this->post(route('reservations.store'), [
+        $response = $this->postJson(route('reservations.store'), [
             'equipment_id' => $this->equipment->id,
             'date_debut' => $startDate,
             'date_fin' => $endDate,

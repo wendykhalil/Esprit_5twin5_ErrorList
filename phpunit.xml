@@ -21,18 +21,33 @@
         <env name="APP_ENV" value="testing"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
-        <env name="CACHE_STORE" value="array"/>
-        <env name="DB_CONNECTION" value="sqlite"/>
-        <env name="DB_DATABASE" value=":memory:"/>
-        <env name="MAIL_MAILER" value="array"/>
+        <env name="CACHE_STORE" value="array" force="true"/>
+        <env name="DB_CONNECTION" value="sqlite" force="true"/>
+        <env name="DB_DATABASE" value=":memory:" force="true"/>
+        <env name="MAIL_MAILER" value="array" force="true"/>
         <env name="PULSE_ENABLED" value="false"/>
-        <env name="QUEUE_CONNECTION" value="sync"/>
-        <env name="SESSION_DRIVER" value="array"/>
+        <env name="QUEUE_CONNECTION" value="sync" force="true"/>
+        <env name="SESSION_DRIVER" value="array" force="true"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
-        <env name="BROADCAST_DRIVER" value="reverb"/>
-        <env name="REVERB_PORT" value="8081"/>
-        <env name="VITE_REVERB_PORT" value="8081"/>
-        <env name="REVERB_SERVER_PORT" value="8081"/>
+        <env name="BROADCAST_CONNECTION" value="reverb" force="true"/>
+        <env name="BROADCAST_DRIVER" value="reverb" force="true"/>
+        <env name="REVERB_APP_ID" value="testing" force="true"/>
+        <env name="REVERB_APP_KEY" value="testing" force="true"/>
+        <env name="REVERB_APP_SECRET" value="testing" force="true"/>
+        <env name="REVERB_HOST" value="localhost" force="true"/>
+        <env name="REVERB_PORT" value="8081" force="true"/>
+        <env name="VITE_REVERB_PORT" value="8081" force="true"/>
+        <env name="REVERB_SERVER_PORT" value="8081" force="true"/>
         <env name="OLLAMA_ENABLED" value="false"/>
+        <env name="OLLAMA_MODEL" value="mistral:latest" force="true"/>
+        <env name="OLLAMA_BASE_URL" value="http://127.0.0.1:11434" force="true"/>
+        <env name="OLLAMA_URL" value="http://127.0.0.1:11434" force="true"/>
+        <env name="OLLAMA_TIMEOUT" value="180" force="true"/>
+        <env name="OLLAMA_KEEP_ALIVE" value="-1" force="true"/>
+        <env name="OLLAMA_NUM_CTX" value="1024" force="true"/>
+        <env name="OLLAMA_NUM_PREDICT" value="220" force="true"/>
     </php>
+    <logging>
+        <junit outputFile="build/junit.xml"/>
+    </logging>
 </phpunit>

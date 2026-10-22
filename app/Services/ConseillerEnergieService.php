@@ -10,11 +10,11 @@ class ConseillerEnergieService
 {
     public function estDisponible(): bool
     {
-        try {
-            return Http::timeout(2)->get(rtrim(config('solarshare.ollama.base_url'), '/').'/api/tags')->successful();
-        } catch (ConnectionException) {
-            return false;
-        }
+        return app(OllamaAvailability::class)->isReady(
+            OllamaSettings::baseUrl(),
+            OllamaSettings::model(),
+            2
+        );
     }
 
     public function recommander(string $besoin): array
@@ -24,13 +24,20 @@ class ConseillerEnergieService
             return ['recommandations' => [], 'message' => 'Aucun équipement disponible ne correspond à votre besoin.'];
         }
         $system = 'Réponds UNIQUEMENT avec un JSON valide en français, sans markdown, sous cette forme exacte : {"recommandations":[{"equipment_id":1,"justification":"Pour votre besoin, cet équipement est adapté.","kwh_estimes":2.5},{"equipment_id":2,"justification":"Une seconde option pertinente.","kwh_estimes":3.0}]}. Donne 1 à 3 recommandations. Les equipment_id doivent venir EXCLUSIVEMENT de la liste fournie. Ne fixe jamais de prix et ne remplace pas les calculs de l’application.';
+        if (! app()->runningUnitTests() && ! $this->estDisponible()) {
+            return ['recommandations' => [], 'message' => 'Le conseiller IA n’a pas pu produire une réponse fiable.'];
+        }
         $user = 'Besoin : '.mb_substr($besoin, 0, 500)."\nCatalogue disponible (maximum 15) : ".json_encode($catalogue, JSON_UNESCAPED_UNICODE);
-        $payload = ['model' => config('solarshare.ollama.model'), 'messages' => [
-            ['role' => 'system', 'content' => $system], ['role' => 'user', 'content' => $user],
-        ], 'stream' => false, 'format' => 'json', 'keep_alive' => '10m', 'options' => ['temperature' => 0.2]];
+        $payload = array_merge(OllamaSettings::requestFields(['temperature' => 0.2]), [
+            'messages' => [
+                ['role' => 'system', 'content' => $system],
+                ['role' => 'user', 'content' => $user],
+            ],
+            'format' => 'json',
+        ]);
         for ($attempt = 0; $attempt < 2; $attempt++) {
             try {
-                $response = Http::timeout(config('solarshare.ollama.timeout'))->post(rtrim(config('solarshare.ollama.base_url'), '/').'/api/chat', $payload)->throw()->json();
+                $response = Http::timeout(OllamaSettings::timeout())->post(OllamaSettings::baseUrl().'/api/chat', $payload)->throw()->json();
                 $decoded = json_decode((string) data_get($response, 'message.content'), true, 512, JSON_THROW_ON_ERROR);
                 $valid = $this->validateRecommendations($decoded, $catalogue);
                 if ($valid) {
@@ -48,15 +55,20 @@ class ConseillerEnergieService
     public function bilan(float $kwh, float $co2, int $badges): ?string
     {
         $system = 'Répondez uniquement en français, en vous adressant à la personne avec "Vous". Écrivez 2 à 3 phrases, sans emoji et sans markdown. Parlez uniquement d’énergie PRODUITE et de CO2 ÉVITÉ. N’utilisez jamais le mot "consommation". Utilisez uniquement les chiffres fournis, n’inventez rien et n’écrivez jamais à la première personne.';
+        if (! app()->runningUnitTests() && ! $this->estDisponible()) {
+            return $this->fallbackBilan($kwh, $co2, $badges);
+        }
         $prompt = 'Chiffres disponibles : '.json_encode(['energie_produite_kwh' => $kwh, 'co2_evite_kg' => $co2, 'badges' => $badges], JSON_UNESCAPED_UNICODE);
         try {
-            $response = Http::timeout(config('solarshare.ollama.timeout'))->post(rtrim(config('solarshare.ollama.base_url'), '/').'/api/chat', [
-                'model' => config('solarshare.ollama.model'), 'messages' => [
-                    ['role' => 'system', 'content' => $system],
-                    ['role' => 'user', 'content' => $prompt],
-                ],
-                'stream' => false, 'keep_alive' => '10m', 'options' => ['temperature' => 0.2],
-            ])->throw()->json();
+            $response = Http::timeout(OllamaSettings::timeout())->post(OllamaSettings::baseUrl().'/api/chat', array_merge(
+                OllamaSettings::requestFields(['temperature' => 0.2]),
+                [
+                    'messages' => [
+                        ['role' => 'system', 'content' => $system],
+                        ['role' => 'user', 'content' => $prompt],
+                    ],
+                ]
+            ))->throw()->json();
             $text = trim((string) data_get($response, 'message.content'));
             return $this->validBilan($text, $kwh, $co2, $badges) ? $text : $this->fallbackBilan($kwh, $co2, $badges);
         } catch (ConnectionException|\Illuminate\Http\Client\RequestException) {

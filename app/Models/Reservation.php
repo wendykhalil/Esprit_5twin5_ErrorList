@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -25,11 +27,25 @@ class Reservation extends Model
     ];
 
     protected $casts = [
-        'date_debut' => 'date',
-        'date_fin' => 'date',
         'base_price' => 'decimal:2',
         'discount_amount' => 'decimal:2',
     ];
+
+    protected function dateDebut(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => $value ? Carbon::parse($value)->startOfDay() : null,
+            set: fn ($value) => $value ? Carbon::parse($value)->toDateString() : null,
+        );
+    }
+
+    protected function dateFin(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => $value ? Carbon::parse($value)->startOfDay() : null,
+            set: fn ($value) => $value ? Carbon::parse($value)->toDateString() : null,
+        );
+    }
 
     public const STATUTS = ['en_attente', 'confirmee', 'en_cours', 'terminee', 'litige', 'annulee', 'refusee'];
 

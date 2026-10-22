@@ -4,10 +4,11 @@
 
 1. **Ollama Installation**: Ensure Ollama is installed and running on your system
    - Download from: https://ollama.ai
-   - After installation, pull the Qwen2.5 3B model:
+   - After installation, pull the current model:
      ```bash
-     ollama pull qwen2.5:3b
+     ollama pull mistral:latest
      ```
+   - An earlier draft of this checklist named `qwen2.5:3b`. That name is historical and is not used by the application.
 
 2. **Laravel Application**: Ensure the Laravel application is running
    ```bash
@@ -26,7 +27,7 @@
 ```bash
 curl http://127.0.0.1:11434/api/tags
 ```
-Expected response: JSON list of available models including `qwen2.5:3b`
+Expected response: JSON list of available models including `mistral:latest`
 
 ### Step 2: Access the Create Reclamation Form
 1. Go to http://127.0.0.1:8000/reclamations/create
@@ -113,7 +114,7 @@ All manual tests should pass, confirming:
 ## Troubleshooting
 
 ### Issue: Ollama model not found
-**Solution**: Pull the model with `ollama pull qwen2.5:3b`
+**Solution**: Pull the model with `ollama pull mistral:latest`
 
 ### Issue: Connection timeout to Ollama
 **Solution**: 

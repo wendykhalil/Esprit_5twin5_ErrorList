@@ -16,9 +16,13 @@ return [
         ],
         'default_city' => env('SOLARSHARE_DEFAULT_CITY', 'Tunis'),
     ],
+    // Mirror of config/ollama.php. Callers use that file through OllamaSettings.
     'ollama' => [
-        'base_url' => env('OLLAMA_BASE_URL', 'http://127.0.0.1:11434'),
-        'model' => env('OLLAMA_MODEL', 'llama3.2:3b'),
-        'timeout' => (int) env('OLLAMA_TIMEOUT', 20),
+        'base_url' => env('OLLAMA_BASE_URL', env('OLLAMA_URL', 'http://127.0.0.1:11434')),
+        'model' => env('OLLAMA_MODEL', 'mistral:latest'),
+        'timeout' => (int) env('OLLAMA_TIMEOUT', 180),
+        'keep_alive' => env('OLLAMA_KEEP_ALIVE', '-1'),
+        'num_ctx' => (int) env('OLLAMA_NUM_CTX', 1024),
+        'num_predict' => (int) env('OLLAMA_NUM_PREDICT', 220),
     ],
 ];

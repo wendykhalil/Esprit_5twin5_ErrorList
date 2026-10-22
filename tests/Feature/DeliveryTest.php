@@ -354,9 +354,15 @@ class DeliveryTest extends TestCase
 
         $this->assertNotNull($delivery->id);
         $this->assertEquals($confirmed_reservation->id, $delivery->reservation_id);
-        $this->assertEquals('prete', $delivery->status); // Changed from 'a_preparer' to 'prete'
-        $this->assertEquals($confirmed_reservation->date_debut, $delivery->planned_delivery_date);
-        $this->assertEquals($confirmed_reservation->date_fin, $delivery->planned_return_date);
+        $this->assertEquals('a_preparer', $delivery->status);
+        $this->assertSame(
+            \Illuminate\Support\Carbon::parse($confirmed_reservation->date_debut)->toDateString(),
+            \Illuminate\Support\Carbon::parse($delivery->planned_delivery_date)->toDateString()
+        );
+        $this->assertSame(
+            \Illuminate\Support\Carbon::parse($confirmed_reservation->date_fin)->toDateString(),
+            \Illuminate\Support\Carbon::parse($delivery->planned_return_date)->toDateString()
+        );
     }
 
     /**

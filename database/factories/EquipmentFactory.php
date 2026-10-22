@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Category;
 use App\Models\Equipment;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -62,9 +63,15 @@ class EquipmentFactory extends Factory
         $item = fake()->randomElement($items);
 
         return [
-            // Create required foreign key relations
+            // Create required foreign key relations.
+            // category_id stays a closure so an explicit id replaces it before any category is created.
             'user_id' => \App\Models\User::factory(),
-            'category_id' => \App\Models\Category::factory(),
+            'category_id' => function (array $attributes) {
+                return Category::query()->inRandomOrder()->value('id')
+                    ?? Category::query()->create([
+                        'name' => 'Catégorie '.fake()->unique()->numerify('####'),
+                    ])->id;
+            },
 
             'name' => $item['name'],
             'description' => fake()->randomElement([

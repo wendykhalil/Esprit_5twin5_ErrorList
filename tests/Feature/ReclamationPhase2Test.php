@@ -116,15 +116,15 @@ class ReclamationPhase2Test extends TestCase
     public function test_incident_refund_calculations(): void
     {
         $damaged = new Incident([
-            'type_probleme' => 'endommage',
+            'type_probleme' => 'endommage', 'titre' => 'Incident signale',
         ]);
         
         $missing = new Incident([
-            'type_probleme' => 'manquant',
+            'type_probleme' => 'manquant', 'titre' => 'Incident signale',
         ]);
         
         $malfunction = new Incident([
-            'type_probleme' => 'malfonctionnant',
+            'type_probleme' => 'malfonctionnant', 'titre' => 'Incident signale',
         ]);
         
         $this->assertTrue(true);
@@ -141,7 +141,7 @@ class ReclamationPhase2Test extends TestCase
             'incidents' => [
                 [
                     'equipment_id' => $this->equipment->id,
-                    'type_probleme' => 'endommage',
+                    'type_probleme' => 'endommage', 'titre' => 'Incident signale',
                     'description' => 'Major damage',
                 ]
             ]
@@ -200,7 +200,7 @@ class ReclamationPhase2Test extends TestCase
         $incident = Incident::create([
             'reclamation_id' => $reclamation->id,
             'equipment_id' => $this->equipment->id,
-            'type_probleme' => 'endommage',
+            'type_probleme' => 'endommage', 'titre' => 'Incident signale',
             'description' => 'Damaged',
             'proposed_refund_amount' => 30,
             'proposed_refund_percentage' => 30,
@@ -301,7 +301,7 @@ class ReclamationPhase2Test extends TestCase
         $incident = Incident::create([
             'reclamation_id' => $reclamation->id,
             'equipment_id' => $this->equipment->id,
-            'type_probleme' => 'endommage',
+            'type_probleme' => 'endommage', 'titre' => 'Incident signale',
             'description' => 'Damaged',
             'proposed_refund_amount' => 30,
             'proposed_refund_percentage' => 30,
@@ -328,7 +328,7 @@ class ReclamationPhase2Test extends TestCase
             'incidents' => [
                 [
                     'equipment_id' => $this->equipment->id,
-                    'type_probleme' => 'endommage',
+                    'type_probleme' => 'endommage', 'titre' => 'Incident signale',
                     'description' => 'Test incident',
                 ]
             ]
@@ -371,7 +371,7 @@ class ReclamationPhase2Test extends TestCase
             'incidents' => [
                 [
                     'equipment_id' => $wrongEquipment->id,
-                    'type_probleme' => 'endommage',
+                    'type_probleme' => 'endommage', 'titre' => 'Incident signale',
                     'description' => 'Test incident',
                 ]
             ]
@@ -412,12 +412,12 @@ class ReclamationPhase2Test extends TestCase
             'incidents' => [
                 [
                     'equipment_id' => $this->equipment->id,
-                    'type_probleme' => 'endommage',
+                    'type_probleme' => 'endommage', 'titre' => 'Incident signale',
                     'description' => 'First incident - correct equipment',
                 ],
                 [
                     'equipment_id' => $wrongEquipment->id,
-                    'type_probleme' => 'manquant',
+                    'type_probleme' => 'manquant', 'titre' => 'Incident signale',
                     'description' => 'Second incident - wrong equipment',
                 ]
             ]
@@ -468,7 +468,7 @@ class ReclamationPhase2Test extends TestCase
             'incidents' => [
                 [
                     'equipment_id' => $otherEquipment->id,
-                    'type_probleme' => 'endommage',
+                    'type_probleme' => 'endommage', 'titre' => 'Incident signale',
                     'description' => 'Test',
                 ]
             ]
@@ -497,7 +497,7 @@ class ReclamationPhase2Test extends TestCase
         $incident = Incident::create([
             'reclamation_id' => $reclamation->id,
             'equipment_id' => $this->equipment->id,
-            'type_probleme' => 'endommage',
+            'type_probleme' => 'endommage', 'titre' => 'Incident signale',
             'description' => 'Damaged',
             'proposed_refund_amount' => 30,
             'proposed_refund_percentage' => 30,
@@ -563,7 +563,7 @@ class ReclamationPhase2Test extends TestCase
         $incident = Incident::create([
             'reclamation_id' => $reclamation->id,
             'equipment_id' => $this->equipment->id,
-            'type_probleme' => 'manquant',
+            'type_probleme' => 'manquant', 'titre' => 'Incident signale',
             'description' => 'Missing',
             'proposed_refund_amount' => 150,
             'proposed_refund_percentage' => 20,
@@ -607,7 +607,7 @@ class ReclamationPhase2Test extends TestCase
         $incident = Incident::create([
             'reclamation_id' => $reclamation->id,
             'equipment_id' => $this->equipment->id,
-            'type_probleme' => 'endommage',
+            'type_probleme' => 'endommage', 'titre' => 'Incident signale',
             'description' => 'Damaged',
             'proposed_refund_amount' => 30,
             'proposed_refund_percentage' => 30,
@@ -660,7 +660,7 @@ class ReclamationPhase2Test extends TestCase
         $incident = Incident::create([
             'reclamation_id' => $reclamation->id,
             'equipment_id' => $this->equipment->id,
-            'type_probleme' => 'endommage',
+            'type_probleme' => 'endommage', 'titre' => 'Incident signale',
             'description' => 'Damaged',
             'proposed_refund_amount' => 30,
             'proposed_refund_percentage' => 30,
@@ -700,7 +700,7 @@ class ReclamationPhase2Test extends TestCase
         $incident = Incident::create([
             'reclamation_id' => $reclamation->id,
             'equipment_id' => $this->equipment->id,
-            'type_probleme' => 'endommage',
+            'type_probleme' => 'endommage', 'titre' => 'Incident signale',
             'description' => 'Damaged',
             'proposed_refund_amount' => 30,
             'proposed_refund_percentage' => 30,
@@ -739,7 +739,7 @@ class ReclamationPhase2Test extends TestCase
         $incident = Incident::create([
             'reclamation_id' => $reclamation->id,
             'equipment_id' => $this->equipment->id,
-            'type_probleme' => 'endommage',
+            'type_probleme' => 'endommage', 'titre' => 'Incident signale',
             'description' => 'Damaged',
             'proposed_refund_amount' => 30,
             'proposed_refund_percentage' => 30,
@@ -769,7 +769,7 @@ class ReclamationPhase2Test extends TestCase
         $incident = Incident::create([
             'reclamation_id' => $reclamation->id,
             'equipment_id' => $this->equipment->id,
-            'type_probleme' => 'endommage',
+            'type_probleme' => 'endommage', 'titre' => 'Incident signale',
             'description' => 'Damaged',
             'proposed_refund_amount' => 30,
             'proposed_refund_percentage' => 30,
@@ -808,7 +808,7 @@ class ReclamationPhase2Test extends TestCase
         $incident = Incident::create([
             'reclamation_id' => $reclamation->id,
             'equipment_id' => $this->equipment->id,
-            'type_probleme' => 'endommage',
+            'type_probleme' => 'endommage', 'titre' => 'Incident signale',
             'description' => 'Damaged',
             'proposed_refund_amount' => 30,
             'proposed_refund_percentage' => 30,
@@ -832,11 +832,19 @@ class ReclamationPhase2Test extends TestCase
 
     public function test_two_reclamations_cross_payment_sequential_within_limit(): void
     {
-        // This test verifies that sequential approvals of two reclamations with refunds totaling exactly the payment amount succeed
-        // Setup: Create payment of 100, then two reclamations with 50 each
+        // One active payment per reservation. This reservation is independent of setUp.
+        $reservation = Reservation::create([
+            'user_id' => $this->client->id,
+            'equipment_id' => $this->equipment->id,
+            'date_debut' => now()->addDays(20),
+            'date_fin' => now()->addDays(25),
+            'statut' => 'terminee',
+            'prix_total' => 100,
+        ]);
+
         $payment = Payment::create([
             'user_id' => $this->client->id,
-            'reservation_id' => $this->reservation->id,
+            'reservation_id' => $reservation->id,
             'amount' => 100,
             'method' => 'stripe',
             'status' => 'paid',
@@ -844,19 +852,16 @@ class ReclamationPhase2Test extends TestCase
         ]);
         
         $reclamation1 = Reclamation::create([
-            'reservation_id' => $this->reservation->id,
+            'reservation_id' => $reservation->id,
             'user_id' => $this->client->id,
             'title' => 'Reclamation 1',
             'description' => 'Test',
             'status' => 'en_attente',
         ]);
-        
-        // For cross-reclamation test we'd need another reservation for second reclamation
-        // But Payment has UNIQUE(reservation_id), so we verify via transaction totals instead
         $incident1 = Incident::create([
             'reclamation_id' => $reclamation1->id,
             'equipment_id' => $this->equipment->id,
-            'type_probleme' => 'endommage',
+            'type_probleme' => 'endommage', 'titre' => 'Incident signale',
             'description' => 'Test',
             'proposed_refund_amount' => 50,
             'proposed_refund_percentage' => 30,
@@ -881,9 +886,18 @@ class ReclamationPhase2Test extends TestCase
     public function test_two_reclamations_cross_payment_sequential_exceeding_limit(): void
     {
         // This test verifies that when a second reclamation's refund would exceed the payment amount, it is rejected
+        $reservation = Reservation::create([
+            'user_id' => $this->client->id,
+            'equipment_id' => $this->equipment->id,
+            'date_debut' => now()->addDays(30),
+            'date_fin' => now()->addDays(35),
+            'statut' => 'terminee',
+            'prix_total' => 100,
+        ]);
+
         $payment = Payment::create([
             'user_id' => $this->client->id,
-            'reservation_id' => $this->reservation->id,
+            'reservation_id' => $reservation->id,
             'amount' => 100,
             'method' => 'stripe',
             'status' => 'paid',
@@ -891,7 +905,7 @@ class ReclamationPhase2Test extends TestCase
         ]);
         
         $reclamation1 = Reclamation::create([
-            'reservation_id' => $this->reservation->id,
+            'reservation_id' => $reservation->id,
             'user_id' => $this->client->id,
             'title' => 'Reclamation 1',
             'description' => 'Test',
@@ -901,7 +915,7 @@ class ReclamationPhase2Test extends TestCase
         $incident1 = Incident::create([
             'reclamation_id' => $reclamation1->id,
             'equipment_id' => $this->equipment->id,
-            'type_probleme' => 'endommage',
+            'type_probleme' => 'endommage', 'titre' => 'Incident signale',
             'description' => 'Test',
             'proposed_refund_amount' => 80,
             'proposed_refund_percentage' => 30,
@@ -916,7 +930,7 @@ class ReclamationPhase2Test extends TestCase
         
         // Create a second reclamation on the same payment (via same reservation check logic)
         $reclamation2 = Reclamation::create([
-            'reservation_id' => $this->reservation->id,
+            'reservation_id' => $reservation->id,
             'user_id' => $this->client->id,
             'title' => 'Reclamation 2',
             'description' => 'Test',
@@ -926,7 +940,7 @@ class ReclamationPhase2Test extends TestCase
         $incident2 = Incident::create([
             'reclamation_id' => $reclamation2->id,
             'equipment_id' => $this->equipment->id,
-            'type_probleme' => 'manquant',
+            'type_probleme' => 'manquant', 'titre' => 'Incident signale',
             'description' => 'Test',
             'proposed_refund_amount' => 30,  // Total would be 110 > 100 limit
             'proposed_refund_percentage' => 20,
@@ -996,7 +1010,7 @@ class ReclamationPhase2Test extends TestCase
         $incident1 = Incident::create([
             'reclamation_id' => $reclamation1->id,
             'equipment_id' => $this->equipment->id,
-            'type_probleme' => 'endommage',
+            'type_probleme' => 'endommage', 'titre' => 'Incident signale',
             'description' => 'Test',
             'proposed_refund_amount' => 60,
             'proposed_refund_percentage' => 30,
@@ -1005,16 +1019,31 @@ class ReclamationPhase2Test extends TestCase
         $incident2 = Incident::create([
             'reclamation_id' => $reclamation2->id,
             'equipment_id' => $this->equipment->id,
-            'type_probleme' => 'manquant',
+            'type_probleme' => 'manquant', 'titre' => 'Incident signale',
             'description' => 'Test',
             'proposed_refund_amount' => 60,
             'proposed_refund_percentage' => 20,
         ]);
         
-        $db1 = new PDO('sqlite:' . database_path('database.sqlite'));
-        $db2 = new PDO('sqlite:' . database_path('database.sqlite'));
+        // Independent file: the :memory: suite is invisible to a second PDO,
+        // and database/database.sqlite must not be written by this test.
+        $tmpDb = tempnam(sys_get_temp_dir(), 'refund_limit_');
+        @unlink($tmpDb);
+        $tmpDb .= '.sqlite';
+        $schema = new PDO('sqlite:' . $tmpDb);
+        $schema->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $schema->exec('CREATE TABLE reclamations (id INTEGER PRIMARY KEY, status TEXT, updated_at TEXT)');
+        $schema->exec('CREATE TABLE transactions (id INTEGER PRIMARY KEY AUTOINCREMENT, payment_id INTEGER, reference TEXT, type TEXT, amount NUMERIC, status TEXT, transaction_date TEXT, created_at TEXT, updated_at TEXT)');
+        $schema->prepare('INSERT INTO reclamations (id, status) VALUES (?, ?)')->execute([$reclamation1->id, 'en_attente']);
+        $schema->prepare('INSERT INTO reclamations (id, status) VALUES (?, ?)')->execute([$reclamation2->id, 'en_attente']);
+        $schema = null;
+
+        $db1 = new PDO('sqlite:' . $tmpDb);
+        $db2 = new PDO('sqlite:' . $tmpDb);
         $db1->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $db2->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $db1->exec('PRAGMA busy_timeout = 500');
+        $db2->exec('PRAGMA busy_timeout = 500');
         
         $successCount = 0;
         $failCount = 0;
@@ -1057,8 +1086,12 @@ class ReclamationPhase2Test extends TestCase
         
         $this->assertGreaterThanOrEqual(1, $successCount);
         $this->assertGreaterThanOrEqual(1, $failCount);
-        $totalRefunded = DB::table('transactions')->where('payment_id', $payment1->id)->where('type', 'refund')->sum('amount');
+        $settled = new PDO('sqlite:' . $tmpDb);
+        $totalRefunded = (float) $settled->query('SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE payment_id = ' . (int) $payment1->id . " AND type = 'refund'")->fetchColumn();
         $this->assertLessThanOrEqual(100, $totalRefunded);
+        if (file_exists($tmpDb)) {
+            @unlink($tmpDb);
+        }
     }
 
     public function test_concurrent_refunds_for_same_payment_are_serialized(): void
@@ -1178,14 +1211,7 @@ class ReclamationPhase2Test extends TestCase
         // SUM(amount) WHERE payment_id=? AND type='refund' AND status='completed'
         // Every other type/status is excluded, so no double-counting.
         // Uses Eloquent (same-connection, RefreshDatabase-safe).
-        $payment = Payment::create([
-            'user_id' => $this->client->id,
-            'reservation_id' => $this->reservation->id,
-            'amount' => 100,
-            'method' => 'card',
-            'status' => 'paid',
-            'payment_date' => now(),
-        ]);
+        $payment = $this->payment;
 
         Transaction::create([
             'payment_id' => $payment->id,

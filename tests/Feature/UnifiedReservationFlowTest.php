@@ -287,7 +287,7 @@ class UnifiedReservationFlowTest extends TestCase
         $response = $this->post(route('reservations.store'), [
             'equipment_id' => $this->equipment->id,
             'date_debut' => '2026-11-10',
-            'date_fin' => '2026-11-15', // 5 days
+            'date_fin' => '2026-11-17', // 7 days
             // Note: No prix_total in request (client can't set it anyway since it's not in form)
         ]);
 
@@ -295,7 +295,7 @@ class UnifiedReservationFlowTest extends TestCase
 
         // Verify price is calculated correctly by server
         $reservation = Reservation::where('user_id', $this->client->id)->latest()->first();
-        $this->assertEquals(250.00, $reservation->prix_total); // 5 days × 50 TND = 250 TND (not whatever client tried to send)
+        $this->assertEquals(350.00, (float) $reservation->prix_total); // 7 days × 50 TND
     }
 
     /**

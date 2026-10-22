@@ -15,9 +15,9 @@ class TechnicalServiceAIService
 
     public function __construct()
     {
-        $this->baseUrl = (string) config('ollama.base_url', 'http://127.0.0.1:11434');
-        $this->model = (string) config('ollama.model', 'qwen2.5:3b');
-        $this->timeout = (int) config('ollama.timeout', 60);
+        $this->baseUrl = OllamaSettings::baseUrl();
+        $this->model = OllamaSettings::model();
+        $this->timeout = OllamaSettings::timeout();
         $this->enabled = (bool) config('ollama.enabled', true);
     }
 
@@ -77,17 +77,19 @@ class TechnicalServiceAIService
         ?string $equipmentName,
         ?string $equipmentCategory
     ): ?array {
+        if (! app()->runningUnitTests() && ! app(OllamaAvailability::class)->isReady($this->baseUrl, $this->model)) {
+            return null;
+        }
+
         $prompt = $this->buildPrompt($title, $description, $equipmentName, $equipmentCategory);
 
-        $response = Http::timeout($this->timeout)->post("{$this->baseUrl}/api/generate", [
-            'model' => $this->model,
-            'prompt' => $prompt,
-            'stream' => false,
-            'format' => 'json',
-            'options' => [
-                'temperature' => 0.2,
-            ],
-        ]);
+        $response = Http::timeout($this->timeout)->post("{$this->baseUrl}/api/generate", array_merge(
+            OllamaSettings::requestFields(['temperature' => 0.2]),
+            [
+                'prompt' => $prompt,
+                'format' => 'json',
+            ]
+        ));
 
         if (!$response->successful()) {
             return null;

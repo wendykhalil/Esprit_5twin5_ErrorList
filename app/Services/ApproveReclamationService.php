@@ -44,7 +44,24 @@ class ApproveReclamationService
      */
     public function approve(Reclamation $reclamation, array $validated): Reclamation
     {
-        return $this->immediateTransaction->run(function () use ($validated, $reclamation) {
+        // An outer Laravel transaction (RefreshDatabase, or a caller) already
+        // provides atomicity. A nested BEGIN IMMEDIATE would desync that
+        // counter, so the same body runs in a savepoint instead. At the top
+        // level the SQLite write lock stays BEGIN IMMEDIATE.
+        if (DB::transactionLevel() > 0) {
+            return DB::transaction(fn () => $this->perform($reclamation, $validated));
+        }
+
+        return $this->immediateTransaction->run(
+            fn () => $this->perform($reclamation, $validated)
+        );
+    }
+
+    /**
+     * @param array{approved_incidents: array<int>, admin_notes?: ?string} $validated
+     */
+    private function perform(Reclamation $reclamation, array $validated): Reclamation
+    {
             // Re-read reclamation from DB to ensure we have current state
             $reclamation = Reclamation::find($reclamation->id);
             if (! $reclamation) {
@@ -128,6 +145,5 @@ class ApproveReclamationService
             }
 
             return Reclamation::find($reclamation->id);
-        });
     }
 }

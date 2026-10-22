@@ -156,7 +156,7 @@ class ReclamationApprovalAtomicityTest extends TestCase
         $incident = Incident::create([
             'reclamation_id' => $reclamation->id,
             'equipment_id' => $equipment->id,
-            'type_probleme' => 'endommage',
+            'type_probleme' => 'endommage', 'titre' => 'Incident signale',
             'description' => 'Damaged',
             'proposed_refund_amount' => 100,
             'proposed_refund_percentage' => 20,
@@ -278,7 +278,7 @@ class ReclamationApprovalAtomicityTest extends TestCase
         $incident2 = Incident::create([
             'reclamation_id' => $reclamation2->id,
             'equipment_id' => $equipment->id,
-            'type_probleme' => 'manquant',
+            'type_probleme' => 'manquant', 'titre' => 'Incident signale',
             'description' => 'Missing',
             'proposed_refund_amount' => 100,  // 150 + 100 = 250 > 200 limit
             'proposed_refund_percentage' => 20,
@@ -364,7 +364,7 @@ class ReclamationApprovalAtomicityTest extends TestCase
         $incident = Incident::create([
             'reclamation_id' => $reclamation->id,
             'equipment_id' => $equipment->id,
-            'type_probleme' => 'endommage',
+            'type_probleme' => 'endommage', 'titre' => 'Incident signale',
             'description' => 'Damaged',
             'proposed_refund_amount' => 100,
             'proposed_refund_percentage' => 20,
@@ -443,6 +443,8 @@ class ReclamationApprovalAtomicityTest extends TestCase
 
         $pdo1->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $pdo2->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        // PHP's PDO SQLite busy handler otherwise waits about 60 seconds.
+        $pdo2->exec('PRAGMA busy_timeout = 200');
 
         $blockedSuccessfully = false;
 
@@ -525,7 +527,7 @@ class ReclamationApprovalAtomicityTest extends TestCase
         $incident = Incident::create([
             'reclamation_id' => $reclamation->id,
             'equipment_id' => $equipment->id,
-            'type_probleme' => 'endommage',
+            'type_probleme' => 'endommage', 'titre' => 'Incident signale',
             'description' => 'Damaged',
             'proposed_refund_amount' => 100,
             'proposed_refund_percentage' => 20,
@@ -541,7 +543,8 @@ class ReclamationApprovalAtomicityTest extends TestCase
         $response1->assertStatus(302);  // Redirect
 
         // Count transactions after first approval
-        $transactionsAfterFirst = Transaction::where('type', 'refund')
+        $transactionsAfterFirst = Transaction::where('payment_id', $payment->id)
+            ->where('type', 'refund')
             ->where('status', 'completed')
             ->count();
         $this->assertEquals(1, $transactionsAfterFirst);
@@ -566,7 +569,8 @@ class ReclamationApprovalAtomicityTest extends TestCase
         );
 
         // Verify still only ONE transaction exists (no duplicate)
-        $transactionsAfterSecond = Transaction::where('type', 'refund')
+        $transactionsAfterSecond = Transaction::where('payment_id', $payment->id)
+            ->where('type', 'refund')
             ->where('status', 'completed')
             ->count();
         $this->assertEquals(1, $transactionsAfterSecond);

@@ -64,10 +64,13 @@ class SupportTicketAssistant
         $contextHash = $ticket->publicContextFingerprint();
 
         try {
+            app(OllamaAvailability::class)->ensureBeforeCall(
+                OllamaSettings::baseUrl(),
+                OllamaSettings::model()
+            );
             $response = Http::connectTimeout(5)
-                ->timeout((int) config('ollama.timeout', 60))
-                ->post($this->endpoint(), [
-                    'model' => config('ollama.model'),
+                ->timeout(OllamaSettings::timeout())
+                ->post($this->endpoint(), array_merge(OllamaSettings::requestFields(), [
                     'messages' => [
                         [
                             'role' => 'system',
@@ -78,9 +81,8 @@ class SupportTicketAssistant
                             'content' => $this->ticketPrompt($ticket, $publicReplies),
                         ],
                     ],
-                    'stream' => false,
                     'format' => 'json',
-                ]);
+                ]));
         } catch (ConnectionException $exception) {
             Log::warning('Support assistant could not reach Ollama', [
                 'ticket_id' => $ticket->id,
@@ -113,7 +115,7 @@ class SupportTicketAssistant
 
     private function endpoint(): string
     {
-        return rtrim((string) config('ollama.base_url'), '/').'/api/chat';
+        return OllamaSettings::baseUrl().'/api/chat';
     }
 
     /**

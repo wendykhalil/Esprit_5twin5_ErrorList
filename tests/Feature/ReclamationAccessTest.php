@@ -103,7 +103,7 @@ class ReclamationAccessTest extends TestCase
             'incidents' => [
                 [
                     'equipment_id' => $this->equipment->id,
-                    'type_probleme' => 'endommage',
+                    'type_probleme' => 'endommage', 'titre' => 'Incident signale',
                     'description' => 'Crack visible sur le verre.',
                     'damage_percentage' => 25,
                 ],
@@ -119,7 +119,7 @@ class ReclamationAccessTest extends TestCase
         ]);
         $this->assertDatabaseHas('incidents', [
             'equipment_id' => $this->equipment->id,
-            'type_probleme' => 'endommage',
+            'type_probleme' => 'endommage', 'titre' => 'Incident signale',
         ]);
     }
 
@@ -137,7 +137,7 @@ class ReclamationAccessTest extends TestCase
             'incidents' => [
                 [
                     'equipment_id' => $this->equipment->id,
-                    'type_probleme' => 'endommage',
+                    'type_probleme' => 'endommage', 'titre' => 'Incident signale',
                     'description' => 'Fake damage',
                 ],
             ],
@@ -179,7 +179,7 @@ class ReclamationAccessTest extends TestCase
             'incidents' => [
                 [
                     'equipment_id' => $differentEquipment->id,  // Wrong equipment!
-                    'type_probleme' => 'endommage',
+                    'type_probleme' => 'endommage', 'titre' => 'Incident signale',
                     'description' => 'Fake',
                 ],
             ],
@@ -324,7 +324,7 @@ class ReclamationAccessTest extends TestCase
             'incidents' => [
                 [
                     'equipment_id' => $this->equipment->id,  // ✓ CORRECT: matches $eligibleReservation->equipment_id
-                    'type_probleme' => 'endommage',
+                    'type_probleme' => 'endommage', 'titre' => 'Incident signale',
                     'description' => 'Visible damage on surface',
                     'damage_percentage' => 30,
                 ],
@@ -375,7 +375,7 @@ class ReclamationAccessTest extends TestCase
             'incidents' => [
                 [
                     'equipment_id' => $wrongEquipment->id,  // ✗ WRONG: doesn't match reservation
-                    'type_probleme' => 'manquant',
+                    'type_probleme' => 'manquant', 'titre' => 'Incident signale',
                     'description' => 'Equipment is missing',
                 ],
             ],

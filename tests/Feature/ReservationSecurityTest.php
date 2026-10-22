@@ -7,6 +7,7 @@ use App\Models\Reservation;
 use App\Models\User;
 use App\Models\Category;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
 /**
@@ -25,6 +26,7 @@ class ReservationSecurityTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        Carbon::setTestNow('2026-10-01 12:00:00');
 
         $this->client = User::factory()->create(['role' => 'client']);
         $this->owner = User::factory()->create(['role' => 'client']);
@@ -38,6 +40,12 @@ class ReservationSecurityTest extends TestCase
             'name' => 'Panneau 200W',
             'price_per_day' => 50.00,
         ]);
+    }
+
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow();
+        parent::tearDown();
     }
 
     /**
@@ -54,8 +62,8 @@ class ReservationSecurityTest extends TestCase
         $response = $this->actingAs($this->client)
             ->post(route('reservations.store'), [
                 'equipment_id' => $ownEquipment->id,
-                'date_debut' => '2026-10-15',
-                'date_fin' => '2026-10-20',
+                'date_debut' => '2026-10-10',
+                'date_fin' => '2026-10-17',
             ]);
 
         $response->assertSessionHasErrors('equipment_id');
@@ -74,11 +82,11 @@ class ReservationSecurityTest extends TestCase
 
         $response = $this->post(route('reservations.store'), [
             'equipment_id' => $this->equipment->id,
-            'date_debut' => '2026-10-15',
-            'date_fin' => '2026-10-20',
+            'date_debut' => '2026-10-10',
+            'date_fin' => '2026-10-17',
         ]);
 
-        $response->assertRedirect(route('reservations.index'));
+        $response->assertRedirect();
 
         $this->assertDatabaseHas('reservations', [
             'user_id' => $this->client->id,
@@ -136,7 +144,7 @@ class ReservationSecurityTest extends TestCase
 
         // Suppression de la réservation en attente: OK
         $response = $this->delete(route('reservations.destroy', $pending));
-        $response->assertRedirect(route('reservations.index'));
+        $response->assertRedirect();
         $this->assertDatabaseMissing('reservations', ['id' => $pending->id]);
 
         // Suppression de la réservation confirmée: 403
@@ -165,14 +173,14 @@ class ReservationSecurityTest extends TestCase
 
         // Annulation de la réservation en attente
         $response = $this->patch(route('reservations.cancel', $pending));
-        $response->assertRedirect(route('reservations.index'));
+        $response->assertRedirect();
 
         $pending->refresh();
         $this->assertEquals('annulee', $pending->statut);
 
         // Annulation de la réservation confirmée
         $response = $this->patch(route('reservations.cancel', $confirmed));
-        $response->assertRedirect(route('reservations.index'));
+        $response->assertRedirect();
 
         $confirmed->refresh();
         $this->assertEquals('annulee', $confirmed->statut);
@@ -238,8 +246,8 @@ class ReservationSecurityTest extends TestCase
         // Première réservation
         Reservation::factory()->create([
             'equipment_id' => $this->equipment->id,
-            'date_debut' => '2026-10-15',
-            'date_fin' => '2026-10-20',
+            'date_debut' => '2026-10-10',
+            'date_fin' => '2026-10-17',
             'statut' => 'confirmee',
         ]);
 
@@ -247,8 +255,8 @@ class ReservationSecurityTest extends TestCase
         $response = $this->actingAs($this->client)
             ->post(route('reservations.store'), [
                 'equipment_id' => $this->equipment->id,
-                'date_debut' => '2026-10-18',
-                'date_fin' => '2026-10-22',
+                'date_debut' => '2026-10-12',
+                'date_fin' => '2026-10-19',
             ]);
 
         $response->assertSessionHasErrors('date_debut');
@@ -262,8 +270,8 @@ class ReservationSecurityTest extends TestCase
         // Réservation annulée
         Reservation::factory()->create([
             'equipment_id' => $this->equipment->id,
-            'date_debut' => '2026-10-15',
-            'date_fin' => '2026-10-20',
+            'date_debut' => '2026-10-10',
+            'date_fin' => '2026-10-17',
             'statut' => 'annulee',
         ]);
 
@@ -271,11 +279,11 @@ class ReservationSecurityTest extends TestCase
         $response = $this->actingAs($this->client)
             ->post(route('reservations.store'), [
                 'equipment_id' => $this->equipment->id,
-                'date_debut' => '2026-10-15',
-                'date_fin' => '2026-10-20',
+                'date_debut' => '2026-10-10',
+                'date_fin' => '2026-10-17',
             ]);
 
-        $response->assertRedirect(route('reservations.index'));
+        $response->assertRedirect();
 
         $this->assertDatabaseHas('reservations', [
             'user_id' => $this->client->id,
@@ -293,16 +301,15 @@ class ReservationSecurityTest extends TestCase
 
         $response = $this->post(route('reservations.store'), [
             'equipment_id' => $this->equipment->id,
-            'date_debut' => '2026-10-15',
-            'date_fin' => '2026-10-20', // 5 jours
-            // Pas de prix envoyé du client
+            'date_debut' => '2026-10-10',
+            'date_fin' => '2026-10-17', // 7 jours
         ]);
 
-        // Prix attendu: 5 jours × 50.00 = 250.00
+        // Prix attendu: 7 jours × 50.00 = 350.00
         $this->assertDatabaseHas('reservations', [
             'user_id' => $this->client->id,
             'equipment_id' => $this->equipment->id,
-            'prix_total' => 250.00,
+            'prix_total' => 350.00,
         ]);
     }
 

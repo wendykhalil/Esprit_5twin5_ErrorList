@@ -78,12 +78,31 @@
     }
 
     /*
+     * Sidebar back-office uniquement.
+     * Le tiroir mobile est fermé par défaut ; .is-open l'ouvre sous lg.
+     */
+    .admin-sidebar {
+        background-color: #0b1f3a;
+    }
+
+    @media (max-width: 1023px) {
+        .admin-sidebar {
+            transform: translateX(-100%);
+        }
+
+        .admin-sidebar.is-open {
+            transform: translateX(0);
+        }
+    }
+
+    /*
      * Scrollbar du menu latéral uniquement.
      * Le conteneur est <nav class="admin-sidebar-nav"> dans la sidebar.
      */
     .admin-sidebar-nav {
+        scrollbar-gutter: stable;
         scrollbar-width: thin;
-        scrollbar-color: #8ea0b5 transparent;
+        scrollbar-color: #7e97b0 #0b1f3a;
     }
 
     .admin-sidebar-nav::-webkit-scrollbar {
@@ -91,15 +110,16 @@
     }
 
     .admin-sidebar-nav::-webkit-scrollbar-track {
-        background: transparent;
+        background: #0b1f3a;
     }
 
     .admin-sidebar-nav::-webkit-scrollbar-thumb {
-        background-color: #8ea0b5;
+        background-color: #9eb4c9;
+        border: 2px solid #0b1f3a;
         border-radius: 999px;
     }
 
     .admin-sidebar-nav::-webkit-scrollbar-thumb:hover {
-        background-color: #b7a08a;
+        background-color: #e8eef5;
     }
 }

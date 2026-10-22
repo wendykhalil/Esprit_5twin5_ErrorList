@@ -60,20 +60,20 @@ class ReportGenerationService
     private function getReservationStats(Carbon $startDate, Carbon $endDate): array
     {
         // Total count (by rental date_debut) - separate query instance
-        $totalReservations = Reservation::whereBetween('date_debut', [$startDate, $endDate])->count();
+        $totalReservations = Reservation::whereDate('date_debut', '>=', $startDate->toDateString())->whereDate('date_debut', '<=', $endDate->toDateString())->count();
 
         // Created count (by created_at) - NEW METRIC for booking activity
-        $createdReservations = Reservation::whereBetween('created_at', [$startDate->startOfDay(), $endDate->endOfDay()])
+        $createdReservations = Reservation::whereBetween('created_at', [$startDate->copy()->startOfDay(), $endDate->copy()->endOfDay()])
             ->count();
 
         // Completed count - separate query instance
-        $completedReservations = Reservation::whereBetween('date_debut', [$startDate, $endDate])
+        $completedReservations = Reservation::whereDate('date_debut', '>=', $startDate->toDateString())->whereDate('date_debut', '<=', $endDate->toDateString())
             ->where('statut', 'terminee')
             ->count();
 
         // Reservations by status - separate query instance
         // Fixed: Create fresh query instead of reusing consumed builder
-        $byStatus = Reservation::whereBetween('date_debut', [$startDate, $endDate])
+        $byStatus = Reservation::whereDate('date_debut', '>=', $startDate->toDateString())->whereDate('date_debut', '<=', $endDate->toDateString())
             ->groupBy('statut')
             ->selectRaw('statut, COUNT(*) as count')
             ->pluck('count', 'statut')
@@ -83,7 +83,7 @@ class ReportGenerationService
         // Note: Only include reservations where date_fin >= date_debut (valid periods)
         $avgDuration = 0;
         if ($totalReservations > 0) {
-            $reservations = Reservation::whereBetween('date_debut', [$startDate, $endDate])
+            $reservations = Reservation::whereDate('date_debut', '>=', $startDate->toDateString())->whereDate('date_debut', '<=', $endDate->toDateString())
                 ->selectRaw('date_debut, date_fin')
                 ->get();
             
@@ -133,24 +133,24 @@ class ReportGenerationService
         // Total paid revenue - filter by ACTUAL payment_date, not reservation date_debut
         $paidRevenue = Payment::where('status', 'paid')
             ->whereNotNull('payment_date')
-            ->whereBetween('payment_date', [$startDate->startOfDay(), $endDate->endOfDay()])
+            ->whereBetween('payment_date', [$startDate->copy()->startOfDay(), $endDate->copy()->endOfDay()])
             ->sum('amount');
 
         // Pending revenue (not yet collected) - filter by payment_date when status changed to pending
         $pendingRevenue = Payment::where('status', 'pending')
             ->whereNotNull('payment_date')
-            ->whereBetween('payment_date', [$startDate->startOfDay(), $endDate->endOfDay()])
+            ->whereBetween('payment_date', [$startDate->copy()->startOfDay(), $endDate->copy()->endOfDay()])
             ->sum('amount');
 
         // Failed payments - filter by payment_date when failure occurred
         $failedRevenue = Payment::where('status', 'failed')
             ->whereNotNull('payment_date')
-            ->whereBetween('payment_date', [$startDate->startOfDay(), $endDate->endOfDay()])
+            ->whereBetween('payment_date', [$startDate->copy()->startOfDay(), $endDate->copy()->endOfDay()])
             ->sum('amount');
 
         // Payment counts by status - filter by actual payment_date
         $paymentsByStatus = Payment::whereNotNull('payment_date')
-            ->whereBetween('payment_date', [$startDate->startOfDay(), $endDate->endOfDay()])
+            ->whereBetween('payment_date', [$startDate->copy()->startOfDay(), $endDate->copy()->endOfDay()])
             ->groupBy('status')
             ->selectRaw('status, COUNT(*) as count')
             ->pluck('count', 'status')
@@ -160,7 +160,7 @@ class ReportGenerationService
         // (refunds are related to reservations, so we use reservation date_debut)
         $approvedRefunds = Reclamation::where('status', 'approuvee')
             ->whereHas('reservation', function ($query) use ($startDate, $endDate) {
-                $query->whereBetween('date_debut', [$startDate, $endDate]);
+                $query->whereDate('date_debut', '>=', $startDate->toDateString())->whereDate('date_debut', '<=', $endDate->toDateString());
             })
             ->sum('refund_amount');
 
@@ -205,27 +205,27 @@ class ReportGenerationService
     {
         // Total distinct reclamations linked to period reservations (by date_debut)
         $totalReclamations = Reclamation::whereHas('reservation', function ($query) use ($startDate, $endDate) {
-            $query->whereBetween('date_debut', [$startDate, $endDate]);
+            $query->whereDate('date_debut', '>=', $startDate->toDateString())->whereDate('date_debut', '<=', $endDate->toDateString());
         })->count();
 
         // NEW: Total reclamations created during period (by created_at)
-        $totalReclamationsCreated = Reclamation::whereBetween('created_at', [$startDate->startOfDay(), $endDate->endOfDay()])
+        $totalReclamationsCreated = Reclamation::whereBetween('created_at', [$startDate->copy()->startOfDay(), $endDate->copy()->endOfDay()])
             ->count();
 
         // Total distinct incidents linked to period reservations
         $totalIncidents = Incident::whereHas('reclamation', function ($query) use ($startDate, $endDate) {
             $query->whereHas('reservation', function ($q) use ($startDate, $endDate) {
-                $q->whereBetween('date_debut', [$startDate, $endDate]);
+                $q->whereDate('date_debut', '>=', $startDate->toDateString())->whereDate('date_debut', '<=', $endDate->toDateString());
             });
         })->count();
 
         // NEW: Total incidents created during period
-        $totalIncidentsCreated = Incident::whereBetween('created_at', [$startDate->startOfDay(), $endDate->endOfDay()])
+        $totalIncidentsCreated = Incident::whereBetween('created_at', [$startDate->copy()->startOfDay(), $endDate->copy()->endOfDay()])
             ->count();
 
         // Reclamations by status (linked to period reservations)
         $byStatus = Reclamation::whereHas('reservation', function ($query) use ($startDate, $endDate) {
-            $query->whereBetween('date_debut', [$startDate, $endDate]);
+            $query->whereDate('date_debut', '>=', $startDate->toDateString())->whereDate('date_debut', '<=', $endDate->toDateString());
         })
             ->groupBy('status')
             ->selectRaw('status, COUNT(*) as count')
@@ -235,7 +235,7 @@ class ReportGenerationService
         // Incidents by type (linked to period reclamations)
         $byType = Incident::whereHas('reclamation', function ($query) use ($startDate, $endDate) {
             $query->whereHas('reservation', function ($q) use ($startDate, $endDate) {
-                $q->whereBetween('date_debut', [$startDate, $endDate]);
+                $q->whereDate('date_debut', '>=', $startDate->toDateString())->whereDate('date_debut', '<=', $endDate->toDateString());
             });
         })
             ->groupBy('type_probleme')
@@ -244,19 +244,19 @@ class ReportGenerationService
             ->toArray();
 
         // Reclamation rate
-        $totalReservations = Reservation::whereBetween('date_debut', [$startDate, $endDate])->count();
+        $totalReservations = Reservation::whereDate('date_debut', '>=', $startDate->toDateString())->whereDate('date_debut', '<=', $endDate->toDateString())->count();
         $reclamationRate = $totalReservations > 0 ? ($totalReclamations / $totalReservations) * 100 : 0;
 
         // Approved reclamations count (by period reservation)
         $approvedCount = Reclamation::where('status', 'approuvee')
             ->whereHas('reservation', function ($query) use ($startDate, $endDate) {
-                $query->whereBetween('date_debut', [$startDate, $endDate]);
+                $query->whereDate('date_debut', '>=', $startDate->toDateString())->whereDate('date_debut', '<=', $endDate->toDateString());
             })->count();
 
         // Rejected reclamations count (by period reservation)
         $rejectedCount = Reclamation::where('status', 'rejetee')
             ->whereHas('reservation', function ($query) use ($startDate, $endDate) {
-                $query->whereBetween('date_debut', [$startDate, $endDate]);
+                $query->whereDate('date_debut', '>=', $startDate->toDateString())->whereDate('date_debut', '<=', $endDate->toDateString());
             })->count();
 
         return [
@@ -326,7 +326,7 @@ class ReportGenerationService
     {
         // Get equipment by reservation count (reservations are still filtered by date_debut)
         // Fetch top 20 to account for potential duplicates that will be deduplicated
-        $equipmentStats = Reservation::whereBetween('date_debut', [$startDate, $endDate])
+        $equipmentStats = Reservation::whereDate('date_debut', '>=', $startDate->toDateString())->whereDate('date_debut', '<=', $endDate->toDateString())
             ->join('equipment', 'reservations.equipment_id', '=', 'equipment.id')
             ->selectRaw('
                 equipment.id,
@@ -346,7 +346,7 @@ class ReportGenerationService
         if (!empty($equipmentIds)) {
             $revenueByEquipment = Payment::where('status', 'paid')
                 ->whereNotNull('payment_date')
-                ->whereBetween('payment_date', [$startDate->startOfDay(), $endDate->endOfDay()])
+                ->whereBetween('payment_date', [$startDate->copy()->startOfDay(), $endDate->copy()->endOfDay()])
                 ->join('reservations', 'payments.reservation_id', '=', 'reservations.id')
                 ->whereIn('reservations.equipment_id', $equipmentIds)
                 ->selectRaw('reservations.equipment_id, SUM(payments.amount) as total_revenue')

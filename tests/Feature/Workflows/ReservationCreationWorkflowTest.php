@@ -3,6 +3,7 @@
 namespace Tests\Feature\Workflows;
 
 use App\Events\ReservationCreated;
+use App\Models\CompensationCode;
 use App\Models\Reservation;
 use App\Models\Equipment;
 use App\Models\User;
@@ -39,11 +40,7 @@ class ReservationCreationWorkflowTest extends TestCase
         Event::fake();
 
         $this->actingAs($this->client)
-            ->post(route('reservations.store'), [
-                'equipment_id' => $this->equipment->id,
-                'date_debut' => now()->addDays(5)->format('Y-m-d'),
-                'date_fin' => now()->addDays(10)->format('Y-m-d'),
-            ]);
+            ->post(route('reservations.store'), $this->rentalPayload());
 
         // Verify event was dispatched
         Event::assertDispatched(ReservationCreated::class);
@@ -57,11 +54,7 @@ class ReservationCreationWorkflowTest extends TestCase
         Event::fake();
 
         $this->actingAs($this->client)
-            ->post(route('reservations.store'), [
-                'equipment_id' => $this->equipment->id,
-                'date_debut' => now()->addDays(5)->format('Y-m-d'),
-                'date_fin' => now()->addDays(10)->format('Y-m-d'),
-            ]);
+            ->post(route('reservations.store'), $this->rentalPayload());
 
         Event::assertDispatched(ReservationCreated::class, function ($event) {
             $this->assertNotNull($event->reservation);
@@ -79,11 +72,7 @@ class ReservationCreationWorkflowTest extends TestCase
         Event::fake();
 
         $response = $this->actingAs($this->client)
-            ->post(route('reservations.store'), [
-                'equipment_id' => $this->equipment->id,
-                'date_debut' => now()->addDays(5)->format('Y-m-d'),
-                'date_fin' => now()->addDays(10)->format('Y-m-d'),
-            ]);
+            ->post(route('reservations.store'), $this->rentalPayload());
 
         // Verify reservation was created with correct status
         $this->assertDatabaseHas('reservations', [
@@ -100,21 +89,16 @@ class ReservationCreationWorkflowTest extends TestCase
     {
         Event::fake();
 
-        $startDate = now()->addDays(5);
-        $endDate = now()->addDays(10); // 5 days
+        $payload = $this->rentalPayload();
         $pricePerDay = $this->equipment->price_per_day ?? 100;
 
         $this->actingAs($this->client)
-            ->post(route('reservations.store'), [
-                'equipment_id' => $this->equipment->id,
-                'date_debut' => $startDate->format('Y-m-d'),
-                'date_fin' => $endDate->format('Y-m-d'),
-            ]);
+            ->post(route('reservations.store'), $payload);
 
         $reservation = Reservation::where('user_id', $this->client->id)->latest()->first();
-        $expectedPrice = 5 * $pricePerDay; // 5 days
+        $expectedPrice = round(7 * (float) $pricePerDay, 2);
 
-        $this->assertEquals($expectedPrice, $reservation->prix_total);
+        $this->assertEquals($expectedPrice, (float) $reservation->prix_total);
     }
 
     /**
@@ -129,7 +113,7 @@ class ReservationCreationWorkflowTest extends TestCase
         $channels = $event->broadcastOn();
         $channelNames = array_map(fn($c) => $c->name, $channels);
 
-        $this->assertContains('admin.reservations', $channelNames);
+        $this->assertContains('private-admin.reservations', $channelNames);
     }
 
     /**
@@ -177,18 +161,10 @@ class ReservationCreationWorkflowTest extends TestCase
         $client2 = User::factory()->create(['role' => 'client']);
 
         $this->actingAs($this->client)
-            ->post(route('reservations.store'), [
-                'equipment_id' => $this->equipment->id,
-                'date_debut' => now()->addDays(5)->format('Y-m-d'),
-                'date_fin' => now()->addDays(10)->format('Y-m-d'),
-            ]);
+            ->post(route('reservations.store'), $this->rentalPayload(5));
 
         $this->actingAs($client2)
-            ->post(route('reservations.store'), [
-                'equipment_id' => $this->equipment->id,
-                'date_debut' => now()->addDays(15)->format('Y-m-d'),
-                'date_fin' => now()->addDays(20)->format('Y-m-d'),
-            ]);
+            ->post(route('reservations.store'), $this->rentalPayload(20));
 
         // Verify both were created
         $this->assertDatabaseHas('reservations', [
@@ -210,20 +186,30 @@ class ReservationCreationWorkflowTest extends TestCase
         Event::fake();
 
         // Create a compensation code for the client
-        $code = \App\Models\CompensationCode::factory()->create([
+        $code = CompensationCode::factory()->percentage(10)->create([
             'user_id' => $this->client->id,
-            'discount_percentage' => 10,
         ]);
 
         $this->actingAs($this->client)
-            ->post(route('reservations.store'), [
-                'equipment_id' => $this->equipment->id,
-                'date_debut' => now()->addDays(5)->format('Y-m-d'),
-                'date_fin' => now()->addDays(10)->format('Y-m-d'),
+            ->post(route('reservations.store'), $this->rentalPayload() + [
                 'compensation_code' => $code->code,
             ]);
 
         $reservation = Reservation::where('user_id', $this->client->id)->latest()->first();
         $this->assertNotNull($reservation->compensation_code_id);
+    }
+
+    /**
+     * Seven days is one of the durations accepted by ReservationRequest.
+     *
+     * @return array{equipment_id: int, date_debut: string, date_fin: string}
+     */
+    private function rentalPayload(int $startInDays = 5): array
+    {
+        return [
+            'equipment_id' => $this->equipment->id,
+            'date_debut' => now()->addDays($startInDays)->toDateString(),
+            'date_fin' => now()->addDays($startInDays + 7)->toDateString(),
+        ];
     }
 }

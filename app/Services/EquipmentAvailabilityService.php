@@ -100,8 +100,8 @@ class EquipmentAvailabilityService
         $query = Reservation::where('equipment_id', $equipment->id)
             ->whereIn('statut', $blockingStatuses)
             ->with('delivery')  // Eager load delivery for shouldBlockDates() check
-            ->where('date_debut', '<', $end)
-            ->where('date_fin', '>', $start);
+            ->whereDate('date_debut', '<', $end)
+            ->whereDate('date_fin', '>', $start);
 
         if ($excludeReservation) {
             $query->where('id', '!=', $excludeReservation->id);

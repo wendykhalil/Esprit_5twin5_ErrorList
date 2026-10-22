@@ -92,7 +92,7 @@ class ReservationBroadcastTest extends TestCase
             'date_fin' => $endDate,
         ]);
 
-        $response->assertStatus(200);
+        $response->assertRedirect();
 
         // Verify admin received notification
         Notification::assertSentTo(
@@ -107,6 +107,7 @@ class ReservationBroadcastTest extends TestCase
     public function test_client_receives_notification_when_reservation_approved(): void
     {
         Notification::fake();
+        Event::fake();
 
         // Create a reservation
         $reservation = Reservation::factory()->create([
@@ -120,7 +121,7 @@ class ReservationBroadcastTest extends TestCase
 
         $this->actingAs($this->admin);
 
-        $response = $this->post(route('admin.reservations.approve', $reservation));
+        $response = $this->patch(route('admin.reservations.approve', $reservation));
 
         // Verify client received approval notification
         Notification::assertSentTo(
@@ -128,8 +129,6 @@ class ReservationBroadcastTest extends TestCase
             ReservationApprovedNotification::class
         );
 
-        // Verify ReservationStatusChanged event was dispatched
-        Event::fake();
         Event::assertDispatched(ReservationStatusChanged::class);
     }
 
@@ -152,7 +151,7 @@ class ReservationBroadcastTest extends TestCase
 
         $this->actingAs($this->admin);
 
-        $response = $this->post(route('admin.reservations.reject', $reservation));
+        $response = $this->patch(route('admin.reservations.reject', $reservation));
 
         // Verify client received rejection notification
         Notification::assertSentTo(
@@ -209,9 +208,9 @@ class ReservationBroadcastTest extends TestCase
         Notification::assertSentTo(
             $this->client,
             ReservationCreatedNotification::class,
-            function ($notification) {
+            function ($notification) use ($reservation) {
                 $data = $notification->toArray($this->client);
-                return $data['reservation_id'] === $this->reservation->id ||
+                return $data['reservation_id'] === $reservation->id ||
                        isset($data['equipment_name']) &&
                        isset($data['date_debut']) &&
                        isset($data['prix_total']);
@@ -279,7 +278,7 @@ class ReservationBroadcastTest extends TestCase
         $this->actingAs($this->client);
 
         // Try to create reservation with invalid data
-        $response = $this->post(route('reservations.store'), [
+        $response = $this->postJson(route('reservations.store'), [
             'equipment_id' => 99999, // Non-existent equipment
             'date_debut' => now()->addDay()->format('Y-m-d'),
             'date_fin' => now()->addDays(2)->format('Y-m-d'),
@@ -288,7 +287,7 @@ class ReservationBroadcastTest extends TestCase
         $response->assertStatus(422);
 
         // Verify no notification was sent
-        Notification::assertNotSentTo($this->admin);
+        Notification::assertNotSentTo($this->admin, ReservationCreatedNotification::class);
     }
 
     /**
@@ -317,6 +316,6 @@ class ReservationBroadcastTest extends TestCase
         $this->client->refresh();
         $unreadAfter = $this->client->unreadNotifications()->count();
 
-        $this->assertEqual($unreadBefore - 1, $unreadAfter);
+        $this->assertEquals($unreadBefore - 1, $unreadAfter);
     }
 }

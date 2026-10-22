@@ -31,7 +31,7 @@ return new class extends Migration
                     THEN reservation_id
                     ELSE NULL
                 END
-            ) PERSISTENT
+            ) VIRTUAL
         ");
 
         DB::statement("

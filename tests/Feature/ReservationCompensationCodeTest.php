@@ -302,7 +302,7 @@ class ReservationCompensationCodeTest extends TestCase
 
         // Usage count should increment from 0 to 1
         $this->assertEquals(1, $code->uses_count);
-        $this->assertEquals('2026-10-11', $code->last_used_at->format('Y-m-d')); // Updated timestamp
+        $this->assertEquals(now()->toDateString(), $code->last_used_at->format('Y-m-d'));
     }
 
     // =====================================================================

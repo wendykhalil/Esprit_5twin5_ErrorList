@@ -113,7 +113,7 @@ class RealTimeReservationFlowTest extends TestCase
             // Check channel is admin.reservations
             $channels = $event->broadcastOn();
             $channelNames = array_map(fn ($ch) => $ch->name, $channels);
-            $hasAdminChannel = in_array('admin.reservations', $channelNames);
+            $hasAdminChannel = in_array('private-admin.reservations', $channelNames);
 
             // Check event name is 'reservation-created'
             $eventName = $event->broadcastAs();
@@ -149,7 +149,7 @@ class RealTimeReservationFlowTest extends TestCase
         $this->actingAs($this->admin);
 
         // Call the approve endpoint
-        $response = $this->post(route('admin.reservations.approve', $reservation));
+        $response = $this->patch(route('admin.reservations.approve', $reservation));
 
         // Verify successful redirect
         $this->assertThat(
@@ -190,7 +190,7 @@ class RealTimeReservationFlowTest extends TestCase
             // Check channel is user.{id}.reservations
             $channels = $event->broadcastOn();
             $channelNames = array_map(fn ($ch) => $ch->name, $channels);
-            $hasUserChannel = in_array('user.' . $this->client->id . '.reservations', $channelNames);
+            $hasUserChannel = in_array('private-user.' . $this->client->id . '.reservations', $channelNames);
 
             // Check event name is 'reservation-status-changed'
             $eventName = $event->broadcastAs();
@@ -226,7 +226,7 @@ class RealTimeReservationFlowTest extends TestCase
         $this->actingAs($this->admin);
 
         // Call the reject endpoint
-        $response = $this->post(route('admin.reservations.reject', $reservation));
+        $response = $this->patch(route('admin.reservations.reject', $reservation));
 
         // Verify successful redirect
         $this->assertThat(
@@ -263,7 +263,7 @@ class RealTimeReservationFlowTest extends TestCase
         $reverbConfig = config('broadcasting.connections.reverb');
 
         $this->assertEquals('reverb', $reverbConfig['driver']);
-        $this->assertEquals('localhost', $reverbConfig['host']);
-        $this->assertEquals(8081, $reverbConfig['port']);
+        $this->assertEquals('localhost', $reverbConfig['options']['host']);
+        $this->assertEquals(8081, $reverbConfig['options']['port']);
     }
 }

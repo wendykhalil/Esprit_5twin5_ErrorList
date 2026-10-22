@@ -17,7 +17,7 @@ class ConseillerEnergieController extends Controller
 
     public function recommend(Request $request, ConseillerEnergieService $service, EstimationProductionService $estimator)
     {
-        set_time_limit((int) config('solarshare.ollama.timeout') + 5);
+        set_time_limit((int) config('ollama.timeout') + 5);
         $data = $request->validate(['besoin' => ['required', 'string', 'max:500']]);
         $key = 'conseiller:'.$request->user()->id;
         abort_if(RateLimiter::tooManyAttempts($key, 10), 429, 'Limite de 10 requêtes par heure atteinte.');

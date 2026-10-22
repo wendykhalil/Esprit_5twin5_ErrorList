@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\ServiceProvider;
 use App\Models\User;
+use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -15,6 +16,7 @@ class AdminUserManagementTest extends TestCase
     {
         parent::setUp();
         $this->withoutVite();
+        $this->seed(RolesAndPermissionsSeeder::class);
     }
 
     public function test_admin_can_update_user_role_to_provider_when_profile_approved(): void

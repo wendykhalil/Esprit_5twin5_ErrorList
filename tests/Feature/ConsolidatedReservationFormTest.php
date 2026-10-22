@@ -59,13 +59,13 @@ class ConsolidatedReservationFormTest extends TestCase
         $startDate = now()->addDay()->format('Y-m-d');
         $endDate = now()->addDays(2)->format('Y-m-d');
 
-        $response = $this->post(route('reservations.store'), [
+        $response = $this->postJson(route('reservations.store'), [
             'equipment_id' => $this->equipment->id,
             'date_debut' => $startDate,
             'date_fin' => $endDate,
             'compensation_code' => null,
         ], [
-            'HTTP_X-Requested-With' => 'XMLHttpRequest'
+            'X-Requested-With' => 'XMLHttpRequest'
         ]);
 
         $response->assertStatus(200)
@@ -89,7 +89,7 @@ class ConsolidatedReservationFormTest extends TestCase
     {
         $this->actingAs($this->client);
 
-        $response = $this->post(route('reservations.store'), [
+        $response = $this->postJson(route('reservations.store'), [
             'equipment_id' => $this->equipment->id,
             'date_debut' => '',
             'date_fin' => now()->addDays(2)->format('Y-m-d'),
@@ -108,7 +108,7 @@ class ConsolidatedReservationFormTest extends TestCase
     {
         $this->actingAs($this->client);
 
-        $response = $this->post(route('reservations.store'), [
+        $response = $this->postJson(route('reservations.store'), [
             'equipment_id' => $this->equipment->id,
             'date_debut' => now()->subDay()->format('Y-m-d'),
             'date_fin' => now()->addDay()->format('Y-m-d'),
@@ -130,13 +130,13 @@ class ConsolidatedReservationFormTest extends TestCase
         $startDate = now()->format('Y-m-d');
         $endDate = now()->addDays(2)->format('Y-m-d');
 
-        $response = $this->post(route('reservations.store'), [
+        $response = $this->postJson(route('reservations.store'), [
             'equipment_id' => $this->equipment->id,
             'date_debut' => $startDate,
             'date_fin' => $endDate,
             'compensation_code' => null,
         ], [
-            'HTTP_X-Requested-With' => 'XMLHttpRequest'
+            'X-Requested-With' => 'XMLHttpRequest'
         ]);
 
         $response->assertStatus(200);
@@ -154,10 +154,10 @@ class ConsolidatedReservationFormTest extends TestCase
         $this->actingAs($this->client);
 
         // Test with 2 days (not supported)
-        $response = $this->post(route('reservations.store'), [
+        $response = $this->postJson(route('reservations.store'), [
             'equipment_id' => $this->equipment->id,
             'date_debut' => now()->addDay()->format('Y-m-d'),
-            'date_fin' => now()->addDays(3)->format('Y-m-d'), // 2 days
+            'date_fin' => now()->addDays(6)->format('Y-m-d'), // 5 days, outside the one-day tolerance
             'compensation_code' => null,
         ]);
 
@@ -177,13 +177,13 @@ class ConsolidatedReservationFormTest extends TestCase
             $startDate = now()->addDays(10 + ($days * 2))->format('Y-m-d');
             $endDate = now()->addDays(10 + ($days * 2) + $days)->format('Y-m-d');
 
-            $response = $this->post(route('reservations.store'), [
+            $response = $this->postJson(route('reservations.store'), [
                 'equipment_id' => $this->equipment->id,
                 'date_debut' => $startDate,
                 'date_fin' => $endDate,
                 'compensation_code' => null,
             ], [
-                'HTTP_X-Requested-With' => 'XMLHttpRequest'
+                'X-Requested-With' => 'XMLHttpRequest'
             ]);
 
             $response->assertStatus(200, "Failed for duration: {$days} days");
@@ -201,7 +201,7 @@ class ConsolidatedReservationFormTest extends TestCase
         $startDate = now()->addDay()->format('Y-m-d');
         $endDate = now()->addDays(4)->format('Y-m-d'); // 3 days
 
-        $response = $this->post(route('reservations.store'), [
+        $response = $this->postJson(route('reservations.store'), [
             'equipment_id' => $this->equipment->id,
             'date_debut' => $startDate,
             'date_fin' => $endDate,
@@ -209,7 +209,7 @@ class ConsolidatedReservationFormTest extends TestCase
             // Client tries to send manipulated price (should be ignored)
             'prix_total' => '999.99',
         ], [
-            'HTTP_X-Requested-With' => 'XMLHttpRequest'
+            'X-Requested-With' => 'XMLHttpRequest'
         ]);
 
         $response->assertStatus(200);
@@ -238,7 +238,7 @@ class ConsolidatedReservationFormTest extends TestCase
         ]);
 
         // Try to book overlapping period
-        $response = $this->post(route('reservations.store'), [
+        $response = $this->postJson(route('reservations.store'), [
             'equipment_id' => $this->equipment->id,
             'date_debut' => now()->addDays(6)->format('Y-m-d'),
             'date_fin' => now()->addDays(9)->format('Y-m-d'),
@@ -271,13 +271,13 @@ class ConsolidatedReservationFormTest extends TestCase
         ]);
 
         // Book after existing ends
-        $response = $this->post(route('reservations.store'), [
+        $response = $this->postJson(route('reservations.store'), [
             'equipment_id' => $this->equipment->id,
             'date_debut' => now()->addDays(8)->format('Y-m-d'),
             'date_fin' => now()->addDays(11)->format('Y-m-d'),
             'compensation_code' => null,
         ], [
-            'HTTP_X-Requested-With' => 'XMLHttpRequest'
+            'X-Requested-With' => 'XMLHttpRequest'
         ]);
 
         $response->assertStatus(200);
@@ -292,13 +292,13 @@ class ConsolidatedReservationFormTest extends TestCase
     {
         $this->actingAs($this->client);
 
-        $response = $this->post(route('reservations.store'), [
+        $response = $this->postJson(route('reservations.store'), [
             'equipment_id' => $this->equipment->id,
             'date_debut' => now()->addDay()->format('Y-m-d'),
             'date_fin' => now()->addDays(4)->format('Y-m-d'),
             'compensation_code' => 'INVALID_CODE_12345',
         ], [
-            'HTTP_X-Requested-With' => 'XMLHttpRequest'
+            'X-Requested-With' => 'XMLHttpRequest'
         ]);
 
         $response->assertStatus(422)
@@ -326,13 +326,13 @@ class ConsolidatedReservationFormTest extends TestCase
             'uses_count' => 0,
         ]);
 
-        $response = $this->post(route('reservations.store'), [
+        $response = $this->postJson(route('reservations.store'), [
             'equipment_id' => $this->equipment->id,
             'date_debut' => now()->addDay()->format('Y-m-d'),
             'date_fin' => now()->addDays(4)->format('Y-m-d'),
             'compensation_code' => 'EXPIRED_CODE',
         ], [
-            'HTTP_X-Requested-With' => 'XMLHttpRequest'
+            'X-Requested-With' => 'XMLHttpRequest'
         ]);
 
         $response->assertStatus(422)
@@ -360,13 +360,13 @@ class ConsolidatedReservationFormTest extends TestCase
             'uses_count' => 0,
         ]);
 
-        $response = $this->post(route('reservations.store'), [
+        $response = $this->postJson(route('reservations.store'), [
             'equipment_id' => $this->equipment->id,
             'date_debut' => now()->addDay()->format('Y-m-d'),
             'date_fin' => now()->addDays(4)->format('Y-m-d'),
             'compensation_code' => 'INACTIVE_CODE',
         ], [
-            'HTTP_X-Requested-With' => 'XMLHttpRequest'
+            'X-Requested-With' => 'XMLHttpRequest'
         ]);
 
         $response->assertStatus(422)
@@ -394,13 +394,13 @@ class ConsolidatedReservationFormTest extends TestCase
             'uses_count' => 1,
         ]);
 
-        $response = $this->post(route('reservations.store'), [
+        $response = $this->postJson(route('reservations.store'), [
             'equipment_id' => $this->equipment->id,
             'date_debut' => now()->addDay()->format('Y-m-d'),
             'date_fin' => now()->addDays(4)->format('Y-m-d'),
             'compensation_code' => 'EXHAUSTED_CODE',
         ], [
-            'HTTP_X-Requested-With' => 'XMLHttpRequest'
+            'X-Requested-With' => 'XMLHttpRequest'
         ]);
 
         $response->assertStatus(422)
@@ -428,13 +428,13 @@ class ConsolidatedReservationFormTest extends TestCase
             'uses_count' => 0,
         ]);
 
-        $response = $this->post(route('reservations.store'), [
+        $response = $this->postJson(route('reservations.store'), [
             'equipment_id' => $this->equipment->id,
             'date_debut' => now()->addDay()->format('Y-m-d'),
             'date_fin' => now()->addDays(4)->format('Y-m-d'),
             'compensation_code' => 'VALID_CODE',
         ], [
-            'HTTP_X-Requested-With' => 'XMLHttpRequest'
+            'X-Requested-With' => 'XMLHttpRequest'
         ]);
 
         $response->assertStatus(200);
@@ -452,13 +452,13 @@ class ConsolidatedReservationFormTest extends TestCase
     {
         $this->actingAs($this->provider);
 
-        $response = $this->post(route('reservations.store'), [
+        $response = $this->postJson(route('reservations.store'), [
             'equipment_id' => $this->equipment->id,
             'date_debut' => now()->addDay()->format('Y-m-d'),
             'date_fin' => now()->addDays(4)->format('Y-m-d'),
             'compensation_code' => null,
         ], [
-            'HTTP_X-Requested-With' => 'XMLHttpRequest'
+            'X-Requested-With' => 'XMLHttpRequest'
         ]);
 
         // Should fail validation (either 422 JSON or 302 redirect)
@@ -481,13 +481,13 @@ class ConsolidatedReservationFormTest extends TestCase
 
         $date = now()->addDay()->format('Y-m-d');
 
-        $response = $this->post(route('reservations.store'), [
+        $response = $this->postJson(route('reservations.store'), [
             'equipment_id' => $this->equipment->id,
             'date_debut' => $date,
             'date_fin' => $date, // Same day
             'compensation_code' => null,
         ], [
-            'HTTP_X-Requested-With' => 'XMLHttpRequest'
+            'X-Requested-With' => 'XMLHttpRequest'
         ]);
 
         // Should fail validation (either 422 JSON or 302 redirect)

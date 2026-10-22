@@ -24,6 +24,8 @@
             id="mobileMenuBtn"
             class="lg:hidden p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-colors"
             aria-label="Ouvrir le menu"
+            aria-controls="admin-sidebar"
+            aria-expanded="false"
         >
             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
@@ -129,22 +131,32 @@
 </header>
 
 <script>
-    // Mobile menu toggle
+    // Mobile menu toggle — sidebar only
     document.getElementById('mobileMenuBtn').addEventListener('click', function() {
-        const sidebar = document.querySelector('aside');
-        const backdrop = document.querySelector('.lg\\:hidden.bg-slate-900\\/50');
-        
-        // Create backdrop if it doesn't exist
-        if (!backdrop) {
-            const newBackdrop = document.createElement('div');
-            newBackdrop.className = 'fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-20 lg:hidden';
-            document.body.appendChild(newBackdrop);
-            newBackdrop.addEventListener('click', () => {
-                sidebar.classList.add('-translate-x-full');
-                newBackdrop.remove();
-            });
-            sidebar.classList.remove('-translate-x-full');
+        const sidebar = document.querySelector('aside.admin-sidebar');
+        const button = document.getElementById('mobileMenuBtn');
+        if (!sidebar) {
+            return;
         }
+
+        let backdrop = document.getElementById('admin-sidebar-backdrop');
+        if (!backdrop) {
+            backdrop = document.createElement('div');
+            backdrop.id = 'admin-sidebar-backdrop';
+            backdrop.className = 'fixed inset-0 z-20 hidden bg-[#0b1f3a]/50 lg:hidden';
+            backdrop.setAttribute('aria-hidden', 'true');
+            document.body.appendChild(backdrop);
+            backdrop.addEventListener('click', function() {
+                sidebar.classList.remove('is-open');
+                backdrop.classList.add('hidden');
+                button.setAttribute('aria-expanded', 'false');
+            });
+        }
+
+        const willOpen = !sidebar.classList.contains('is-open');
+        sidebar.classList.toggle('is-open', willOpen);
+        backdrop.classList.toggle('hidden', !willOpen);
+        button.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
     });
 
     // Notification dropdown

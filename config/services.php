@@ -33,9 +33,9 @@ return [
         ],
     ],
 
-    // SolarShare AI - Ollama
+    // Mirror of config/ollama.php. OLLAMA_BASE_URL wins so the two URL variables stay identical.
     'ollama' => [
-        'url' => env('OLLAMA_URL', 'http://127.0.0.1:11434'),
+        'url' => env('OLLAMA_BASE_URL', env('OLLAMA_URL', 'http://127.0.0.1:11434')),
         'model' => env('OLLAMA_MODEL', 'mistral:latest'),
     ],
 

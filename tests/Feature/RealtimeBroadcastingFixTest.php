@@ -94,7 +94,6 @@ class RealtimeBroadcastingFixTest extends TestCase
         $reservation = Reservation::factory()->create([
             'equipment_id' => $this->equipment->id,
             'user_id' => $this->client->id,
-            'status' => 'pending'
         ]);
 
         $payment = Payment::factory()->create([
@@ -115,8 +114,8 @@ class RealtimeBroadcastingFixTest extends TestCase
                 return $channel->name;
             }, $channels);
 
-            $hasAdminChannel = in_array('admin.payments', $broadcastChannels);
-            $hasUserChannel = in_array('user.' . $this->client->id . '.payments', $broadcastChannels);
+            $hasAdminChannel = in_array('private-admin.payments', $broadcastChannels);
+            $hasUserChannel = in_array('private-user.' . $this->client->id . '.payments', $broadcastChannels);
 
             // Check broadcast data includes necessary fields
             $broadcastData = $event->broadcastWith();
@@ -144,14 +143,12 @@ class RealtimeBroadcastingFixTest extends TestCase
         $reservation = Reservation::factory()->create([
             'equipment_id' => $this->equipment->id,
             'user_id' => $this->client->id,
-            'status' => 'approved'
         ]);
 
         $delivery = Delivery::factory()->create([
             'reservation_id' => $reservation->id,
             'user_id' => $this->client->id,
-            'status' => 'pending',
-            'scheduled_date' => now()->addDay()
+            'status' => 'prete',
         ]);
 
         $oldStatus = $delivery->status;
@@ -168,8 +165,8 @@ class RealtimeBroadcastingFixTest extends TestCase
                 return $channel->name;
             }, $channels);
 
-            $hasAdminChannel = in_array('admin.deliveries', $broadcastChannels);
-            $hasUserChannel = in_array('user.' . $this->client->id . '.deliveries', $broadcastChannels);
+            $hasAdminChannel = in_array('private-admin.deliveries', $broadcastChannels);
+            $hasUserChannel = in_array('private-user.' . $this->client->id . '.deliveries', $broadcastChannels);
 
             $broadcastData = $event->broadcastWith();
             $hasRequiredFields = isset($broadcastData['id']) &&

@@ -55,7 +55,7 @@ class CompleteReservationWorkflowTest extends TestCase
         $reservationResponse = $this->post(route('reservations.store'), [
             'equipment_id' => $this->equipment->id,
             'date_debut' => '2026-11-01',
-            'date_fin' => '2026-11-06', // 5 days
+            'date_fin' => '2026-11-08', // 7 days
         ]);
 
         $reservationResponse->assertRedirect();
@@ -64,7 +64,7 @@ class CompleteReservationWorkflowTest extends TestCase
         $reservation = Reservation::where('user_id', $this->client->id)->latest()->first();
         $this->assertNotNull($reservation);
         $this->assertEquals('en_attente', $reservation->statut);
-        $this->assertEquals(500.00, $reservation->prix_total); // 5 days × 100
+        $this->assertEquals(700.00, (float) $reservation->prix_total); // 7 days × 100
 
         // Verify NO contract yet (contract only created after payment)
         $this->assertFalse($reservation->contract()->exists());

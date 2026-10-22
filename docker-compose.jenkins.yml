@@ -1,0 +1,21 @@
+# Local Jenkins only. Ports stay on 127.0.0.1.
+# The Docker socket mount is deliberate and high risk: a Jenkins job can control
+# the host Docker engine, including other projects. Do not publish this service.
+
+services:
+  jenkins:
+    build:
+      context: ./docker
+      dockerfile: jenkins.Dockerfile
+    image: solarshare-jenkins:local
+    ports:
+      - "127.0.0.1:8088:8080"
+      - "127.0.0.1:55000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+    group_add:
+      - "0"
+
+volumes:
+  jenkins_home:

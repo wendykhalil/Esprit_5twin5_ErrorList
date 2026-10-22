@@ -3,10 +3,12 @@
 namespace Tests\Feature;
 
 use App\Models\CompensationCode;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class CompensationCodeValidationTest extends TestCase
 {
+    use RefreshDatabase;
     /**
      * Test Case 1: Valid percentage discount (50%)
      * Expected: Discount calculation correct
@@ -260,9 +262,9 @@ class CompensationCodeValidationTest extends TestCase
         $discount = $code->calculateDiscount(100);
         $this->assertEquals(33.33, $discount);
 
-        // 150.50 TND * 33.33% = 50.18 TND (rounded)
+        // 150.50 TND * 33.33% = 50.16165, arrondi à 50.16
         $discount2 = $code->calculateDiscount(150.50);
-        $this->assertEquals(50.18, $discount2);
+        $this->assertEquals(50.16, $discount2);
     }
 }
 

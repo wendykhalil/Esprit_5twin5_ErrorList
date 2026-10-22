@@ -7,6 +7,7 @@ use App\Models\Equipment;
 use App\Models\Reservation;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
 /**
@@ -25,6 +26,7 @@ class ReservationAdminWorkflowTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        Carbon::setTestNow('2026-10-01 12:00:00');
 
         $this->admin = User::factory()->create(['role' => 'admin']);
         $this->client = User::factory()->create(['role' => 'client']);
@@ -38,6 +40,12 @@ class ReservationAdminWorkflowTest extends TestCase
             'name' => 'Panneau 300W',
             'price_per_day' => 75.00,
         ]);
+    }
+
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow();
+        parent::tearDown();
     }
 
     /**
@@ -89,16 +97,16 @@ class ReservationAdminWorkflowTest extends TestCase
     {
         $reservation1 = Reservation::factory()->create([
             'equipment_id' => $this->equipment->id,
-            'date_debut' => '2026-10-15',
-            'date_fin' => '2026-10-20',
+            'date_debut' => '2026-10-10',
+            'date_fin' => '2026-10-17',
             'statut' => 'en_attente',
         ]);
 
         // Une autre réservation confirmée sur les mêmes dates
         $reservation2 = Reservation::factory()->create([
             'equipment_id' => $this->equipment->id,
-            'date_debut' => '2026-10-15',
-            'date_fin' => '2026-10-20',
+            'date_debut' => '2026-10-10',
+            'date_fin' => '2026-10-17',
             'statut' => 'confirmee',
         ]);
 
@@ -209,8 +217,8 @@ class ReservationAdminWorkflowTest extends TestCase
         $reservation = Reservation::factory()->create([
             'user_id' => $this->client->id,
             'equipment_id' => $this->equipment->id,
-            'date_debut' => '2026-10-15',
-            'date_fin' => '2026-10-20',
+            'date_debut' => '2026-10-10',
+            'date_fin' => '2026-10-17',
             'statut' => 'en_attente',
         ]);
 
@@ -218,18 +226,18 @@ class ReservationAdminWorkflowTest extends TestCase
             ->put(route('admin.reservations.update', $reservation), [
                 'user_id' => $this->client->id,
                 'equipment_id' => $this->equipment->id,
-                'date_debut' => '2026-10-16',
-                'date_fin' => '2026-10-21',
+                'date_debut' => '2026-10-11',
+                'date_fin' => '2026-10-18',
                 'statut' => 'en_attente',
             ]);
 
         $response->assertRedirect(route('admin.reservations.show', $reservation));
 
         $reservation->refresh();
-        $this->assertEquals('2026-10-16', $reservation->date_debut->format('Y-m-d'));
-        $this->assertEquals('2026-10-21', $reservation->date_fin->format('Y-m-d'));
-        // Prix recalculé: 5 jours × 75.00 = 375.00
-        $this->assertEquals(375.00, $reservation->prix_total);
+        $this->assertEquals('2026-10-11', $reservation->date_debut->format('Y-m-d'));
+        $this->assertEquals('2026-10-18', $reservation->date_fin->format('Y-m-d'));
+        // Prix recalculé: 7 jours × 75.00 = 525.00
+        $this->assertEquals(525.00, (float) $reservation->prix_total);
     }
 
     /**
@@ -303,8 +311,8 @@ class ReservationAdminWorkflowTest extends TestCase
     {
         $refused = Reservation::factory()->create([
             'equipment_id' => $this->equipment->id,
-            'date_debut' => '2026-10-15',
-            'date_fin' => '2026-10-20',
+            'date_debut' => '2026-10-10',
+            'date_fin' => '2026-10-17',
             'statut' => 'refusee',
         ]);
 

@@ -863,6 +863,7 @@ class ReportsTest extends TestCase
                 'reservation_id' => $reservation->id,
                 'amount' => 50.00,
                 'status' => 'paid',
+                'payment_date' => now(),
             ]);
         }
 

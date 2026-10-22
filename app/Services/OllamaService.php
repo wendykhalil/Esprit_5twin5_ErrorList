@@ -39,14 +39,13 @@ class OllamaService
         );
 
         try {
-            $response = Http::timeout(config('ollama.timeout', 60))
+            $this->ensureReady();
+            $response = Http::timeout(OllamaSettings::timeout())
                 ->post(
-                    config('ollama.base_url') . '/api/generate',
-                    [
-                        'model' => config('ollama.model'),
+                    OllamaSettings::baseUrl() . '/api/generate',
+                    array_merge(OllamaSettings::requestFields(), [
                         'prompt' => $prompt,
-                        'stream' => false,
-                    ]
+                    ])
                 );
 
             if (!$response->successful()) {
@@ -76,7 +75,7 @@ class OllamaService
     }
 
     /**
-     * Generate an incident description using Ollama Qwen2.5 3B model
+     * Generate an incident description using the configured Ollama model
      *
      * @param string $problemType Type of problem (endommage, manquant, etc.)
      * @param string $problemTitle Title of the problem
@@ -99,7 +98,7 @@ class OllamaService
             throw new \Exception('Ollama service is not enabled.');
         }
 
-        // Build the prompt for Qwen2.5 3B
+        // Build the prompt for the configured model
         $prompt = $this->buildPrompt(
             $problemType,
             $problemTitle,
@@ -110,14 +109,13 @@ class OllamaService
         );
 
         try {
-            $response = Http::timeout(config('ollama.timeout', 60))
+            $this->ensureReady();
+            $response = Http::timeout(OllamaSettings::timeout())
                 ->post(
-                    config('ollama.base_url') . '/api/generate',
-                    [
-                        'model' => config('ollama.model'),
+                    OllamaSettings::baseUrl() . '/api/generate',
+                    array_merge(OllamaSettings::requestFields(), [
                         'prompt' => $prompt,
-                        'stream' => false,
-                    ]
+                    ])
                 );
 
             if (!$response->successful()) {
@@ -163,6 +161,14 @@ class OllamaService
      * @param int|null $reservationId
      * @return string
      */
+    private function ensureReady(): void
+    {
+        app(OllamaAvailability::class)->ensureBeforeCall(
+            OllamaSettings::baseUrl(),
+            OllamaSettings::model()
+        );
+    }
+
     private function buildReclamationDetailsPrompt(
         string $clientExplanation,
         ?string $equipmentName = null,
@@ -201,7 +207,7 @@ Analyse l'explication du client et génère une réclamation structurée. Tu doi
 {
   "type_probleme": "endommage|manquant|malfonctionnant|autre",
   "titre": "Titre concis (3-255 caractères)",
-  "description": "Description professionnelle (120-180 mots, sans formatage Markdown)"
+  "description": "Description professionnelle (60-90 mots, sans formatage Markdown)"
 }
 
 RÈGLES STRICTES:
@@ -283,7 +289,7 @@ PROMPT;
     }
 
     /**
-     * Build an enhanced prompt for Qwen2.5 3B that generates detailed, professional descriptions
+     * Build an enhanced prompt that generates detailed, professional descriptions
      *
      * @param string $problemType
      * @param string $problemTitle
@@ -340,7 +346,7 @@ Génère une description professionnelle, détaillée et courtoise de la réclam
 6. Se terminer par une formule de politesse
 
 CONTRAINTES IMPORTANTES:
-- La description doit faire entre 120 et 180 mots (paragraphe substantiel, pas une seule phrase)
+- La description doit faire entre 60 et 90 mots (un paragraphe court, pas une seule phrase)
 - N'invente PAS de dates, de noms, de détails de livraison, ou de faits non fournis
 - N'ajoute PAS de formatage Markdown, de tirets ou d'énumération
 - Utilise uniquement les informations fournies dans le contexte

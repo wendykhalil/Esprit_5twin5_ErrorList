@@ -63,12 +63,10 @@ class Reservation13WorkflowTest extends TestCase
         $reservation->refresh();
         $this->assertEquals('confirmee', $reservation->statut);
 
-        // Verify delivery was auto-created
-        $delivery = $reservation->delivery;
-        $this->assertNotNull($delivery);
-        $this->assertEquals('a_preparer', $delivery->status);
+        // Delivery is created when the client accepts the contract, not on approval.
+        $this->assertNull($reservation->delivery);
 
-        echo "✅ Step 2: Reservation approved, delivery auto-created (ID: {$delivery->id})\n";
+        echo "✅ Step 2: Reservation approved, delivery still pending contract acceptance\n";
 
         // Step 3: Client pays with reservation_id
         $this->actingAs($client);
@@ -110,12 +108,15 @@ class Reservation13WorkflowTest extends TestCase
 
         echo "✅ Step 4: Contract auto-created (ID: {$contract->id}, Number: {$contract->contract_number})\n";
 
-        // Step 5: Verify delivery still exists
+        // Step 5: Client accepts the contract, which creates the delivery.
+        $acceptResponse = $this->actingAs($client)->post(route('contracts.accept', $contract));
+        $acceptResponse->assertRedirect();
+
         $deliveryAfterPayment = Delivery::where('reservation_id', $reservation->id)->first();
         $this->assertNotNull($deliveryAfterPayment);
-        $this->assertEquals($delivery->id, $deliveryAfterPayment->id);  // Same delivery
+        $this->assertEquals('prete', $deliveryAfterPayment->status);
 
-        echo "✅ Step 5: Delivery confirmed (ID: {$deliveryAfterPayment->id})\n";
+        echo "✅ Step 5: Delivery created on contract acceptance (ID: {$deliveryAfterPayment->id})\n";
 
         // Final verification
         echo "\n📊 FINAL WORKFLOW STATE:\n";

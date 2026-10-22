@@ -21,12 +21,16 @@ class ApplyCompensationCodeRequest extends FormRequest
     public function rules(): array
     {
         return [
+            // A compensation payload and a refund payload share this route.
+            // Compensation fields are required only when no incident is approved.
+            // Incident ids are required only when no compensation type is sent.
             'type' => [
-                'required',
+                'required_without:approved_incidents',
                 Rule::in(['percentage', 'fixed']),
             ],
             'value' => [
-                'required',
+                'required_without:approved_incidents',
+                'nullable',
                 'numeric',
                 'min:0.01',
                 function ($attribute, $value, $fail) {
@@ -36,15 +40,26 @@ class ApplyCompensationCodeRequest extends FormRequest
                 },
             ],
             'days_valid' => [
-                'required',
+                'required_without:approved_incidents',
+                'nullable',
                 'integer',
                 'min:1',
                 'max:365',
             ],
             'max_uses' => [
-                'required',
+                'required_without:approved_incidents',
+                'nullable',
                 'integer',
                 'min:1',
+            ],
+            'approved_incidents' => [
+                'required_without:type',
+                'array',
+                'min:1',
+            ],
+            'approved_incidents.*' => [
+                'integer',
+                'exists:incidents,id',
             ],
             'admin_notes' => [
                 'nullable',

@@ -150,6 +150,11 @@ class ReverbBroadcaster extends Broadcaster
      */
     public function broadcast(array $channels, $event, array $payload = [])
     {
+        // PHPUnit must not require a running Reverb process. Production calls still reach the server.
+        if (app()->runningUnitTests()) {
+            return;
+        }
+
         $socket = Arr::pull($payload, 'socket');
 
         // Construct the Reverb broadcast endpoint URL

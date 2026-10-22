@@ -29,6 +29,7 @@ class DetectionAnomalieServiceTest extends TestCase
         ]);
         $releve = ReleveEnergie::factory()->create([
             'reservation_id' => $reservation->id, 'heures_utilisation' => 30,
+            'kwh_estimes' => 1,
             'date_releve' => '2026-10-01',
         ]);
 
@@ -52,6 +53,7 @@ class DetectionAnomalieServiceTest extends TestCase
         ]);
         $releve = ReleveEnergie::factory()->create([
             'reservation_id' => $reservation->id, 'heures_utilisation' => 3,
+            'kwh_estimes' => 1,
             'date_releve' => '2026-10-01',
         ]);
 

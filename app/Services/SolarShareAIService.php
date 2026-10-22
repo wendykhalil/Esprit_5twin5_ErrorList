@@ -15,7 +15,7 @@ class SolarShareAIService
         string $systemPrompt,
         string $userPrompt,
         array $history = [],
-        int $maxTokens = 900,
+        int $maxTokens = 220,
         bool $jsonMode = false
     ): string {
         $messages = [
@@ -52,38 +52,24 @@ class SolarShareAIService
             'content' => $userPrompt,
         ];
 
-        $url = rtrim(
-            (string) config(
-                'services.ollama.url',
-                'http://127.0.0.1:11434'
-            ),
-            '/'
-        );
+        $url = OllamaSettings::baseUrl();
+        $model = OllamaSettings::model();
 
-        $model = (string) config(
-            'services.ollama.model',
-            'mistral:latest'
-        );
-
-        $payload = [
-            'model' => $model,
+        $payload = array_merge(OllamaSettings::requestFields([
+            'temperature' => 0.1,
+            'num_predict' => $maxTokens,
+        ]), [
             'messages' => $messages,
-            'stream' => false,
-            'keep_alive' => '10m',
-            'options' => [
-                'temperature' => 0.1,
-                'num_predict' => $maxTokens,
-                'num_ctx' => 2048,
-            ],
-        ];
+        ]);
 
         if ($jsonMode) {
             $payload['format'] = 'json';
         }
 
         try {
+            app(OllamaAvailability::class)->ensureBeforeCall($url, $model);
             $response = Http::connectTimeout(5)
-                ->timeout(180)
+                ->timeout(OllamaSettings::timeout())
                 ->post($url . '/api/chat', $payload);
         } catch (ConnectionException $e) {
             throw new RuntimeException(
@@ -204,7 +190,7 @@ PROMPT;
             $system,
             "Équipement :\n" . $context,
             [],
-            1000,
+            480,
             true
         );
     }
@@ -282,7 +268,7 @@ PROMPT;
             $system,
             "Équipement :\n" . $context,
             [],
-            500,
+            280,
             true
         );
     }
@@ -309,6 +295,7 @@ as your primary references.
 
 RULES:
 - Answer in the language used by the user.
+- Answer in at most 5 short sentences.
 - Be clear, helpful and professional.
 - Explain general equipment usage.
 - Explain maintenance and safe troubleshooting.
@@ -343,7 +330,7 @@ PROMPT;
             "\n\nUser question:\n" .
             mb_substr($question, 0, 2000),
             $history,
-            700,
+            160,
             false
         );
     }
@@ -400,7 +387,7 @@ PROMPT;
             $system,
             "Recommendation request and catalogue:\n" . $context,
             [],
-            650,
+            240,
             true
         );
     }

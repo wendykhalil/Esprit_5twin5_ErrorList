@@ -85,7 +85,7 @@ class ClientReclamationRewardUXTest extends TestCase
         Incident::create([
             'reclamation_id' => $this->approvedReclamation->id,
             'equipment_id' => $this->equipment->id,
-            'type_probleme' => 'endommage',
+            'type_probleme' => 'endommage', 'titre' => 'Incident signale',
             'description' => 'Minor scratch on panel surface',
             'damage_percentage' => 5,
             'proposed_refund_percentage' => 30,
@@ -448,7 +448,7 @@ class ClientReclamationRewardUXTest extends TestCase
         $response = $this->get(route('reclamations.index'));
 
         $response->assertStatus(200);
-        $response->assertSee('Mes Réclamations');
+        $response->assertSee('Mes Incidents');
         $response->assertSee($this->approvedReclamation->title);
         $response->assertSee('Approuvée'); // Status badge
     }

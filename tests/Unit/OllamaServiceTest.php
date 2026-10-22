@@ -53,14 +53,12 @@ class OllamaServiceTest extends TestCase
         $this->assertStringContainsString('11434', $baseUrl);
     }
 
-    /**
-     * Test config model is set to qwen2.5:3b
-     */
-    public function test_config_model_is_qwen(): void
+    public function test_config_model_is_mistral(): void
     {
         $model = config('ollama.model');
-        $this->assertStringContainsString('qwen', strtolower($model));
-        $this->assertStringContainsString('3b', $model);
+        $this->assertSame('mistral:latest', $model);
+        $this->assertSame($model, config('solarshare.ollama.model'));
+        $this->assertSame($model, config('services.ollama.model'));
     }
 
     /**

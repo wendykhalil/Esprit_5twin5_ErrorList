@@ -22,6 +22,8 @@ class RegistrationTest extends TestCase
     {
         $response = $this->post('/register', [
             'name' => 'Test User',
+            'username' => 'test_user',
+            'phone' => '+21620000000',
             'email' => 'test@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',
@@ -38,7 +40,7 @@ class RegistrationTest extends TestCase
         $this->assertTrue(Hash::check('password', $user->password));
 
         $this->post('/login', [
-            'email' => 'test@example.com',
+            'login' => 'test@example.com',
             'password' => 'password',
         ])->assertRedirect(route('home', absolute: false));
 

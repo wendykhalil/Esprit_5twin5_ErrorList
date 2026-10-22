@@ -10,6 +10,6 @@
                 class="max-w-full sm:max-w-md rounded-lg border border-slate-200 shadow-sm group-hover:opacity-95 transition-opacity"
             />
         </a>
-        <p class="text-xs text-slate-400 mt-1">Cliquez pour ouvrir l'image en grand.</p>
+        <p class="text-xs text-slate-400 mt-1">Cliquez pour agrandir l'image</p>
     </div>
 @endif

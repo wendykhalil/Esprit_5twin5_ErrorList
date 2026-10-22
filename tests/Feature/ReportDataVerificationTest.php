@@ -7,10 +7,12 @@ use App\Models\Payment;
 use App\Models\Reclamation;
 use App\Models\Reservation;
 use Carbon\Carbon;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class ReportDataVerificationTest extends TestCase
 {
+    use RefreshDatabase;
     /**
      * Verify that the current database matches the problem statement
      * This is a diagnostic test, not a fix test
@@ -106,7 +108,16 @@ class ReportDataVerificationTest extends TestCase
             echo "  ID {$i->id}: rec_id={$i->reclamation_id}, type={$i->type_probleme}, created_at={$i->created_at->format('Y-m-d H:i')}\n";
         }
 
-        // Just verify some data exists
+        \App\Models\User::factory()->create();
+        $owner = \App\Models\User::factory()->create();
+        $equipment = \App\Models\Equipment::factory()->create(['user_id' => $owner->id]);
+        Reservation::factory()->create([
+            'user_id' => $owner->id,
+            'equipment_id' => $equipment->id,
+            'date_debut' => '2026-10-19',
+            'date_fin' => '2026-10-20',
+        ]);
+
         $this->assertTrue(Reservation::count() > 0, 'Database should have reservations');
     }
 }

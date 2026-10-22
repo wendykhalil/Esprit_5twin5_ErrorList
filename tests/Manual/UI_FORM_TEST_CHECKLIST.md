@@ -5,7 +5,7 @@
 ### Prerequisites
 - [ ] Laravel application running: `php artisan serve`
 - [ ] Ollama service running: `ollama serve`
-- [ ] Ollama model available: `qwen2.5:3b`
+- [ ] Ollama model available: `mistral:latest`
 - [ ] Database migrations executed: `php artisan migrate`
 - [ ] View cache cleared: `php artisan view:clear`
 - [ ] Config cache cleared: `php artisan config:clear`
