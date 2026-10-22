@@ -80,7 +80,13 @@ pipeline {
 
     post {
         always {
-            junit allowEmptyResults: false, testResults: 'build/ci-reports/junit.xml'
+            script {
+                if (fileExists('build/ci-reports/junit.xml')) {
+                    junit testResults: 'build/ci-reports/junit.xml'
+                } else {
+                    echo 'No JUnit report: PHPUnit did not run because an earlier stage failed.'
+                }
+            }
         }
     }
 }
