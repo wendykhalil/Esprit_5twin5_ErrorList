@@ -30,6 +30,13 @@ pipeline {
         stage('Checkout') {
             steps {
                 checkout scm
+                script {
+                    env.COMMIT_SHA = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
+                    if (!env.COMMIT_SHA) {
+                        error('git rev-parse HEAD did not return a commit SHA')
+                    }
+                    env.GHCR_IMAGE = "ghcr.io/wendykhalil/esprit_5twin5_errorlist:${env.COMMIT_SHA}"
+                }
             }
         }
 
@@ -79,15 +86,12 @@ pipeline {
 
         stage('Application image') {
             steps {
-                script {
-                    env.GHCR_IMAGE = "ghcr.io/wendykhalil/esprit_5twin5_errorlist:${env.GIT_COMMIT}"
-                }
                 sh '''
                     set -eu
-                    test -n "$GIT_COMMIT"
+                    test -n "$COMMIT_SHA"
                     test -n "$GHCR_IMAGE"
                     start=$(date +%s)
-                    docker build -t "$APP_IMAGE" -t "solarshare:${GIT_COMMIT}" -t "$GHCR_IMAGE" .
+                    docker build -t "$APP_IMAGE" -t "solarshare:${COMMIT_SHA}" -t "$GHCR_IMAGE" .
                     echo "STAGE_SECONDS=$(( $(date +%s) - start ))"
                 '''
             }
@@ -120,7 +124,7 @@ pipeline {
                 expression { return env.IMAGE_PUBLISHED == 'true' }
             }
             steps {
-                input message: "Deploy ghcr.io/wendykhalil/esprit_5twin5_errorlist:${env.GIT_COMMIT} to the local test environment? This is not production.", ok: 'Deploy'
+                input message: "Deploy ghcr.io/wendykhalil/esprit_5twin5_errorlist:${env.COMMIT_SHA} to the local test environment? This is not production.", ok: 'Deploy'
             }
         }
 
