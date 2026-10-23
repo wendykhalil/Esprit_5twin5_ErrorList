@@ -65,6 +65,17 @@ pipeline {
                 '''
             }
         }
+        stage('SonarQube Analysis') {
+            steps {
+                script {
+                    def scannerHome = tool 'SonarScanner'
+
+                    withSonarQubeEnv('SonarQube-SolarShare') {
+                        sh "set -eu; '${scannerHome}/bin/sonar-scanner'"
+                    }
+                }
+            }
+        }
 
         stage('Application image') {
             steps {
