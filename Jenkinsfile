@@ -133,24 +133,35 @@ pipeline {
                 expression { return env.IMAGE_PUBLISHED == 'true' }
             }
             steps {
-                sh '''
-                    set -eu
-                    start=$(date +%s)
-                    docker pull "$GHCR_IMAGE"
-                    SOLARSHARE_IMAGE="$GHCR_IMAGE" docker compose -f docker-compose.cd.yml -p solarshare-cd up -d --no-build --pull never
-                    ready=0
-                    i=0
-                    while [ "$i" -lt 30 ]; do
-                        if SOLARSHARE_IMAGE="$GHCR_IMAGE" docker compose -f docker-compose.cd.yml -p solarshare-cd exec -T app php -r "exit(@file_get_contents('http://127.0.0.1:8000/up') === false ? 1 : 0);"; then
-                            ready=1
-                            break
+                withCredentials([usernamePassword(credentialsId: 'ghcr-solarshare', usernameVariable: 'GHCR_USER', passwordVariable: 'GHCR_TOKEN')]) {
+                    sh '''
+                        set -eu
+                        test -n "$GHCR_IMAGE"
+                        start=$(date +%s)
+                        echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
+                        status=0
+                        docker pull "$GHCR_IMAGE" || status=$?
+                        if [ "$status" -eq 0 ]; then
+                            SOLARSHARE_IMAGE="$GHCR_IMAGE" docker compose -f docker-compose.cd.yml -p solarshare-cd up -d --no-build --pull never || status=$?
                         fi
-                        i=$((i + 1))
-                        sleep 2
-                    done
-                    echo "STAGE_SECONDS=$(( $(date +%s) - start ))"
-                    test "$ready" = "1"
-                '''
+                        if [ "$status" -eq 0 ]; then
+                            ready=0
+                            i=0
+                            while [ "$i" -lt 30 ]; do
+                                if SOLARSHARE_IMAGE="$GHCR_IMAGE" docker compose -f docker-compose.cd.yml -p solarshare-cd exec -T app php -r "exit(@file_get_contents('http://127.0.0.1:8000/up') === false ? 1 : 0);"; then
+                                    ready=1
+                                    break
+                                fi
+                                i=$((i + 1))
+                                sleep 2
+                            done
+                            test "$ready" = "1" || status=$?
+                        fi
+                        echo "STAGE_SECONDS=$(( $(date +%s) - start ))"
+                        docker logout ghcr.io
+                        exit "$status"
+                    '''
+                }
             }
         }
     }
