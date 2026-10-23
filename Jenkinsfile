@@ -79,11 +79,73 @@ pipeline {
 
         stage('Application image') {
             steps {
+                script {
+                    env.GHCR_IMAGE = "ghcr.io/wendykhalil/esprit_5twin5_errorlist:${env.GIT_COMMIT}"
+                }
+                sh '''
+                    set -eu
+                    test -n "$GIT_COMMIT"
+                    test -n "$GHCR_IMAGE"
+                    start=$(date +%s)
+                    docker build -t "$APP_IMAGE" -t "solarshare:${GIT_COMMIT}" -t "$GHCR_IMAGE" .
+                    echo "STAGE_SECONDS=$(( $(date +%s) - start ))"
+                '''
+            }
+        }
+
+        stage('Publish image') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'ghcr-solarshare', usernameVariable: 'GHCR_USER', passwordVariable: 'GHCR_TOKEN')]) {
+                    sh '''
+                        set -eu
+                        test -n "$GHCR_IMAGE"
+                        echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
+                        status=0
+                        docker push "$GHCR_IMAGE" || status=$?
+                        if [ "$status" -eq 0 ]; then
+                            docker buildx imagetools inspect "$GHCR_IMAGE" || status=$?
+                        fi
+                        docker logout ghcr.io
+                        exit "$status"
+                    '''
+                }
+                script {
+                    env.IMAGE_PUBLISHED = 'true'
+                }
+            }
+        }
+
+        stage('Approve test deploy') {
+            when {
+                expression { return env.IMAGE_PUBLISHED == 'true' }
+            }
+            steps {
+                input message: "Deploy ghcr.io/wendykhalil/esprit_5twin5_errorlist:${env.GIT_COMMIT} to the local test environment? This is not production.", ok: 'Deploy'
+            }
+        }
+
+        stage('Deploy test') {
+            when {
+                expression { return env.IMAGE_PUBLISHED == 'true' }
+            }
+            steps {
                 sh '''
                     set -eu
                     start=$(date +%s)
-                    docker build -t "$APP_IMAGE" .
+                    docker pull "$GHCR_IMAGE"
+                    SOLARSHARE_IMAGE="$GHCR_IMAGE" docker compose -f docker-compose.cd.yml -p solarshare-cd up -d --no-build --pull never
+                    ready=0
+                    i=0
+                    while [ "$i" -lt 30 ]; do
+                        if SOLARSHARE_IMAGE="$GHCR_IMAGE" docker compose -f docker-compose.cd.yml -p solarshare-cd exec -T app php -r "exit(@file_get_contents('http://127.0.0.1:8000/up') === false ? 1 : 0);"; then
+                            ready=1
+                            break
+                        fi
+                        i=$((i + 1))
+                        sleep 2
+                    done
                     echo "STAGE_SECONDS=$(( $(date +%s) - start ))"
+                    test "$ready" = "1"
                 '''
             }
         }
