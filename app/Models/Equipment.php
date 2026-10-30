@@ -63,6 +63,9 @@ class Equipment extends Model
         return $this->belongsTo(Category::class);
     }
 
+    /**
+     * Service requests for this equipment.
+     */
     public function serviceRequests(): HasMany
     {
         return $this->hasMany(ServiceRequest::class);

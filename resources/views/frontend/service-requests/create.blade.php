@@ -9,6 +9,7 @@
         <p class="text-slate-500 mt-2" style="font-family: Outfit, sans-serif">Veuillez remplir ce formulaire. Votre demande sera envoyée avec le statut « En attente ».</p>
     </div>
 
+    {{-- Provider Info Card --}}
     <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-8">
         <h2 class="text-lg font-semibold text-slate-800 mb-4" style="font-family: Outfit, sans-serif">Prestataire sélectionné</h2>
         <div class="flex flex-col sm:flex-row sm:items-center gap-4">

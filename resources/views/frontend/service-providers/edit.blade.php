@@ -52,7 +52,7 @@
                 <div class="space-y-6">
                     <div>
                         <label for="specialty" class="block text-sm font-medium text-gray-700">Spécialité <span class="text-red-500">*</span></label>
-                        <input type="text" name="specialty" id="specialty" value="{{ old('specialty', $serviceProvider->specialty) }}"
+                        <input type="text" name="specialty" id="specialty" value="{{ old('specialty', $serviceProvider->specialty) }}" required
                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm">
                         @error('specialty')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -61,7 +61,7 @@
 
                     <div>
                         <label for="location" class="block text-sm font-medium text-gray-700">Localisation <span class="text-red-500">*</span></label>
-                        <input type="text" name="location" id="location" value="{{ old('location', $serviceProvider->location) }}"
+                        <input type="text" name="location" id="location" value="{{ old('location', $serviceProvider->location) }}" required
                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm">
                         @error('location')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -71,7 +71,7 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div>
                             <label for="experience_years" class="block text-sm font-medium text-gray-700">Années d'expérience <span class="text-red-500">*</span></label>
-                            <input type="text" inputmode="numeric" name="experience_years" id="experience_years" value="{{ old('experience_years', $serviceProvider->experience_years) }}"
+                            <input type="text" inputmode="numeric" name="experience_years" id="experience_years" value="{{ old('experience_years', $serviceProvider->experience_years) }}" required
                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm">
                             @error('experience_years')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -80,7 +80,7 @@
 
                         <div>
                             <label for="hourly_rate" class="block text-sm font-medium text-gray-700">Tarif horaire (TND) <span class="text-red-500">*</span></label>
-                            <input type="text" inputmode="decimal" name="hourly_rate" id="hourly_rate" value="{{ old('hourly_rate', $serviceProvider->hourly_rate) }}"
+                            <input type="text" inputmode="decimal" name="hourly_rate" id="hourly_rate" value="{{ old('hourly_rate', $serviceProvider->hourly_rate) }}" required
                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm">
                             @error('hourly_rate')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -99,7 +99,7 @@
 
                     <div>
                         <label for="description" class="block text-sm font-medium text-gray-700">Description détaillée <span class="text-red-500">*</span></label>
-                        <textarea name="description" id="description" rows="5"
+                        <textarea name="description" id="description" rows="5" required
                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm">{{ old('description', $serviceProvider->description) }}</textarea>
                         @error('description')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>

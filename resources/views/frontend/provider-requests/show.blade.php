@@ -41,7 +41,6 @@
             </div>
         </div>
     @endif
-
     <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
         {{-- Header Status --}}
         <div class="p-6 border-b border-slate-200 bg-slate-50 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
@@ -121,7 +120,6 @@
                 <h3 class="text-lg font-semibold text-slate-800 mb-3 border-b border-slate-100 pb-2" style="font-family: Outfit, sans-serif">Description de la demande</h3>
                 <p class="text-slate-700 whitespace-pre-wrap">{{ $serviceRequest->description }}</p>
             </div>
-
             {{-- AI Pre-Diagnosis Card (if available) --}}
             @if($serviceRequest->ai_pre_diagnosis)
                 @php $ai = $serviceRequest->ai_pre_diagnosis; @endphp

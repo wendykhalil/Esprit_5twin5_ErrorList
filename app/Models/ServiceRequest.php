@@ -56,7 +56,6 @@ class ServiceRequest extends Model
     {
         return $this->belongsTo(Equipment::class);
     }
-
     /**
      * Get the user who cancelled the request.
      */

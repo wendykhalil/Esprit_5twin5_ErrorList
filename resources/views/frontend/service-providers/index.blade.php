@@ -1,17 +1,16 @@
 @extends('layouts.frontend')
 
-@section('title', 'Trouver un professionnel - SolarShare')
+@section('title', 'Prestataires de services - SolarShare')
 
 @section('content')
-<div class="min-h-screen bg-gray-50">
-
+<div class="min-h-screen bg-gray-50 py-12">
     {{-- Header --}}
-    <div class="bg-white border-b border-green-100">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div class="bg-white border-b border-gray-100 py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
-                    <h1 class="text-3xl font-bold text-green-900 mb-2" style="font-family: Fraunces, Georgia, serif">
-                        Trouver un professionnel
+                    <h1 class="text-3xl font-bold text-gray-900" style="font-family: Fraunces, Georgia, serif">
+                        Prestataires de services
                     </h1>
                     <p class="text-gray-500">
                         {{ $serviceProviders->total() }}
@@ -69,6 +68,7 @@
         </div>
     </div>
 
+    {{-- Main Content --}}
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
         @if(session('success'))

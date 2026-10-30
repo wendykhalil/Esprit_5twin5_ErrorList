@@ -409,11 +409,6 @@ Route::middleware('auth')->group(function () {
 
 Route::get('/services/{serviceProvider}', [ServiceProviderController::class, 'show'])
     ->name('service-providers.show');
-
-
-
-
-
 // --------------------------------------------------
 // ADMIN ROUTES
 // --------------------------------------------------

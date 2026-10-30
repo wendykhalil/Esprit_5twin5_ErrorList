@@ -19,7 +19,6 @@ class ServiceProviderController extends Controller
         if (auth()->check()) {
             $query->where('user_id', '!=', auth()->id());
         }
-
         if ($request->filled('specialty')) {
             $query->where('specialty', 'like', '%' . $request->specialty . '%');
         }
@@ -52,7 +51,6 @@ class ServiceProviderController extends Controller
         if (! $user->isClient()) {
             abort(403, 'Seuls les comptes client peuvent soumettre un nouveau profil prestataire.');
         }
-
         // Redirect if the user already has a profile
         if ($user->serviceProvider) {
             return redirect()->route('service-providers.edit', $user->serviceProvider)
@@ -120,6 +118,10 @@ class ServiceProviderController extends Controller
      */
     public function update(StoreServiceProviderRequest $request, ServiceProvider $serviceProvider)
     {
+        if ($serviceProvider->user_id !== auth()->id()) {
+            abort(403);
+        }
+
         $isResubmission = ($serviceProvider->status === 'rejected');
 
         $data = [

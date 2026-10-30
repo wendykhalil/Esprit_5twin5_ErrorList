@@ -45,7 +45,6 @@
             </div>
         </div>
     @endif
-
     <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
         {{-- Header Status --}}
         <div class="p-6 border-b border-slate-200 bg-slate-50 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
